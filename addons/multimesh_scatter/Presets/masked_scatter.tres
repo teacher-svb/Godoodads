@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="ScatterSettings" format=3]
+
+[ext_resource type="Script" path="res://addons/multimesh_scatter/Resources/ScatterSettings.cs" id="1_lgiyb"]
+
+[resource]
+resource_name = "Masked scatter"
+script = ExtResource("1_lgiyb")
+Amount = 1000
+MaskMode = 1
+MinDistance = 0.1

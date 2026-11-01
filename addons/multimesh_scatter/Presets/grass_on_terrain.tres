@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ScatterSettings" format=3]
+
+[ext_resource type="Script" path="res://addons/multimesh_scatter/Resources/ScatterSettings.cs" id="1_ta2go"]
+
+[resource]
+resource_name = "Grass on terrain"
+script = ExtResource("1_ta2go")
+Amount = 2000
+SlopeMaxDegrees = 40.0
+NormalSource = 1
+Alignment = 0.7
+AlignmentRandomness = 0.15
+RandomTiltDegrees = 8.0
+MinDistance = 0.15

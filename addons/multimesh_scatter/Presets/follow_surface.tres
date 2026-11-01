@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ScatterSettings" format=3]
+
+[ext_resource type="Script" path="res://addons/multimesh_scatter/Resources/ScatterSettings.cs" id="1_tj7fu"]
+
+[resource]
+resource_name = "Follow surface"
+script = ExtResource("1_tj7fu")
+NormalSource = 1
+Alignment = 0.0

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Engine-free unit tests for the pure-logic Core folders of every addon.
+       Core may only use GodotSharp value types (Vector3, Basis, Quaternion, ...),
+       never engine objects, so it runs without a Godot process. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>Godoodads.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../addons/*/Core/**/*.cs" LinkBase="Core" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GodotSharp" Version="4.7.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+</Project>

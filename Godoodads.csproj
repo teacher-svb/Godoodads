@@ -1,0 +1,26 @@
+<Project Sdk="Godot.NET.Sdk/4.7.0">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>Godoodads</RootNamespace>
+    <!-- Required by gdUnit4 so the test adapter can load the project's dependencies. -->
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>$(NoWarn);NU1605</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Engine-free tests build as their own project. -->
+    <Compile Remove="tests/Core.Tests/**" />
+  </ItemGroup>
+  <!-- gdUnit4: engine-dependent tests under tests/<addon>/ compile into this assembly. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="gdUnit4.api" Version="5.1.0-rc5" />
+    <PackageReference Include="gdUnit4.test.adapter" Version="3.1.1" />
+    <PackageReference Include="gdUnit4.analyzers" Version="1.1.0">
+      <PrivateAssets>none</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+</Project>
