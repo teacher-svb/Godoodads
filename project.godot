@@ -20,7 +20,7 @@ project/assembly_name="Godoodads"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/multimesh_scatter/plugin.cfg")
+enabled=PackedStringArray("res://addons/multimesh_scatter/plugin.cfg")
 
 [godot_mcp]
 

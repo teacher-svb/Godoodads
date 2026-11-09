@@ -8,7 +8,14 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 |---|---|---|---|
 | MultiMesh Scatter | `addons/multimesh_scatter/` | 1.0.1, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
 
-## Getting started
+## Install an addon
+
+1. Download the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `multimesh_scatter-1.0.1.zip`, and extract it into your project's root folder. Its files go under `addons/`.
+2. If your project has no C# solution yet, create one with *Project → Tools → C# → Create C# solution*.
+3. Build the C# project (the hammer icon, or `dotnet build`).
+4. Enable the addon in *Project → Project Settings → Plugins*.
+
+## Working on this repository
 
 1. Open this folder in Godot 4.7 .NET and build the project. For the engine tests, run `cp .runsettings.example .runsettings` and set `GODOT_BIN` in it to your Godot binary.
 2. Open `demo/multimesh_scatter/demo.tscn` and select the `Scatter` node.
