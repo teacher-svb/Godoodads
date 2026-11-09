@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-regenerate-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "medium"
 assignee: null
 epic: "WFC 1.1"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T22:55:00.000Z"
-completedAt: null
+modified: "2026-11-09T23:03:56.000Z"
+completedAt: "2026-11-09T23:03:56.000Z"
 labels: ["idea", "editor"]
 order: "b2"
 ---
@@ -24,3 +24,6 @@ Today a second Generate keeps the previous result, because generated cells count
 ## Open questions
 - Should Regenerate be the default behaviour of Generate?
 - How do we detect that a generated cell was edited by hand: compare item and orientation with what was written?
+
+## Planned (2026-11-10)
+Split into the *WFC 1.1* tickets. Decisions: Generate replaces the previous result by default, and edited generated cells count as hand-placed. See brief §11.2.

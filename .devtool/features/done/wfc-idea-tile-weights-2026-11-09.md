@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-tile-weights-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "high"
 assignee: null
 epic: "WFC 1.1"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T22:55:00.000Z"
-completedAt: null
+modified: "2026-11-09T23:03:56.000Z"
+completedAt: "2026-11-09T23:03:56.000Z"
 labels: ["idea", "core"]
 order: "b0"
 ---
@@ -27,3 +27,6 @@ Let each tile set how likely it is, so density no longer depends on copies of ti
 ## Open questions
 - Is a weight per tile, or per variant (so rotations share it)?
 - Weighted entropy or fewest options?
+
+## Planned (2026-11-10)
+Split into the *WFC 1.1* tickets. Decisions: weight per tile shared by its rotations, fewest-options cell order kept, 0 disables generation, results differ from 1.0. See brief §11.1.
