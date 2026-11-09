@@ -1,0 +1,72 @@
+[gd_resource type="Resource" script_class="WfcTileSet" format=3 uid="uid://cj3uifuabjxmy"]
+
+[ext_resource type="MeshLibrary" uid="uid://c8j63ilpby2ff" path="res://demo/wfc_generator/hills_library.tres" id="1_j2ydt"]
+[ext_resource type="Script" uid="uid://rb5vled2paii" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_koqwd"]
+[ext_resource type="Script" uid="uid://bp15dtwmw2ped" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="3_61r5f"]
+
+[sub_resource type="Resource" id="Resource_ekh4k"]
+script = ExtResource("2_koqwd")
+Item = 0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "rock"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_2qlh2"]
+script = ExtResource("2_koqwd")
+Item = 1
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_j7nqe"]
+script = ExtResource("2_koqwd")
+Item = 2
+Rotation = 2
+SocketPosX = "solid"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_b8wgg"]
+script = ExtResource("2_koqwd")
+Item = 3
+Rotation = 2
+SocketPosX = "side-"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_fld2f"]
+script = ExtResource("2_koqwd")
+Item = 4
+Rotation = 2
+SocketPosX = "solid"
+SocketNegX = "side+"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_k2v6r"]
+script = ExtResource("2_koqwd")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[resource]
+script = ExtResource("3_61r5f")
+Library = ExtResource("1_j2ydt")
+Tiles = Array[ExtResource("2_koqwd")]([SubResource("Resource_ekh4k"), SubResource("Resource_2qlh2"), SubResource("Resource_j7nqe"), SubResource("Resource_b8wgg"), SubResource("Resource_fld2f"), SubResource("Resource_k2v6r")])

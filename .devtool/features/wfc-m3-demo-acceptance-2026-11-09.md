@@ -19,3 +19,7 @@ Brief: §8 Performance, Reliability.
 
 ## Done when
 - At least 19 of 20 seeds complete and timings meet the target, or the shortfall is reported here for the board.
+
+
+## From M2
+If a full-size solve is slow enough, check in the editor that **Stop** leaves the GridMap unchanged and that rebuilding during a solve neither crashes nor hangs. Then close `wfc-m2-solve-runner`.

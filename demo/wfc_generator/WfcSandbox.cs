@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
+using Godoodads.WfcGenerator;
 using Godoodads.WfcGenerator.Core;
 
 namespace Godoodads.WfcGenerator.Demo;
@@ -41,6 +42,7 @@ public partial class WfcSandbox : Node3D
     [ExportToolButton("Generate")] public Callable GenerateButton => new(this, MethodName.Generate);
     [ExportToolButton("New Seed + Generate")] public Callable NewSeedButton => new(this, MethodName.GenerateWithNewSeed);
     [ExportToolButton("Clear")] public Callable ClearButton => new(this, MethodName.Clear);
+    [ExportToolButton("Save Test Assets")] public Callable SaveAssetsButton => new(this, MethodName.SaveTestAssets);
 
     [Export(PropertyHint.MultilineText)] public string Status { get; set; } = "";
 
@@ -66,6 +68,32 @@ public partial class WfcSandbox : Node3D
     {
         Map.Clear();
         Report("Cleared.");
+    }
+
+    /// <summary>Writes the MeshLibrary and tile set that generate_test.tscn uses.</summary>
+    public void SaveTestAssets()
+    {
+        const string libraryPath = "res://demo/wfc_generator/hills_library.tres";
+        const string tileSetPath = "res://demo/wfc_generator/hills_tileset.tres";
+
+        var library = BuildLibrary();
+        library.TakeOverPath(libraryPath);
+        var tileSet = new WfcTileSet { Library = library };
+        for (int i = 0; i < Tiles.Length; i++)
+        {
+            var s = Tiles[i].Sockets;
+            tileSet.Tiles.Add(new WfcTile
+            {
+                Item = i == Air ? WfcTile.EmptyItem : i,
+                Rotation = Tiles[i].Rotation,
+                SocketPosX = s[Directions.PosX], SocketNegX = s[Directions.NegX],
+                SocketPosY = s[Directions.PosY], SocketNegY = s[Directions.NegY],
+                SocketPosZ = s[Directions.PosZ], SocketNegZ = s[Directions.NegZ],
+            });
+        }
+        var first = ResourceSaver.Save(library, libraryPath);
+        var second = ResourceSaver.Save(tileSet, tileSetPath);
+        Report($"Saved test assets: library {first}, tile set {second}.");
     }
 
     public void Generate()
