@@ -30,3 +30,14 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 - LOD, culling and collision generation for instances
 - GDScript or GDExtension ports
 - Publishing on the Godot Asset Store
+
+### WFC Generator
+
+- Tile weights, including per-region and per-height weights
+- Runtime (in-game) generation
+- Streaming, chunks and infinite grids
+- Connected-path and reachability constraints
+- 2D `TileMapLayer` adapter
+- Full in-viewport socket editor
+- Multi-cell tiles
+- Marker tiles that instantiate scenes (doors, spawn points, lights)
