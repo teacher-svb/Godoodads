@@ -6,7 +6,7 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 
 | Addon | Folder | Status | Brief |
 |---|---|---|---|
-| MultiMesh Scatter | `addons/multimesh_scatter/` | 1.0.0, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
+| MultiMesh Scatter | `addons/multimesh_scatter/` | 1.0.1, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
 
 ## Getting started
 
