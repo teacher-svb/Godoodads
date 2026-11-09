@@ -1,15 +1,15 @@
 ---
 id: "wfc-m1-review-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "WFC M1 Core solver"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
-completedAt: null
+modified: "2026-11-09T16:52:14.269Z"
+completedAt: "2026-11-09T16:52:14.269Z"
 labels: ["review"]
-order: "a9"
+order: "Zz"
 ---
 # WFC M1: Milestone review
 

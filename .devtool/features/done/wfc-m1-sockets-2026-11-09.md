@@ -1,13 +1,13 @@
 ---
 id: "wfc-m1-sockets-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "WFC M1 Core solver"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
-completedAt: null
+modified: "2026-11-09T16:42:27.000Z"
+completedAt: "2026-11-09T16:42:27.000Z"
 labels: ["core"]
 order: "a1"
 ---
@@ -19,3 +19,6 @@ Brief: §4.2.
 
 ## Done when
 - Unit tests cover every row of the §4.2 table, plus non-matches and invalid labels.
+
+## Result
+Implemented `Socket` parsing, matching and rotation. Every row of the brief table is tested, plus non-matches and invalid labels.

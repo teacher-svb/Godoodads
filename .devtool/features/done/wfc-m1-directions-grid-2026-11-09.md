@@ -1,13 +1,13 @@
 ---
 id: "wfc-m1-directions-grid-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "WFC M1 Core solver"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
-completedAt: null
+modified: "2026-11-09T16:42:27.000Z"
+completedAt: "2026-11-09T16:42:27.000Z"
 labels: ["core"]
 order: "a0"
 ---
@@ -19,3 +19,6 @@ Brief: §4.5, §4.6.
 
 ## Done when
 - Unit tests cover neighbours and opposite directions in 2D and 3D, including edges and corners.
+
+## Result
+Implemented `Directions` and `GridTopology`. A 2D grid uses the X and Z directions. Rotation order is tested against Godot `Basis`. Unit tests pass.

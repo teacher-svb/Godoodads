@@ -1,13 +1,13 @@
 ---
 id: "wfc-m1-failure-report-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "WFC M1 Core solver"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
-completedAt: null
+modified: "2026-11-09T16:45:45.000Z"
+completedAt: "2026-11-09T16:45:45.000Z"
 labels: ["core"]
 order: "a7"
 ---
@@ -20,3 +20,6 @@ Brief: §4.7, §4.8.
 ## Done when
 - Unit tests cover both failure kinds and cancellation.
 - Event replay reproduces the final grid, including after backtracks.
+
+## Result
+Added `SolveStatus` (Solved, Impossible, OutOfAttempts, Cancelled), `FailureReport`, `FixedConflict`, `ISolveObserver` and a `CancellationToken` check per decision. Replay reproduces the final grid after backtracks and restarts.
