@@ -3,7 +3,7 @@
 ## Sub-project 2: WFC Generator
 
 **Decisions by:** the board (Syndias)
-**Status:** Approved by the board (2026-11-09), ready for M0
+**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review).
 **Reference material:** none. The demo tileset is created for this project.
 
 ---

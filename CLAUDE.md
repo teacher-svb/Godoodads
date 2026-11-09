@@ -4,9 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-**Godot Editor Tools** (working title, "Godoodads") is a suite of independent Godot editor addons in one repo, with one addon folder per sub-project and shared helpers. Sub-project 1 is **MultiMesh Scatter**, which fills a `MultiMeshInstance3D` with instances placed on a surface mesh, driven by geometry, mask textures and normal maps. It was **released as 1.0.0 on 2026-11-01** (all milestones M0–M5 accepted by the board). Its CHANGELOG lists what shipped. New sub-projects get their own brief in `docs/briefs/`, addon folder and milestone epics on the kanban board, and reuse `addons/editor_tools_common/`.
+**Godot Editor Tools** (working title, "Godoodads") is a suite of independent Godot editor addons in one repo, with one addon folder per sub-project and shared helpers. Sub-project 1 is **MultiMesh Scatter**, which fills a `MultiMeshInstance3D` with instances placed on a surface mesh, driven by geometry, mask textures and normal maps. It was **released as 1.0.0 on 2026-11-01** (all milestones M0–M5 accepted by the board). Its CHANGELOG lists what shipped. Sub-project 2 is **WFC Generator**, which fills a `GridMap` with modules using wave function collapse and socket rules, in true 3D. Its 1.0.0 completed milestones M0–M5 on 2026-11-09. New sub-projects get their own brief in `docs/briefs/`, addon folder and milestone epics on the kanban board, and reuse `addons/editor_tools_common/`.
 
 - [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) is the board's brief for MultiMesh Scatter and the authoritative spec. Read the relevant section before implementing anything. Most important: §4 requirements, §6 reference bugs to avoid, §8 acceptance criteria.
+- [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) is the brief for WFC Generator. §10 records the GridMap facts verified in M0, and the kanban cards record the board decisions (no tile weights in v1).
 - [CONVENTIONS.md](CONVENTIONS.md) covers layout, namespaces, the UI pattern, testing and work tracking. Follow it.
 
 ## Commands
@@ -20,6 +21,7 @@ dotnet test Godoodads.csproj --settings .runsettings               # gdUnit4 eng
 dotnet test tests/Core.Tests --filter "FullyQualifiedName~Sampler" # single test or class
 $GODOT --headless -e --path . --quit-after 200                     # load the editor headless to catch plugin load errors
 $GODOT --headless --path . res://demo/multimesh_scatter/tools/build_demos.tscn  # rebuild the per-mode demo scenes
+$GODOT --headless --path . res://demo/wfc_generator/tools/build_demo.tscn       # rebuild the WFC hillside ruin tile set and scenes
 ```
 
 gdUnit4 versions are pinned as a pair (`gdUnit4.api` 5.1.0-rc5 with `gdUnit4.test.adapter` 3.1.1). Newer adapters need a newer api, so upgrade both together.
