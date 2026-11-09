@@ -19,3 +19,7 @@ Brief: §7.
 
 ## Done when
 - Docs match the shipped behaviour and the versions agree.
+
+
+## From the M3 board decision
+v1 has no weights. The socket guide must explain controlling density by repeating empty tiles and adding variants, and keeping requirements local, such as fixed-length bridges.

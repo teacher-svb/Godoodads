@@ -1,0 +1,1196 @@
+[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_gjyxb"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_peesb"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="3_git1y"]
+
+[sub_resource type="Resource" id="Resource_rjvwt"]
+resource_name = "Rock"
+script = ExtResource("2_peesb")
+Item = 0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "rock"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_ncfjc"]
+resource_name = "Grass"
+script = ExtResource("2_peesb")
+Item = 1
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_j6o2k"]
+resource_name = "Paving"
+script = ExtResource("2_peesb")
+Item = 2
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_5yxxh"]
+resource_name = "Ramp"
+script = ExtResource("2_peesb")
+Item = 3
+Rotation = 2
+SocketPosX = "solid"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_atr7y"]
+resource_name = "Outer Corner"
+script = ExtResource("2_peesb")
+Item = 4
+Rotation = 2
+SocketPosX = "side-"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_wsyjo"]
+resource_name = "Inner Corner"
+script = ExtResource("2_peesb")
+Item = 5
+Rotation = 2
+SocketPosX = "solid"
+SocketNegX = "side+"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_j6d8g"]
+resource_name = "Wall"
+script = ExtResource("2_peesb")
+Item = 6
+Rotation = 1
+SocketPosX = "wall"
+SocketNegX = "wall"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_be6y0"]
+resource_name = "Wall Arch"
+script = ExtResource("2_peesb")
+Item = 7
+Rotation = 1
+SocketPosX = "wall"
+SocketNegX = "wall"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ust8y"]
+resource_name = "Broken Wall"
+script = ExtResource("2_peesb")
+Item = 8
+Rotation = 1
+SocketPosX = "wall"
+SocketNegX = "wall"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_1gme5"]
+resource_name = "Wall End"
+script = ExtResource("2_peesb")
+Item = 9
+Rotation = 2
+SocketPosX = "wall"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_l7lro"]
+resource_name = "Wall Corner"
+script = ExtResource("2_peesb")
+Item = 10
+Rotation = 2
+SocketPosX = "wall"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "wall"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_heqh7"]
+resource_name = "Tower Base"
+script = ExtResource("2_peesb")
+Item = 11
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "tower"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_slsgs"]
+resource_name = "Tower Top"
+script = ExtResource("2_peesb")
+Item = 12
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "tower"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_0e85m"]
+resource_name = "Pillar"
+script = ExtResource("2_peesb")
+Item = 13
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "pier"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_met20"]
+resource_name = "Stairs"
+script = ExtResource("2_peesb")
+Item = 14
+Rotation = 2
+SocketPosX = "landing"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_5d6au"]
+resource_name = "Plinth"
+script = ExtResource("2_peesb")
+Item = 15
+Rotation = 2
+SocketPosX = "open"
+SocketNegX = "landing"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_8hdjm"]
+resource_name = "Bridge Head"
+script = ExtResource("2_peesb")
+Item = 16
+Rotation = 2
+SocketPosX = "span+"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "pier"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_63tpu"]
+resource_name = "Bridge Deck"
+script = ExtResource("2_peesb")
+Item = 17
+Rotation = 2
+SocketPosX = "mid"
+SocketNegX = "span-"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_twyd1"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_qp7og"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_swxcu"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_vhtv4"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_uyuh2"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_o0kwa"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_awxvr"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_p0gws"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_vh4cy"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_bwil5"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_bdnrb"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_p0qxy"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_n4v3r"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_k080s"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_epitu"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_524bk"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_go3jx"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_sln8v"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_irpdo"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_cys5l"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_uaami"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_wn7w8"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_f4mos"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_1vwo2"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_uo26r"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_aic2l"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_jifk6"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_2eptx"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_usyb0"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_gsgk2"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_nfcla"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_wlg2h"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_xgvhp"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_dvemw"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_0ebw6"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_vyg8q"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_sqe5c"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_270vq"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_3axss"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_orrxj"]
+resource_name = "Air"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_lktc2"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_pgko7"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_pug0q"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_yejkx"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_t2gys"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_fjexr"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_5glar"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_l1ac3"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_u66eg"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_k0lv5"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_fb4cb"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_6mp6g"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_r2k5p"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_8nvsv"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_svo01"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_afp0c"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_6f2nx"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_rwmm4"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_odlq6"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_yxw2t"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_puec3"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_qsp0p"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_u7dyg"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_x3sdh"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_kf71q"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_qld6y"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_bh8x5"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_a0qgn"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_6bw2p"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_7qi7u"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_63oih"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_wpo0a"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ppqpd"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_o02cj"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ddx0l"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_bsgw5"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_djsod"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_t6qkl"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_xo7f4"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_gejlv"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_peesb")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_3m1cs"]
+resource_name = "Grass 1"
+script = ExtResource("2_peesb")
+Item = 18
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_4uyo5"]
+resource_name = "Grass 2"
+script = ExtResource("2_peesb")
+Item = 19
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_v6n4v"]
+resource_name = "Grass 3"
+script = ExtResource("2_peesb")
+Item = 20
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_auk0j"]
+resource_name = "Grass 4"
+script = ExtResource("2_peesb")
+Item = 21
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_88730"]
+resource_name = "Grass 5"
+script = ExtResource("2_peesb")
+Item = 22
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_0xtfe"]
+resource_name = "Grass 6"
+script = ExtResource("2_peesb")
+Item = 23
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_qvmv6"]
+resource_name = "Grass 7"
+script = ExtResource("2_peesb")
+Item = 24
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_5bpqm"]
+resource_name = "Grass 8"
+script = ExtResource("2_peesb")
+Item = 25
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_y865v"]
+resource_name = "Grass 9"
+script = ExtResource("2_peesb")
+Item = 26
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_j28qp"]
+resource_name = "Grass 10"
+script = ExtResource("2_peesb")
+Item = 27
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_jtwgu"]
+resource_name = "Grass 11"
+script = ExtResource("2_peesb")
+Item = 28
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_b57w3"]
+resource_name = "Grass 12"
+script = ExtResource("2_peesb")
+Item = 29
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_f42va"]
+resource_name = "Grass 13"
+script = ExtResource("2_peesb")
+Item = 30
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_2vhct"]
+resource_name = "Grass 14"
+script = ExtResource("2_peesb")
+Item = 31
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_glwix"]
+resource_name = "Grass 15"
+script = ExtResource("2_peesb")
+Item = 32
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_vr2s2"]
+resource_name = "Grass 16"
+script = ExtResource("2_peesb")
+Item = 33
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[resource]
+script = ExtResource("3_git1y")
+Library = ExtResource("1_gjyxb")
+Tiles = Array[ExtResource("2_peesb")]([SubResource("Resource_rjvwt"), SubResource("Resource_ncfjc"), SubResource("Resource_j6o2k"), SubResource("Resource_5yxxh"), SubResource("Resource_atr7y"), SubResource("Resource_wsyjo"), SubResource("Resource_j6d8g"), SubResource("Resource_be6y0"), SubResource("Resource_ust8y"), SubResource("Resource_1gme5"), SubResource("Resource_l7lro"), SubResource("Resource_heqh7"), SubResource("Resource_slsgs"), SubResource("Resource_0e85m"), SubResource("Resource_met20"), SubResource("Resource_5d6au"), SubResource("Resource_8hdjm"), SubResource("Resource_63tpu"), SubResource("Resource_twyd1"), SubResource("Resource_qp7og"), SubResource("Resource_swxcu"), SubResource("Resource_vhtv4"), SubResource("Resource_uyuh2"), SubResource("Resource_o0kwa"), SubResource("Resource_awxvr"), SubResource("Resource_p0gws"), SubResource("Resource_vh4cy"), SubResource("Resource_bwil5"), SubResource("Resource_bdnrb"), SubResource("Resource_p0qxy"), SubResource("Resource_n4v3r"), SubResource("Resource_k080s"), SubResource("Resource_epitu"), SubResource("Resource_524bk"), SubResource("Resource_go3jx"), SubResource("Resource_sln8v"), SubResource("Resource_irpdo"), SubResource("Resource_cys5l"), SubResource("Resource_uaami"), SubResource("Resource_wn7w8"), SubResource("Resource_f4mos"), SubResource("Resource_1vwo2"), SubResource("Resource_uo26r"), SubResource("Resource_aic2l"), SubResource("Resource_jifk6"), SubResource("Resource_2eptx"), SubResource("Resource_usyb0"), SubResource("Resource_gsgk2"), SubResource("Resource_nfcla"), SubResource("Resource_wlg2h"), SubResource("Resource_xgvhp"), SubResource("Resource_dvemw"), SubResource("Resource_0ebw6"), SubResource("Resource_vyg8q"), SubResource("Resource_sqe5c"), SubResource("Resource_270vq"), SubResource("Resource_3axss"), SubResource("Resource_orrxj"), SubResource("Resource_lktc2"), SubResource("Resource_pgko7"), SubResource("Resource_pug0q"), SubResource("Resource_yejkx"), SubResource("Resource_t2gys"), SubResource("Resource_fjexr"), SubResource("Resource_5glar"), SubResource("Resource_l1ac3"), SubResource("Resource_u66eg"), SubResource("Resource_k0lv5"), SubResource("Resource_fb4cb"), SubResource("Resource_6mp6g"), SubResource("Resource_r2k5p"), SubResource("Resource_8nvsv"), SubResource("Resource_svo01"), SubResource("Resource_afp0c"), SubResource("Resource_6f2nx"), SubResource("Resource_rwmm4"), SubResource("Resource_odlq6"), SubResource("Resource_yxw2t"), SubResource("Resource_puec3"), SubResource("Resource_qsp0p"), SubResource("Resource_u7dyg"), SubResource("Resource_x3sdh"), SubResource("Resource_kf71q"), SubResource("Resource_qld6y"), SubResource("Resource_bh8x5"), SubResource("Resource_a0qgn"), SubResource("Resource_6bw2p"), SubResource("Resource_7qi7u"), SubResource("Resource_63oih"), SubResource("Resource_wpo0a"), SubResource("Resource_ppqpd"), SubResource("Resource_o02cj"), SubResource("Resource_ddx0l"), SubResource("Resource_bsgw5"), SubResource("Resource_djsod"), SubResource("Resource_t6qkl"), SubResource("Resource_xo7f4"), SubResource("Resource_gejlv"), SubResource("Resource_3m1cs"), SubResource("Resource_4uyo5"), SubResource("Resource_v6n4v"), SubResource("Resource_auk0j"), SubResource("Resource_88730"), SubResource("Resource_0xtfe"), SubResource("Resource_qvmv6"), SubResource("Resource_5bpqm"), SubResource("Resource_y865v"), SubResource("Resource_j28qp"), SubResource("Resource_jtwgu"), SubResource("Resource_b57w3"), SubResource("Resource_f42va"), SubResource("Resource_2vhct"), SubResource("Resource_glwix"), SubResource("Resource_vr2s2")])

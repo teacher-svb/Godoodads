@@ -1,0 +1,35 @@
+[gd_scene format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_5sbhy"]
+[ext_resource type="Resource" path="res://demo/wfc_generator/assets/ruin_tileset.tres" id="2_lak1a"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcSettings.cs" id="3_ypakw"]
+
+[sub_resource type="Resource" id="Resource_i3qry"]
+script = ExtResource("3_ypakw")
+TileSet = ExtResource("2_lak1a")
+Seed = 1
+BoundsSize = Vector3i(32, 12, 32)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_nslu0"]
+
+[sub_resource type="Sky" id="Sky_526ag"]
+sky_material = SubResource("ProceduralSkyMaterial_nslu0")
+
+[sub_resource type="Environment" id="Environment_j0ou0"]
+background_mode = 2
+sky = SubResource("Sky_526ag")
+ambient_light_source = 3
+tonemap_mode = 2
+
+[node name="HillsideFree" type="Node3D" unique_id=811064110]
+
+[node name="GridMap" type="GridMap" parent="." unique_id=333415211]
+mesh_library = ExtResource("1_5sbhy")
+metadata/godoodads_wfc_settings = SubResource("Resource_i3qry")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1434164082]
+transform = Transform3D(0.81915206, 0.46984634, -0.32898995, 0, 0.57357645, 0.81915206, 0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2146197530]
+environment = SubResource("Environment_j0ou0")
