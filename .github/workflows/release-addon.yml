@@ -1,0 +1,53 @@
+name: Release addon
+
+# Tag format: <addon>-v<version>, for example multimesh_scatter-v1.0.0.
+on:
+  push:
+    tags:
+      - "*-v[0-9]*"
+
+permissions:
+  contents: write
+
+env:
+  GODOT_RELEASE: 4.7-stable
+  GODOT_NAME: Godot_v4.7-stable_mono_linux
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Parse tag
+        run: |
+          echo "ADDON=${GITHUB_REF_NAME%-v*}" >> "$GITHUB_ENV"
+          echo "VERSION=${GITHUB_REF_NAME##*-v}" >> "$GITHUB_ENV"
+
+      - name: Run Core tests
+        run: dotnet test tests/Core.Tests
+
+      - name: Package addon
+        run: bash tools/package_addon.sh "$ADDON" "$VERSION" dist
+
+      - name: Download Godot
+        run: |
+          curl -fsSL -o godot.zip \
+            "https://github.com/godotengine/godot-builds/releases/download/$GODOT_RELEASE/${GODOT_NAME}_x86_64.zip"
+          unzip -q godot.zip -d "$RUNNER_TEMP/godot"
+          echo "GODOT=$RUNNER_TEMP/godot/${GODOT_NAME}_x86_64/$GODOT_NAME.x86_64" >> "$GITHUB_ENV"
+
+      - name: Smoke test in a clean project
+        run: bash tools/smoke_test_addon.sh "dist/$ADDON-$VERSION.zip" "$ADDON"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/$ADDON-$VERSION.zip" \
+            --title "$ADDON $VERSION" \
+            --notes-file "dist/$ADDON-$VERSION.notes.md"

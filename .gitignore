@@ -20,3 +20,5 @@ gdunit4_testadapter_v5/
 # mcp specific
 .claude/skills/godot-mcp/
 addons/godot_mcp/
+# Release packages (tools/package_addon.sh)
+dist/
