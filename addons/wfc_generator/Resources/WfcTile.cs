@@ -29,6 +29,6 @@ public partial class WfcTile : Resource
     public override void _ValidateProperty(Dictionary property)
     {
         if (property["name"].AsStringName() == PropertyName.Rotation)
-            property["hint_string"] = "None:0,2-way:1,4-way:2";
+            property["hint_string"] = "None:0,Half Turn (2 rotations):1,Quarter Turns (4 rotations):2";
     }
 }

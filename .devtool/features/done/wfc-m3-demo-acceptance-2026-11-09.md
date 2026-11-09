@@ -33,3 +33,7 @@ Headless, 100×16×100, 20 seeds each, default limits:
 | No fixed cells | 20 of 20 | 4.48 / 5.28 / 6.26 s | 0 | 0 |
 
 Meets the 30-second and 19-of-20 targets. Earlier socket designs with unbounded bridges ran out of attempts on 3 of 4 seeds, so reliability depends strongly on keeping requirements local. Stop and rebuild during a solve are checked on `wfc-m2-solve-runner`.
+
+
+## Rerun after the wall rotation fix (M4, 2026-11-09)
+144 variants, 100×16×100, 20 seeds each: ground layer 20 of 20, average 3.87 s; no fixed cells 20 of 20, average 5.23 s. 0 backtracks and 0 restarts.

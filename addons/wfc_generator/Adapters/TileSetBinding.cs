@@ -14,6 +14,9 @@ public sealed class TileSetBinding
     public List<string> Errors { get; } = new();
     public bool IsValid => Errors.Count == 0;
 
+    /// <summary>Readable name per tile: the tile's own name, its item's name, or its position.</summary>
+    public string[] TileNames { get; private set; }
+
     /// <summary>The tile index using a MeshLibrary item, or -1.</summary>
     public int TileForItem(int item) => _tileForItem.TryGetValue(item, out int tile) ? tile : -1;
 
@@ -25,6 +28,7 @@ public sealed class TileSetBinding
 
         var definitions = new List<TileDefinition>();
         var items = new List<int>();
+        var names = new List<string>();
         for (int i = 0; i < tileSet.Tiles.Count; i++)
         {
             var tile = tileSet.Tiles[i];
@@ -36,15 +40,42 @@ public sealed class TileSetBinding
             binding.CheckItem(tileSet.Library, tile.Item, items.Count, i);
             definitions.Add(tile.ToDefinition());
             items.Add(tile.Item);
+            names.Add(NameOf(tile, tileSet.Library, i));
         }
 
         binding.Items = items.ToArray();
+        binding.TileNames = names.ToArray();
         binding.Compiled = CompiledTileSet.Compile(definitions, directions);
         foreach (var issue in binding.Compiled.Errors)
             binding.Errors.Add(issue.TileIndex < 0
                 ? issue.Message
                 : $"Tile {issue.TileIndex} ({Directions.Name(issue.Direction)}): {issue.Message}");
         return binding;
+    }
+
+    /// <summary>Tile set warnings as messages. Empty when the binding has errors, because nothing can be checked.</summary>
+    public List<string> Warnings()
+    {
+        var warnings = new List<string>();
+        if (!IsValid)
+            return warnings;
+        var report = TileSetChecker.Check(Compiled);
+        foreach (var face in report.UnmatchedFaces)
+            warnings.Add($"{TileNames[face.TileIndex]} ({Directions.Name(face.Direction)}): socket '{face.Socket}' has no partner.");
+        foreach (int tile in report.EdgeOnlyTiles)
+            warnings.Add($"{TileNames[tile]} only fits at the edges of the grid.");
+        return warnings;
+    }
+
+    private static string NameOf(WfcTile tile, MeshLibrary library, int index)
+    {
+        if (!string.IsNullOrEmpty(tile.ResourceName))
+            return tile.ResourceName;
+        if (tile.Item == WfcTile.EmptyItem)
+            return "Empty";
+        return library != null && System.Array.IndexOf(library.GetItemList(), tile.Item) >= 0
+            ? library.GetItemName(tile.Item)
+            : $"Tile {index}";
     }
 
     private void CheckItem(MeshLibrary library, int item, int tileIndex, int listIndex)

@@ -34,6 +34,14 @@ public class WfcDemoAssetTests
 
     [TestCase]
     [RequireGodotRuntime]
+    public void Ruin_tile_set_has_no_check_warnings()
+    {
+        var binding = TileSetBinding.Create(ResourceLoader.Load<WfcTileSet>(TileSetPath), Directions.All3D);
+        AssertThat(string.Join("; ", binding.Warnings())).IsEqual("");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
     public void Demo_scenes_store_their_settings()
     {
         foreach (string name in new[] { "hillside_free", "hillside_ground" })

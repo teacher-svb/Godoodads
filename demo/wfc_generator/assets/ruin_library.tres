@@ -1,4 +1,4 @@
-[gd_resource type="MeshLibrary" format=4]
+[gd_resource type="MeshLibrary" format=4 uid="uid://b8fum6wlmiv5h"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jj8dn"]
 cull_mode = 2

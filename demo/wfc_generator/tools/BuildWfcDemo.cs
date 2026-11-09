@@ -47,9 +47,9 @@ public partial class BuildWfcDemo : Node
         new("Outer Corner", S("side-", "open", "air", "rock", "side+", "open"), TileRotation.FourWay, b => b.Slope(1, -1, -1, -1, SlopeColour)),
         new("Inner Corner", S("solid", "side+", "air", "rock", "solid", "side-"), TileRotation.FourWay, b => b.Slope(1, 1, 1, -1, SlopeColour)),
 
-        new("Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.TwoWay, b => BuildWall(b, -1, 1)),
-        new("Wall Arch", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.TwoWay, BuildArch),
-        new("Broken Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.TwoWay, BuildBrokenWall),
+        new("Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, b => BuildWall(b, -1, 1)),
+        new("Wall Arch", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, BuildArch),
+        new("Broken Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, BuildBrokenWall),
         new("Wall End", S("wall", "open", "air", "ground", "open", "open"), TileRotation.FourWay, b => BuildWall(b, -0.4f, 1)),
         new("Wall Corner", S("wall", "open", "air", "ground", "wall", "open"), TileRotation.FourWay, BuildCorner),
         new("Tower Base", S("open", "open", "tower", "ground", "open", "open"), TileRotation.None, BuildTowerBase),

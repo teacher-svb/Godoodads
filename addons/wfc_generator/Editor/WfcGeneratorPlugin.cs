@@ -21,10 +21,11 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     private const int MaxCell = short.MaxValue;
 
     /// <summary>One running solve. Never survives an assembly reload, which cancels it first.</summary>
-    private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin, long Seed, Stopwatch Clock);
+    private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin, long Seed, Stopwatch Clock, List<string> Warnings);
 
     private SpatialMenuHook _menu;
     private DialogInspectorFilterPlugin _dialogFilter;
+    private TileSetInspectorPlugin _tileSetInspector;
     private ToolDialog _dialog;
     private GridMap _selected;
     private GridMap _target;
@@ -42,6 +43,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
 
         _dialogFilter = new DialogInspectorFilterPlugin();
         AddInspectorPlugin(_dialogFilter);
+        _tileSetInspector = new TileSetInspectorPlugin();
+        AddInspectorPlugin(_tileSetInspector);
 
         _dialog = new ToolDialog(ToolName, ActionText, "wfc_generator_dialog_size") { Filter = _dialogFilter };
         _dialog.ActionPressed += OnActionPressed;
@@ -60,6 +63,11 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             _dialogFilter.Target = null;
             RemoveInspectorPlugin(_dialogFilter);
             _dialogFilter = null;
+        }
+        if (_tileSetInspector != null)
+        {
+            RemoveInspectorPlugin(_tileSetInspector);
+            _tileSetInspector = null;
         }
         if (_dialog != null)
         {
@@ -207,7 +215,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var cells = _settings.ClearBoundsFirst ? GridMapCells.AllFree(grid) : GridMapCells.ReadFixed(_target, origin, grid, binding);
         var options = new SolveOptions { Seed = _settings.Seed, MaxBacktracks = _settings.MaxBacktracks, MaxRestarts = _settings.MaxRestarts };
         var job = new SolveJob(grid, binding.Compiled, cells.Initial, options);
-        _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, Stopwatch.StartNew());
+        _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, Stopwatch.StartNew(), binding.Warnings());
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         job.Start();
@@ -278,6 +286,11 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
                 ReportDetails(run, result);
                 break;
         }
+
+        for (int i = 0; i < run.Warnings.Count && i < MaxReportedErrors; i++)
+            _dialog.AddStatus(run.Warnings[i], ToolDialog.Severity.Warning);
+        if (run.Warnings.Count > MaxReportedErrors)
+            _dialog.AddStatus($"And {run.Warnings.Count - MaxReportedErrors} more tile set warnings.", ToolDialog.Severity.Warning);
     }
 
     private static string ImpossibleMessage(SolveResult result) => result.FixedConflicts.Count > 0 || result.Failure?.HasFixedCells == true

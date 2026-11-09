@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+[gd_resource type="Resource" script_class="WfcTileSet" format=3 uid="uid://rq8xkelcabab"]
 
-[ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_gjyxb"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_peesb"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="3_git1y"]
+[ext_resource type="MeshLibrary" uid="uid://b8fum6wlmiv5h" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_gjyxb"]
+[ext_resource type="Script" uid="uid://rb5vled2paii" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_peesb"]
+[ext_resource type="Script" uid="uid://bp15dtwmw2ped" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="3_git1y"]
 
 [sub_resource type="Resource" id="Resource_rjvwt"]
 resource_name = "Rock"
@@ -77,7 +77,7 @@ SocketNegZ = "side-"
 resource_name = "Wall"
 script = ExtResource("2_peesb")
 Item = 6
-Rotation = 1
+Rotation = 2
 SocketPosX = "wall"
 SocketNegX = "wall"
 SocketPosY = "air"
@@ -89,7 +89,7 @@ SocketNegZ = "open"
 resource_name = "Wall Arch"
 script = ExtResource("2_peesb")
 Item = 7
-Rotation = 1
+Rotation = 2
 SocketPosX = "wall"
 SocketNegX = "wall"
 SocketPosY = "air"
@@ -101,7 +101,7 @@ SocketNegZ = "open"
 resource_name = "Broken Wall"
 script = ExtResource("2_peesb")
 Item = 8
-Rotation = 1
+Rotation = 2
 SocketPosX = "wall"
 SocketNegX = "wall"
 SocketPosY = "air"
