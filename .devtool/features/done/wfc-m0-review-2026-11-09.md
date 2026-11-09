@@ -1,13 +1,13 @@
 ---
 id: "wfc-m0-review-2026-11-09"
-status: "todo"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "WFC M0 Foundations"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
-completedAt: null
+modified: "2026-11-09T16:33:56.376Z"
+completedAt: "2026-11-09T16:33:53.832Z"
 labels: ["review"]
 order: "a4"
 ---
@@ -16,6 +16,7 @@ order: "a4"
 Demo for the board. The board moves this card to *Done* when approved. Do not start the next milestone before that.
 
 ## Review checklist for the board
+
 1. Enable the plugin and check that the entry point appears for a selected `GridMap`.
 2. Read the findings on the three verification cards.
 3. Confirm any brief changes they caused.

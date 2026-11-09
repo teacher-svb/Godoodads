@@ -127,7 +127,7 @@ Read tile set and fixed cells
 
 ### 5. UI requirements
 
-- A toolbar entry appears when a `GridMap` is selected and opens a `ToolDialog`, using `SpatialMenuHook` if a suitable built-in menu exists (see section 10).
+- A toolbar entry appears when a `GridMap` is selected and opens a `ToolDialog`, using `SpatialMenuHook`, which falls back to the addon's own button because no built-in GridMap menu exists (see section 10).
 - The dialog holds tile set, bounds (origin and size), seed with a randomise button, clear bounds first, animation speed, and backtrack and restart limits. Options are exported properties on `WfcSettings`.
 - The status area shows progress, then a result such as: `Solved 160,000 cells in 12.4 s (3 backtracks, 0 restarts). Seed 4821.`
 - Bounds are drawn in the viewport while the dialog is open.
@@ -203,13 +203,13 @@ Note further ideas in the repo's `README.md` backlog rather than building them.
 
 ---
 
-### 10. Assumptions to verify in M0
+### 10. Assumptions verified in M0
 
-These come from knowledge of Godot's API and have not been tested on 4.7:
+Checked on Godot 4.7. Details are on the M0 cards.
 
-1. `MeshLibrary` has no per-item custom data, so `WfcTileSet` needs to hold the rules.
-2. GridMap's 24 orthogonal orientations are rotations only.
-3. Four Y rotations map cleanly to orientation indices through `GetOrthogonalIndexFromBasis`.
-4. Whether a built-in GridMap menu exists in the 3D toolbar for `SpatialMenuHook` to use, or the addon needs its own button.
-5. The cost of `SetCellItem` at per-frame batch sizes.
-6. Whether a C# background thread can be reliably stopped before an assembly reload.
+1. `MeshLibrary` has no per-item custom data, so `WfcTileSet` holds the rules. Confirmed.
+2. GridMap's 24 orthogonal orientations are rotations only. Confirmed. `GetOrthogonalIndexFromBasis` silently returns 0 for a mirrored basis, so never pass one.
+3. Y rotations of 0, 90, 180 and 270 degrees are orientation indices 0, 16, 10 and 22. Confirmed.
+4. There is no built-in GridMap menu in the 3D toolbar, so the addon adds its own button.
+5. The cost of `SetCellItem` calls is negligible (160,000 in 47 ms), but real mesh rebuild cost needs a real renderer. It is measured in M5.
+6. Stopping a background thread before an assembly reload uses `ISerializationListener.OnBeforeSerialize`. Confirmed in the editor.
