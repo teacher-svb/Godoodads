@@ -1,13 +1,13 @@
 ---
 id: "dist-release-workflow-2026-11-09"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "Distribution"
 dueDate: null
 created: "2026-11-09T11:35:00.000Z"
-modified: "2026-11-09T11:41:37.000Z"
-completedAt: null
+modified: "2026-11-09T11:44:37.000Z"
+completedAt: "2026-11-09T11:44:37.000Z"
 labels: ["release", "ci"]
 order: "a0"
 ---
@@ -36,4 +36,4 @@ Verified locally with Godot 4.7 .NET:
 - Smoke test fails as it should for a missing plugin script, an exception in `_EnterTree`, and a missing `editor_tools_common`. Godot exits 0 for the first two, so the script checks the log for `ERROR:`.
 - Core tests: 64 passed.
 
-**Still to verify:** the workflow has not run on GitHub. Check the first tagged run (`multimesh_scatter-v1.0.0`), then move this card to done. The Godot download URL returned 200.
+Verified on GitHub: the first tagged run (`multimesh_scatter-v1.0.0`, run 42611292559) passed every step and published the [release](https://github.com/teacher-svb/Godoodads/releases/tag/multimesh_scatter-v1.0.0) with `multimesh_scatter-1.0.0.zip`. GitHub warns that `actions/checkout@v4` and `actions/setup-dotnet@v4` target the deprecated Node.js 20; they still ran, forced onto Node.js 24.

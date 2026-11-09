@@ -9,8 +9,9 @@ Fill a `MultiMeshInstance3D` with instances placed on a surface mesh, straight f
 ## Install
 
 1. Copy `addons/multimesh_scatter/` and `addons/editor_tools_common/` into your project's `addons/` folder.
-2. Build the C# project (the hammer icon, or `dotnet build`).
-3. Enable **MultiMesh Scatter** in *Project → Project Settings → Plugins*.
+2. If your project has no C# solution yet, create one with *Project → Tools → C# → Create C# solution*.
+3. Build the C# project (the hammer icon, or `dotnet build`).
+4. Enable **MultiMesh Scatter** in *Project → Project Settings → Plugins*.
 
 ## Use
 
