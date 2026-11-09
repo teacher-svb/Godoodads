@@ -1,13 +1,13 @@
 ---
 id: "wfc-m5-readme-changelog-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "WFC M5 Animation and release"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
-completedAt: null
+modified: "2026-11-09T22:40:45.000Z"
+completedAt: "2026-11-09T22:40:45.000Z"
 labels: ["docs"]
 order: "aT"
 ---
@@ -23,3 +23,6 @@ Brief: §7.
 
 ## From the M3 board decision
 v1 has no weights. The socket guide must explain controlling density by repeating empty tiles and adding variants, and keeping requirements local, such as fixed-length bridges.
+
+## Result
+Addon README with usage, options, tile set and socket guide (density through copies and variants, keeping requirements local), failure messages, how it works, performance and limitations, with two rendered images in `docs/` (`.gdignore` as in Scatter). CHANGELOG 1.0.0, `plugin.cfg` 1.0.0, and a row in the suite README. No dialog screenshot, because it needs the real editor.

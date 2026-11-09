@@ -19,9 +19,15 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     private const int MaxReportedErrors = 12;
     private const int MinCell = short.MinValue;
     private const int MaxCell = short.MaxValue;
+    private static readonly Color BoundsColour = new(1f, 0.6f, 0.1f);
+    private static readonly Color FailureColour = new(1f, 0.15f, 0.15f);
 
-    /// <summary>One running solve. Never survives an assembly reload, which cancels it first.</summary>
-    private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin, long Seed, Stopwatch Clock, List<string> Warnings);
+    /// <summary>
+    /// One running solve. Never survives an assembly reload, which cancels it first. While the solve
+    /// is shown, Preview holds the original item and orientation of every cell written so far.
+    /// </summary>
+    private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin,
+        long Seed, int CellsPerFrame, Stopwatch Clock, List<string> Warnings, Dictionary<int, (int Item, int Orientation)> Preview);
 
     private SpatialMenuHook _menu;
     private DialogInspectorFilterPlugin _dialogFilter;
@@ -32,6 +38,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     private WfcSettings _settings = new();
     private MeshInstance3D _overlay;
     private string _overlayState;
+    private Godot.Collections.Array<Vector3I> _failedCells = new();
 
     private ActiveRun _run;
     private double _sinceProgress;
@@ -91,7 +98,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         if (StopRun())
         {
             SetRunning(false);
-            _dialog?.SetStatus("Generation was cancelled because the project was rebuilt.", ToolDialog.Severity.Warning);
+            _dialog?.SetStatus("Generation was cancelled because the project was rebuilt. The GridMap was not changed.", ToolDialog.Severity.Warning);
         }
     }
 
@@ -113,11 +120,15 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             return;
         }
 
-        if (_run.Job.IsFinished)
+        if (_run.CellsPerFrame > 0)
+            ShowEvents(_run, _run.CellsPerFrame);
+
+        if (_run.Job.IsFinished && !_run.Job.HasPendingEvents)
         {
             var finished = _run;
             _run = null;
             SetRunning(false);
+            RestorePreview(finished);
             Finish(finished);
             return;
         }
@@ -126,9 +137,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         if (_sinceProgress < ProgressInterval)
             return;
         _sinceProgress = 0;
+        string phase = _run.Job.IsFinished ? $"Solved. Showing the result: {_run.Preview.Count:N0} cells shown" : $"Solving: {_run.Job.ResolvedCells:N0} of {_run.Grid.CellCount:N0} cells";
         int restarts = _run.Job.Restarts;
-        _dialog.SetStatus($"Solving: {_run.Job.ResolvedCells:N0} of {_run.Grid.CellCount:N0} cells"
-            + (restarts > 0 ? $", {restarts} restarts" : "") + ".");
+        _dialog.SetStatus(phase + (restarts > 0 ? $", {restarts} restarts" : "") + ".");
     }
 
     private bool TargetIsAlive => _target != null && IsInstanceValid(_target) && _target.IsInsideTree();
@@ -144,6 +155,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             return;
 
         RemoveOverlay();
+        _failedCells.Clear();
         _target = _selected;
         if (_target.HasMeta(WfcSettings.MetaKey) && _target.GetMeta(WfcSettings.MetaKey).As<WfcSettings>() is { } stored)
             _settings = (WfcSettings)stored.Duplicate();
@@ -159,18 +171,21 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     {
         if (StopRun())
             SetRunning(false);
+        _failedCells.Clear();
     }
 
     private void OnActionPressed()
     {
         if (_run != null)
         {
-            _run.Job.Cancel();
-            _dialog.SetStatus("Stopping.");
+            StopRun();
+            SetRunning(false);
+            _dialog.SetStatus("Generation stopped. The GridMap was not changed.", ToolDialog.Severity.Warning);
             return;
         }
 
         _dialog.ClearStatus();
+        _failedCells.Clear();
         if (!TargetIsAlive)
         {
             Notify.Report(_dialog, "The target GridMap is no longer in the scene.", ToolDialog.Severity.Error);
@@ -214,8 +229,10 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var origin = _settings.BoundsOrigin;
         var cells = _settings.ClearBoundsFirst ? GridMapCells.AllFree(grid) : GridMapCells.ReadFixed(_target, origin, grid, binding);
         var options = new SolveOptions { Seed = _settings.Seed, MaxBacktracks = _settings.MaxBacktracks, MaxRestarts = _settings.MaxRestarts };
-        var job = new SolveJob(grid, binding.Compiled, cells.Initial, options);
-        _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, Stopwatch.StartNew(), binding.Warnings());
+        int cellsPerFrame = Mathf.Max(_settings.CellsPerFrame, 0);
+        var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0);
+        _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, cellsPerFrame, Stopwatch.StartNew(),
+            binding.Warnings(), new Dictionary<int, (int, int)>());
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         job.Start();
@@ -253,6 +270,44 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             _dialog.AddStatus($"And {errors.Count - MaxReportedErrors} more.", ToolDialog.Severity.Error);
     }
 
+    /// <summary>Writes up to <paramref name="limit"/> solver changes to the GridMap as a preview.</summary>
+    private void ShowEvents(ActiveRun run, int limit)
+    {
+        for (int i = 0; i < limit && run.Job.TryTakeEvent(out var change); i++)
+        {
+            if (change.IsRestart)
+            {
+                RestorePreview(run);
+                continue;
+            }
+            if (run.Cells.Initial[change.Cell] != WfcSolver.Free)
+                continue;
+
+            var position = run.Origin + run.Grid.Coordinates(change.Cell);
+            if (!run.Preview.ContainsKey(change.Cell))
+                run.Preview[change.Cell] = (_target.GetCellItem(position), _target.GetCellItemOrientation(position));
+
+            if (change.Variant < 0)
+            {
+                var original = run.Preview[change.Cell];
+                _target.SetCellItem(position, original.Item, Mathf.Max(original.Orientation, 0));
+                continue;
+            }
+            var variant = run.Binding.Compiled.Variants[change.Variant];
+            int item = run.Binding.Items[variant.TileIndex];
+            _target.SetCellItem(position, item, item == WfcTile.EmptyItem ? 0 : GridMapOrientation.FromQuarterTurns(variant.QuarterTurns));
+        }
+    }
+
+    /// <summary>Puts back every cell the preview changed, so the GridMap is as it was before Generate.</summary>
+    private void RestorePreview(ActiveRun run)
+    {
+        if (run.Preview.Count > 0 && _target != null && IsInstanceValid(_target))
+            foreach (var (cell, original) in run.Preview)
+                _target.SetCellItem(run.Origin + run.Grid.Coordinates(cell), original.Item, Mathf.Max(original.Orientation, 0));
+        run.Preview.Clear();
+    }
+
     private void Finish(ActiveRun run)
     {
         run.Clock.Stop();
@@ -282,7 +337,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             case SolveStatus.OutOfAttempts:
                 Notify.Report(_dialog, $"Ran out of attempts after {result.Backtracks:N0} backtracks and {result.Restarts} restarts. "
                     + "A solution may still exist: try another seed or raise the limits. "
-                    + $"Seed {run.Seed}.", ToolDialog.Severity.Error);
+                    + $"Seed {run.Seed}. The GridMap was not changed.", ToolDialog.Severity.Error);
                 ReportDetails(run, result);
                 break;
         }
@@ -302,6 +357,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         for (int i = 0; i < result.FixedConflicts.Count && i < MaxReportedErrors; i++)
         {
             var conflict = result.FixedConflicts[i];
+            _failedCells.Add(run.Origin + conflict.CellA);
+            _failedCells.Add(run.Origin + conflict.CellB);
             _dialog.AddStatus($"Cells {run.Origin + conflict.CellA} and {run.Origin + conflict.CellB} do not fit: "
                 + $"'{conflict.SocketA}' faces '{conflict.SocketB}'.", ToolDialog.Severity.Error);
         }
@@ -310,7 +367,12 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
 
         if (result.Failure == null)
             return;
-        _dialog.AddStatus($"Failed at cell {run.Origin + result.Failure.Cell}.", ToolDialog.Severity.Error);
+        var cell = run.Origin + result.Failure.Cell;
+        _failedCells.Add(cell);
+        bool placed = run.Cells.Initial[run.Grid.Index(result.Failure.Cell)] >= 0;
+        _dialog.AddStatus(placed
+            ? $"The placed cell at {cell} does not fit its neighbours (marked red in the viewport)."
+            : $"No tile fits at cell {cell} (marked red in the viewport).", ToolDialog.Severity.Error);
         foreach (var neighbour in result.Failure.Neighbours)
             _dialog.AddStatus($"{Directions.Name(neighbour.Direction)} neighbour {run.Origin + neighbour.Cell} offers: {string.Join(", ", neighbour.Sockets)}", ToolDialog.Severity.Info);
     }
@@ -344,7 +406,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             GridMapCells.Apply(map, changes);
     }
 
-    /// <summary>Cancels a running solve and waits for its thread. Returns true if one was running.</summary>
+    /// <summary>Cancels a running solve, waits for its thread and removes its preview. Returns true if one was running.</summary>
     private bool StopRun()
     {
         if (_run == null)
@@ -352,6 +414,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         _run.Job.Cancel();
         if (!_run.Job.Wait(5000))
             GD.PushError("WFC Generator: the solver thread did not stop in time.");
+        RestorePreview(_run);
         _run = null;
         return true;
     }
@@ -375,7 +438,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var half = _target.CellSize * 0.5f;
         var min = _target.MapToLocal(origin) - half;
         var max = _target.MapToLocal(origin + size - Vector3I.One) + half;
-        string state = $"{min}|{max}";
+        string state = $"{min}|{max}|{string.Join(";", _failedCells)}";
 
         if (_overlay == null || !IsInstanceValid(_overlay))
         {
@@ -387,7 +450,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
                 {
                     ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
                     NoDepthTest = true,
-                    AlbedoColor = new Color(1f, 0.6f, 0.1f),
+                    VertexColorUseAsAlbedo = true,
                 },
             };
             // No owner, so the overlay is never saved with the scene.
@@ -398,7 +461,18 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         if (state == _overlayState)
             return;
         _overlayState = state;
-        DrawBox((ImmediateMesh)_overlay.Mesh, min, max);
+
+        var mesh = (ImmediateMesh)_overlay.Mesh;
+        mesh.ClearSurfaces();
+        mesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
+        AddBox(mesh, min, max, BoundsColour);
+        foreach (var cell in _failedCells)
+        {
+            // Slightly larger than the cell, so the box stays visible around a placed module.
+            var centre = _target.MapToLocal(cell);
+            AddBox(mesh, centre - half * 1.08f, centre + half * 1.08f, FailureColour);
+        }
+        mesh.SurfaceEnd();
     }
 
     private void RemoveOverlay()
@@ -409,10 +483,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         _overlayState = null;
     }
 
-    private static void DrawBox(ImmediateMesh mesh, Vector3 min, Vector3 max)
+    private static void AddBox(ImmediateMesh mesh, Vector3 min, Vector3 max, Color colour)
     {
-        mesh.ClearSurfaces();
-        mesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
         for (int corner = 0; corner < 8; corner++)
         {
             var from = Corner(min, max, corner);
@@ -420,11 +492,12 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             {
                 if ((corner & axis) != 0)
                     continue;
+                mesh.SurfaceSetColor(colour);
                 mesh.SurfaceAddVertex(from);
+                mesh.SurfaceSetColor(colour);
                 mesh.SurfaceAddVertex(Corner(min, max, corner | axis));
             }
         }
-        mesh.SurfaceEnd();
     }
 
     private static Vector3 Corner(Vector3 min, Vector3 max, int bits) => new(

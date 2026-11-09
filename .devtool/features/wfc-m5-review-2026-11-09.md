@@ -1,12 +1,12 @@
 ---
 id: "wfc-m5-review-2026-11-09"
-status: "backlog"
+status: "review"
 priority: "medium"
 assignee: "claude"
 epic: "WFC M5 Animation and release"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:23:51.000Z"
+modified: "2026-11-09T22:44:10.000Z"
 completedAt: null
 labels: ["review"]
 order: "aV"

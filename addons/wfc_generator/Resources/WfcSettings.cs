@@ -21,6 +21,10 @@ public partial class WfcSettings : Resource
     [Export] public Vector3I BoundsOrigin { get; set; }
     [Export] public Vector3I BoundsSize { get; set; } = new(24, 8, 24);
 
+    /// <summary>Cells shown per frame while solving. 0 shows only the final result.</summary>
+    [ExportGroup("Animation")]
+    [Export(PropertyHint.Range, "0,20000,50,or_greater")] public int CellsPerFrame { get; set; } = 1000;
+
     [ExportGroup("Solver Limits")]
     [Export(PropertyHint.Range, "0,1000000,1,or_greater")] public int MaxBacktracks { get; set; } = 2000;
     [Export(PropertyHint.Range, "0,1000,1,or_greater")] public int MaxRestarts { get; set; } = 20;

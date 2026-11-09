@@ -53,4 +53,37 @@ public class WfcSolveJobTests
         Assert.NotNull(bad.Error);
         Assert.Null(bad.Result);
     }
+
+    [Fact]
+    public void RecordedEventsReplayToTheResult()
+    {
+        var grid = GridTopology.Create2D(24, 24);
+        var set = CompiledTileSet.Compile(WfcSolverTests.ContradictionProne2D(), grid.ActiveDirections);
+        var initial = Enumerable.Repeat(WfcSolver.Free, grid.CellCount).ToArray();
+        var job = new SolveJob(grid, set, initial, new SolveOptions { Seed = 2, MaxBacktracks = 5, MaxRestarts = 500 }, recordEvents: true);
+        job.Start();
+        Assert.True(job.Wait(30000));
+        Assert.Equal(SolveStatus.Solved, job.Result.Status);
+
+        var cells = Enumerable.Repeat(-1, grid.CellCount).ToArray();
+        while (job.TryTakeEvent(out var change))
+        {
+            if (change.IsRestart)
+                System.Array.Fill(cells, -1);
+            else
+                cells[change.Cell] = change.Variant;
+        }
+        Assert.Equal(job.Result.Cells, cells);
+        Assert.False(job.HasPendingEvents);
+    }
+
+    [Fact]
+    public void NoEventsWhenNotRecording()
+    {
+        var (grid, set, initial) = Setup(4);
+        var job = new SolveJob(grid, set, initial, new SolveOptions());
+        job.Start();
+        Assert.True(job.Wait(10000));
+        Assert.False(job.TryTakeEvent(out _));
+    }
 }
