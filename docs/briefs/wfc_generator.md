@@ -213,3 +213,28 @@ Checked on Godot 4.7. Details are on the M0 cards.
 4. There is no built-in GridMap menu in the 3D toolbar, so the addon adds its own button.
 5. The cost of `SetCellItem` calls is negligible (160,000 in 47 ms), but real mesh rebuild cost needs a real renderer. It is measured in M5.
 6. Stopping a background thread before an assembly reload uses `ISerializationListener.OnBeforeSerialize`. Confirmed in the editor.
+
+---
+
+### 11. Release 1.1
+
+Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.1*.
+
+#### 11.1 Per-tile weights
+
+- `WfcTile` gets a **Weight** (default 1). A tile's weight is **shared by its rotations**: each of its variants gets weight ÷ variant count, so a 4-way ramp with weight 1 is as likely as grass with weight 1.
+- **Weight 0** means the solver never chooses the tile, but cells you place yourself may still use it. A negative weight, or a tile set where every tile has weight 0, is a validation error.
+- The solver still collapses the cell with the **fewest remaining options**. Weights only decide which variant is chosen there.
+- Same seed, same result still holds within 1.1. Results **differ from 1.0** for the same tile set and seed. The CHANGELOG says so, and the release stays a minor version (1.1.0).
+- The demo drops its copies of the air tiles and uses weights instead.
+
+#### 11.2 Regenerate without undoing
+
+- **Generate replaces the previous result by default.** Cells written by the last generation are free again. Hand-placed cells stay fixed. There is no new option, and Clear Bounds First still removes everything.
+- A generated cell whose item or orientation no longer matches what was written counts as **hand-placed**. Erased cells are simply empty.
+- What was written is stored on the GridMap in metadata, compressed, and changed in the same undo action as the cells.
+
+#### 11.3 Not in 1.1
+
+Boundary sockets stay in the backlog. The Copies field is dropped, because weights replace it.
+
