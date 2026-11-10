@@ -2,6 +2,17 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-11-10
+
+### Added
+- **Weight** on each tile: how often the solver chooses it, shared by its rotations. Weight 0 means the tile is never generated, but it can still be placed by hand. Negative weights, and tile sets where every tile has weight 0, are reported as errors.
+- The tile set preview shows each tile's weight and its share of the total.
+- **Generate replaces the previous result.** The cells the last generation wrote are stored compressed on the GridMap, in the same undo step, and the next Generate fills them again. Cells you placed, and generated cells you changed since, are kept. The status area reports both counts, and mentions tiles of weight 0.
+
+### Changed
+- **Results differ from 1.0 for the same seed.** The solver now fills the cell with the least total weight left first, instead of the cell with the fewest options, and chooses in proportion to weight. With equal weights the order is the same as before, but the random choices are not.
+- The demo tile set uses weights instead of 80 copies of its air tiles and 12 of its 16 grass variants: 54 variants instead of 144. It looks the same and solves about twice as fast.
+
 ## [1.0.0] - 2026-11-09
 
 First release.

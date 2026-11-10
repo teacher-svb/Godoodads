@@ -47,8 +47,8 @@ public sealed class TileSetBinding
         binding.TileNames = names.ToArray();
         binding.Compiled = CompiledTileSet.Compile(definitions, directions);
         foreach (var issue in binding.Compiled.Errors)
-            binding.Errors.Add(issue.TileIndex < 0
-                ? issue.Message
+            binding.Errors.Add(issue.TileIndex < 0 ? issue.Message
+                : issue.Direction < 0 ? $"Tile {issue.TileIndex}: {issue.Message}"
                 : $"Tile {issue.TileIndex} ({Directions.Name(issue.Direction)}): {issue.Message}");
         return binding;
     }

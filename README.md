@@ -7,7 +7,7 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 | Addon | Folder | Status | Brief |
 |---|---|---|---|
 | MultiMesh Scatter | `addons/multimesh_scatter/` | 1.0.1, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
-| WFC Generator | `addons/wfc_generator/` | 1.0.0, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
+| WFC Generator | `addons/wfc_generator/` | 1.1.0, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
 
 ## Install an addon
 
@@ -34,11 +34,9 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### WFC Generator
 
-- Tile weights, including per-region and per-height weights
+Boundary sockets, multi-cell tiles, marker tiles, guided paths, the 2D adapter and socket editing are idea cards on the kanban board (epic *WFC 2.0*). Not planned yet:
+
 - Runtime (in-game) generation
-- Streaming, chunks and infinite grids
-- Connected-path and reachability constraints
-- 2D `TileMapLayer` adapter
-- Full in-viewport socket editor
-- Multi-cell tiles
-- Marker tiles that instantiate scenes (doors, spawn points, lights)
+- Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)
+- Guaranteed connected paths and reachability (needs a brief)
+- Learning rules from example scenes, and the overlapping WFC model

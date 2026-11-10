@@ -9,6 +9,9 @@ public partial class WfcSettings : Resource
     /// <summary>Metadata key under which a GridMap stores the settings of its last generation.</summary>
     public const string MetaKey = "godoodads_wfc_settings";
 
+    /// <summary>GridMap metadata with the cells the last generation wrote (a compressed <see cref="Core.GeneratedRecord"/>).</summary>
+    public const string GeneratedKey = "godoodads_wfc_generated";
+
     [Export] public WfcTileSet TileSet { get; set; }
     [Export] public long Seed { get; set; }
     [ExportToolButton("Randomise Seed", Icon = "RandomNumberGenerator")]

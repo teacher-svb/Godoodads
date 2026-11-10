@@ -5,8 +5,11 @@ using Godoodads.WfcGenerator.Core;
 
 namespace Godoodads.WfcGenerator.Adapters;
 
-/// <summary>The solver's starting state, read from the cells already in a GridMap.</summary>
-public sealed record FixedCells(int[] Initial, int Kept, int Ignored);
+/// <summary>
+/// The solver's starting state, read from the cells already in a GridMap. Replaced counts cells a
+/// previous generation wrote, which are free again; Edited counts those changed since, which are kept.
+/// </summary>
+public sealed record FixedCells(int[] Initial, int Kept, int Ignored, int Replaced = 0, int Edited = 0);
 
 /// <summary>Cell changes as flat (x, y, z, item, orientation) records, so undo stores plain ints.</summary>
 public sealed record CellChanges(int[] Do, int[] Undo)
@@ -26,19 +29,30 @@ public static class GridMapCells
     }
 
     /// <summary>
-    /// Occupied cells become fixed. Those whose item or orientation has no variant are excluded,
-    /// which leaves them in place and places no constraint on their neighbours.
+    /// Occupied cells become fixed, except cells that still hold what the previous generation wrote
+    /// (<paramref name="previous"/>), which are free again. Cells whose item or orientation has no
+    /// variant are excluded, which leaves them in place and places no constraint on their neighbours.
     /// </summary>
-    public static FixedCells ReadFixed(GridMap map, Vector3I origin, GridTopology grid, TileSetBinding binding)
+    public static FixedCells ReadFixed(GridMap map, Vector3I origin, GridTopology grid, TileSetBinding binding, GeneratedRecord previous = null)
     {
         var result = AllFree(grid);
-        int kept = 0, ignored = 0;
+        int kept = 0, ignored = 0, replaced = 0, edited = 0;
         for (int cell = 0; cell < grid.CellCount; cell++)
         {
             var position = origin + grid.Coordinates(cell);
             int item = map.GetCellItem(position);
             if (item == GridMap.InvalidCellItem)
                 continue;
+            if (previous != null)
+            {
+                if (previous.Matches(position, item, map.GetCellItemOrientation(position)))
+                {
+                    replaced++;
+                    continue;
+                }
+                if (previous.Contains(position))
+                    edited++;
+            }
 
             int tile = binding.TileForItem(item);
             int turns = GridMapOrientation.ToQuarterTurns(map.GetCellItemOrientation(position));
@@ -49,8 +63,49 @@ public static class GridMapCells
             else
                 ignored++;
         }
-        return result with { Kept = kept, Ignored = ignored };
+        return result with { Kept = kept, Ignored = ignored, Replaced = replaced, Edited = edited };
     }
+
+    /// <summary>
+    /// The record after this generation: the previous one outside the bounds, plus the non-empty
+    /// cells written to free cells inside them.
+    /// </summary>
+    public static GeneratedRecord RecordAfter(GeneratedRecord previous, Vector3I origin, GridTopology grid, TileSetBinding binding, int[] initial, int[] solved)
+    {
+        var record = new GeneratedRecord();
+        if (previous != null)
+            foreach (var (position, written) in previous.Cells)
+                record.Set(position, written.Item, written.Orientation);
+        record.RemoveInside(origin, grid.Size);
+
+        for (int cell = 0; cell < grid.CellCount; cell++)
+        {
+            if (initial[cell] != WfcSolver.Free)
+                continue;
+            var variant = binding.Compiled.Variants[solved[cell]];
+            int item = binding.Items[variant.TileIndex];
+            if (item != WfcTile.EmptyItem)
+                record.Set(origin + grid.Coordinates(cell), item, GridMapOrientation.FromQuarterTurns(variant.QuarterTurns));
+        }
+        return record;
+    }
+
+    /// <summary>Stores an encoded record. Null or empty data removes it, so undo leaves no empty entry.</summary>
+    public static void WriteRecord(GridMap map, byte[] data)
+    {
+        if (data == null || data.Length == 0)
+            map.RemoveMeta(WfcSettings.GeneratedKey);
+        else
+            map.SetMeta(WfcSettings.GeneratedKey, data);
+    }
+
+    /// <summary>The encoded record stored on a GridMap, or an empty array.</summary>
+    public static byte[] StoredRecord(GridMap map) =>
+        map.HasMeta(WfcSettings.GeneratedKey) ? map.GetMeta(WfcSettings.GeneratedKey).AsByteArray() ?? System.Array.Empty<byte>() : System.Array.Empty<byte>();
+
+    /// <summary>The record stored on a GridMap, or an empty one.</summary>
+    public static GeneratedRecord ReadRecord(GridMap map) =>
+        GeneratedRecord.Decode(StoredRecord(map));
 
     /// <summary>The changes that write a solution to free cells. Cells already correct are skipped.</summary>
     public static CellChanges Diff(GridMap map, Vector3I origin, GridTopology grid, TileSetBinding binding, int[] initial, int[] solved)

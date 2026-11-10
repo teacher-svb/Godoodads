@@ -9,8 +9,11 @@ public enum TileRotation
     FourWay,
 }
 
-/// <summary>A tile as the author defines it. Sockets are indexed by <see cref="Directions"/>.</summary>
-public sealed record TileDefinition(string[] Sockets, TileRotation Rotation = TileRotation.None);
+/// <summary>
+/// A tile as the author defines it. Sockets are indexed by <see cref="Directions"/>. The weight is
+/// shared by the tile's rotations; 0 means the solver never chooses it, but it may be fixed.
+/// </summary>
+public sealed record TileDefinition(string[] Sockets, TileRotation Rotation = TileRotation.None, double Weight = 1);
 
 /// <summary>One placeable rotation of a tile. Sockets are in world directions.</summary>
 public sealed record TileVariant(int TileIndex, int QuarterTurns, Socket[] Sockets);
@@ -24,8 +27,12 @@ public sealed class CompiledTileSet
     private readonly Dictionary<(int Tile, int Turns), int> _lookup = new();
     private readonly List<TileVariant> _variants = new();
     private readonly List<TileIssue> _errors = new();
+    private readonly List<double> _weights = new();
 
     public IReadOnlyList<TileVariant> Variants => _variants;
+
+    /// <summary>Per-variant choice weight: the tile's weight divided by its number of variants.</summary>
+    public IReadOnlyList<double> VariantWeights => _weights;
     public IReadOnlyList<TileIssue> Errors => _errors;
     public bool IsValid => _errors.Count == 0;
     public int[] ActiveDirections { get; }
@@ -36,6 +43,9 @@ public sealed class CompiledTileSet
     /// <summary>Flat compatibility bitsets, addressed through <see cref="CompatibleOffset"/>.</summary>
     internal ulong[] Compatible { get; private set; }
 
+    /// <summary>Bitset of the variants with a weight above zero: the starting options of a free cell.</summary>
+    internal ulong[] Generatable { get; private set; }
+
     private CompiledTileSet(int[] activeDirections) => ActiveDirections = activeDirections;
 
     public static CompiledTileSet Compile(IReadOnlyList<TileDefinition> tiles, int[] activeDirections)
@@ -45,6 +55,8 @@ public sealed class CompiledTileSet
             set.AddTile(i, tiles[i]);
         if (set._variants.Count == 0 && set._errors.Count == 0)
             set._errors.Add(new TileIssue(-1, -1, "The tile set has no tiles."));
+        else if (set._errors.Count == 0 && !set._weights.Exists(w => w > 0))
+            set._errors.Add(new TileIssue(-1, -1, "Every tile has weight 0, so nothing can be generated."));
         if (set.IsValid)
             set.BuildAdjacency();
         return set;
@@ -64,6 +76,11 @@ public sealed class CompiledTileSet
     {
         var parsed = new Socket[Directions.Count];
         bool valid = true;
+        if (!(tile.Weight >= 0) || double.IsInfinity(tile.Weight))
+        {
+            _errors.Add(new TileIssue(tileIndex, -1, $"Weight {tile.Weight} is not allowed; use 0 or more."));
+            valid = false;
+        }
         foreach (int direction in ActiveDirections)
         {
             string label = tile.Sockets != null && tile.Sockets.Length == Directions.Count ? tile.Sockets[direction] : null;
@@ -77,6 +94,7 @@ public sealed class CompiledTileSet
             return;
 
         int step = tile.Rotation switch { TileRotation.FourWay => 1, TileRotation.TwoWay => 2, _ => 4 };
+        int first = _variants.Count;
         var seen = new Dictionary<string, int>();
         for (int turns = 0; turns < 4; turns += step)
         {
@@ -96,6 +114,11 @@ public sealed class CompiledTileSet
             }
             _lookup[(tileIndex, turns)] = variant;
         }
+
+        // Identical rotations were merged, so the weight is split over the variants that remain.
+        int added = _variants.Count - first;
+        for (int i = 0; i < added; i++)
+            _weights.Add(tile.Weight / added);
     }
 
     private void BuildAdjacency()
@@ -103,6 +126,10 @@ public sealed class CompiledTileSet
         int count = _variants.Count;
         WordCount = (count + 63) / 64;
         Compatible = new ulong[count * Directions.Count * WordCount];
+        Generatable = new ulong[WordCount];
+        for (int v = 0; v < count; v++)
+            if (_weights[v] > 0)
+                Generatable[v >> 6] |= 1UL << v;
         for (int a = 0; a < count; a++)
         {
             foreach (int direction in ActiveDirections)

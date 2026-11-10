@@ -33,7 +33,7 @@ Cells already in the bounds stay where they are, and the solve fills in around t
 
 A cell whose item has no tile, or whose rotation is not one the tile allows, is left alone and does not constrain its neighbours. The status area reports how many there were.
 
-Generated cells also count as placed cells the next time. To try another seed, undo first or turn on Clear Bounds First.
+**Generate replaces the previous result.** The GridMap remembers which cells the last generation wrote, so pressing Generate again with another seed replaces them, without undoing first. Cells you placed yourself stay. A generated cell that you changed since (another item or rotation) counts as placed by you and stays too. The status area reports how many cells were replaced and how many edited cells were kept. What was written is stored compressed in the GridMap's metadata (about 20 KB for 100 × 16 × 100 cells) and is part of the undo step.
 
 ## Options
 
@@ -41,7 +41,7 @@ Generated cells also count as placed cells the next time. To try another seed, u
 |---|---|
 | Tile Set | The `WfcTileSet` to generate with. Its `MeshLibrary` must be the GridMap's. |
 | Seed, Randomise Seed | The same seed, settings and placed cells give the same result. |
-| Clear Bounds First | Removes everything in the bounds before solving. Otherwise placed cells are kept. |
+| Clear Bounds First | Removes everything in the bounds before solving, including cells you placed. Otherwise placed cells are kept. |
 | Bounds → Origin, Size | The box of cells to fill, in GridMap cell coordinates. |
 | Animation → Cells Per Frame | How fast the solve is shown. 0 shows only the final result. The result never depends on this. About 1,000 keeps the editor responsive. |
 | Solver Limits → Max Backtracks | Backtracks allowed per attempt before starting over with a new seed derived from yours. |
@@ -55,9 +55,10 @@ A `WfcTileSet` holds a `MeshLibrary` and a list of `WfcTile` entries. The rules 
 |---|---|
 | Item | The MeshLibrary item this tile places, or -1 for an empty tile (air). |
 | Rotation | **None**, **Half Turn** (0° and 180°) or **Quarter Turns** (all four). Rotations whose sockets are identical are merged. Straight pieces such as walls need Quarter Turns to run in both directions. |
+| Weight | How often the tile is chosen, relative to the others (default 1). The weight is shared by the tile's rotations, so a ramp with Quarter Turns and weight 1 is as common as a plain block with weight 1. 0 means the solver never chooses the tile, but you can still place it by hand. |
 | Sockets | One label per face: +X, -X, +Y, -Y, +Z, -Z, as the module is modelled. |
 
-The tile set's inspector shows a preview: the selected tile in 3D with its socket labels (drag to orbit), the tiles allowed next to each face, and a check for problems.
+The tile set's inspector shows a preview: the selected tile in 3D with its socket labels (drag to orbit), its weight and share of the total, the tiles allowed next to each face, and a check for problems.
 
 <img src="docs/preview.png" alt="The tile set preview: a stair module with its socket labels and valid neighbours" width="560">
 
@@ -77,7 +78,7 @@ Labels use letters, digits and underscores. Every face needs a label.
 ### Designing a tile set
 
 - **Give empty space real tiles.** Air is a tile with Item -1. A useful pattern: one air tile that rests on `ground` and one that rests on `air`, so modules can only stand on surfaces you mark as `ground`, and nothing floats.
-- **Control density with copies and variants.** v1 has no tile weights: every remaining option is equally likely, and each rotation counts as an option. To make something more common, add copies of it (empty tiles can repeat freely) or extra variants with their own items, such as several grass tiles. The demo uses 40 copies of each air tile and 16 grass variants.
+- **Control density with weights.** Heavy empty tiles keep a map open; the demo gives each air tile weight 40, against 1 to 5 for the modules. Weight also decides which cells are filled first (see How it works), so it shapes the terrain, not only how often a tile appears. A tile of weight 3 behaves like three copies of weight 1, so copies are no longer needed. Extra variants with their own items, such as several grass tiles, are still useful for looks.
 - **Keep requirements local.** Rules only see direct neighbours. A bridge that may run for any length but must end on a pillar often fails at large sizes. Give it a fixed length instead (head, deck, deck, head), using one-sided sockets so a deck can only meet a head at its outer end.
 - **Use one-sided sockets for direction.** `span+` against `span-` stops a module from connecting to a rotated copy of itself.
 - **Anchor the ground.** Edges are unconstrained, so empty columns can reach the bottom. Paint a ground layer, or design sockets that keep air above ground.
@@ -100,14 +101,14 @@ In every case the GridMap is left unchanged.
 ## How it works
 
 1. Each tile becomes one variant per allowed rotation, and an adjacency table records which variants may face each other in each direction.
-2. Every cell starts with all variants as options. Placed cells start with one.
-3. The cell with the fewest options (ties broken by the seed) is set to one of its options, chosen uniformly at random, and the options of its neighbours are narrowed, repeatedly.
+2. Every cell starts with all variants of weight above 0 as options. Placed cells start with one, which may have weight 0.
+3. The cell with the least total weight left among its options (ties broken by the seed) is set to one of them, chosen at random in proportion to weight, and the options of its neighbours are narrowed, repeatedly. A tile's weight is split evenly over its rotations. With equal weights, this is the classic "fewest options first" order.
 4. When a cell runs out of options, the solver backtracks: it undoes its last choice and rules that option out. After Max Backtracks, it starts over with a seed derived from yours.
 5. The result is written to the GridMap as one undoable action.
 
 The solver runs on a background thread and touches no engine objects, so the editor stays responsive. A rebuild of the C# project cancels a running solve first.
 
-**Performance** (100 × 16 × 100 cells, demo tile set with 144 variants): about 3.9 s with a placed ground layer and 5.2 s without, with every one of 20 seeds solved first time.
+**Performance** (100 × 16 × 100 cells, demo tile set with 54 variants): about 1.7 s with a placed ground layer and 2.3 s without, with every one of 20 seeds solved first time.
 
 ## Demo
 
@@ -116,7 +117,7 @@ The solver runs on a background thread and touches no engine objects, so the edi
 ## Limitations
 
 - Editor-only. There is no runtime generation yet.
-- No tile weights. Use copies and variants instead (see above).
+- Weights are global. There are no weights per region or per height yet.
 - Rotation is around Y only, and one item fills one cell. Mirrored modules need their own items.
 - Rules are local. Connected paths and reachability are not guaranteed.
 - The edges of the bounds are unconstrained.
