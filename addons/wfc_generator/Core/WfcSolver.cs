@@ -69,6 +69,8 @@ public sealed class WfcSolver
 
     // Per direction, the variants allowed against the boundary socket, or null when unconstrained.
     private ulong[][] _boundaryMasks = new ulong[Directions.Count][];
+    private int[] _restrictionOfCell;
+    private ulong[][] _restrictionMasks;
 
     private WfcRandom _random;
     private ISolveObserver _observer;
@@ -151,6 +153,7 @@ public sealed class WfcSolver
         _observer = observer;
         _failure = null;
         SetBoundary(options.Boundary);
+        SetRestrictions(options.Restrictions);
 
         var conflicts = FindFixedConflicts(options.Boundary);
         if (conflicts.Count > 0)
@@ -306,6 +309,24 @@ public sealed class WfcSolver
             }
         }
 
+        // Cells limited to a class of variants, such as a guided path.
+        if (_restrictionOfCell != null)
+        {
+            for (int cell = 0; cell < _grid.CellCount; cell++)
+            {
+                int restriction = _restrictionOfCell[cell];
+                if (restriction < 0 || _initial[cell] != Free)
+                    continue;
+                _restrictionMasks[restriction].CopyTo(_scratch, 0);
+                Narrow(cell);
+                if (_counts[cell] == 0 && consistent)
+                {
+                    _contradiction = cell;
+                    consistent = false;
+                }
+            }
+        }
+
         // Starting from every cell also removes tiles that can never fit before any choice is made.
         for (int cell = 0; cell < _grid.CellCount; cell++)
             if (_initial[cell] != Excluded)
@@ -313,6 +334,27 @@ public sealed class WfcSolver
         if (!consistent)
             ClearQueue();
         return consistent;
+    }
+
+    private void SetRestrictions(CellRestrictions restrictions)
+    {
+        if (restrictions == null)
+        {
+            _restrictionOfCell = null;
+            _restrictionMasks = null;
+            return;
+        }
+        if (restrictions.ClassOfCell.Length != _grid.CellCount)
+            throw new ArgumentException("There must be one restriction entry per cell.", nameof(restrictions));
+        _restrictionOfCell = restrictions.ClassOfCell;
+        _restrictionMasks = new ulong[restrictions.Classes.Count][];
+        for (int i = 0; i < restrictions.Classes.Count; i++)
+        {
+            var mask = new ulong[_words];
+            foreach (int variant in restrictions.Classes[i])
+                mask[variant >> 6] |= 1UL << variant;
+            _restrictionMasks[i] = mask;
+        }
     }
 
     private void SetBoundary(IReadOnlyList<Socket?> boundary)

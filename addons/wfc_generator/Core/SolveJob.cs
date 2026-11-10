@@ -11,13 +11,27 @@ public readonly record struct SolveEvent(int Cell, int Variant)
     public bool IsRestart => Cell < 0;
 }
 
-/// <summary>Runs one solve on a background thread. The owner polls it and applies the result on its own thread.</summary>
+/// <summary>
+/// Guided paths to lay out before solving (brief §13.3). Coordinates in messages are offset by
+/// <paramref name="Origin"/>. When the tiles around a route cannot be filled in, up to
+/// <paramref name="Attempts"/> routes are tried, each from a seed derived from the solve seed.
+/// </summary>
+public sealed record PathRequest(string Socket, double Wander, Godot.Vector3I Origin = default, int Attempts = PathRequest.DefaultAttempts)
+{
+    public const int DefaultAttempts = 8;
+}
+
+/// <summary>
+/// Runs one solve on a background thread, after laying out paths when asked. The owner polls it
+/// and applies the result on its own thread.
+/// </summary>
 public sealed class SolveJob : ISolveObserver
 {
     private readonly GridTopology _grid;
     private readonly CompiledTileSet _tiles;
     private readonly int[] _initial;
     private readonly SolveOptions _options;
+    private readonly PathRequest _paths;
     private readonly CancellationTokenSource _cancellation = new();
     private readonly Thread _thread;
     private readonly ConcurrentQueue<SolveEvent> _events;
@@ -26,7 +40,14 @@ public sealed class SolveJob : ISolveObserver
     private int _restarts;
     private volatile bool _finished;
 
+    /// <summary>Null when the job finished without a result: cancelled before solving, or the paths have errors.</summary>
     public SolveResult Result { get; private set; }
+
+    /// <summary>The path layout used, when paths were asked for. Check <see cref="PathPlan.IsValid"/>.</summary>
+    public PathPlan Plan { get; private set; }
+
+    /// <summary>How many routes were laid out, counting the one used.</summary>
+    public int RouteAttempts { get; private set; }
 
     /// <summary>Set when the solver threw instead of returning a result.</summary>
     public Exception Error { get; private set; }
@@ -36,8 +57,9 @@ public sealed class SolveJob : ISolveObserver
     public int Restarts => Volatile.Read(ref _restarts);
 
     /// <param name="recordEvents">Queue every change for <see cref="TryTakeEvent"/>, for showing the solve as it runs.</param>
-    public SolveJob(GridTopology grid, CompiledTileSet tiles, int[] initial, SolveOptions options, bool recordEvents = false)
+    public SolveJob(GridTopology grid, CompiledTileSet tiles, int[] initial, SolveOptions options, bool recordEvents = false, PathRequest paths = null)
     {
+        _paths = paths;
         _events = recordEvents ? new ConcurrentQueue<SolveEvent>() : null;
         _grid = grid;
         _tiles = tiles;
@@ -66,7 +88,28 @@ public sealed class SolveJob : ISolveObserver
     {
         try
         {
-            Result = new WfcSolver(_grid, _tiles, _initial).Solve(_options, this, _cancellation.Token);
+            if (_paths == null)
+            {
+                Result = new WfcSolver(_grid, _tiles, _initial).Solve(_options, this, _cancellation.Token);
+                return;
+            }
+
+            // A route can leave the tiles around it no way to fit. That shows up as Impossible,
+            // usually before any choice, so another route is tried.
+            var solver = new WfcSolver(_grid, _tiles, _initial);
+            for (int attempt = 0; attempt < Math.Max(1, _paths.Attempts); attempt++)
+            {
+                long routeSeed = attempt == 0 ? _options.Seed : unchecked(_options.Seed + attempt * 0x5851F42D4C957F2DL);
+                Plan = PathRouter.Plan(_grid, _tiles, _initial, _paths.Socket, _paths.Wander, routeSeed, _paths.Origin);
+                RouteAttempts = attempt + 1;
+                if (!Plan.IsValid)
+                    return;
+                if (attempt > 0)
+                    ((ISolveObserver)this).OnRestart();
+                Result = solver.Solve(_options with { Restrictions = Plan.Restrictions }, this, _cancellation.Token);
+                if (Result.Status != SolveStatus.Impossible || Plan.RouteCount == 0)
+                    return;
+            }
         }
         catch (Exception e)
         {

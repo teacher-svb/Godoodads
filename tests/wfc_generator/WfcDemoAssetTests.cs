@@ -12,6 +12,7 @@ using static GdUnit4.Assertions;
 public class WfcDemoAssetTests
 {
     private const string TileSetPath = "res://demo/wfc_generator/assets/ruin_tileset.tres";
+    private const string PathTileSetPath = "res://demo/wfc_generator/assets/ruin_paths_tileset.tres";
 
     [TestCase]
     [RequireGodotRuntime]
@@ -34,10 +35,14 @@ public class WfcDemoAssetTests
 
     [TestCase]
     [RequireGodotRuntime]
-    public void Ruin_tile_set_has_no_check_warnings()
+    public void Ruin_tile_sets_have_no_check_warnings()
     {
-        var binding = TileSetBinding.Create(ResourceLoader.Load<WfcTileSet>(TileSetPath), Directions.All3D);
-        AssertThat(string.Join("; ", binding.Warnings())).IsEqual("");
+        foreach (string path in new[] { TileSetPath, PathTileSetPath })
+        {
+            var binding = TileSetBinding.Create(ResourceLoader.Load<WfcTileSet>(path), Directions.All3D);
+            AssertThat(binding.IsValid).IsTrue();
+            AssertThat(string.Join("; ", binding.Warnings())).IsEqual("");
+        }
     }
 
     [TestCase]
@@ -78,5 +83,41 @@ public class WfcDemoAssetTests
         var plan = GridMapMarkers.Plan(map, Vector3I.Zero, grid, binding, cells.Initial, result.Cells);
         AssertThat(plan.Count).IsEqual(towers);
         AssertThat(plan.All(p => p.Scene.ResourcePath == "res://demo/wfc_generator/assets/tower_light.tscn")).IsTrue();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Paths_scene_joins_its_two_ends_for_every_seed_and_sometimes_climbs()
+    {
+        var root = ResourceLoader.Load<PackedScene>("res://demo/wfc_generator/hillside_paths.tscn").Instantiate();
+        var map = root.GetNode<GridMap>("GridMap");
+        var settings = map.GetMeta(WfcSettings.MetaKey).As<WfcSettings>();
+        AssertThat(settings.TileSet.ResourcePath).IsEqual(PathTileSetPath);
+        AssertThat(settings.PathSocket).IsEqual("path");
+        AssertThat(map.GetUsedCells().Count).IsEqual(2);
+
+        var grid = GridTopology.Create3D(settings.BoundsSize);
+        var binding = TileSetBinding.Create(settings.TileSet, grid.ActiveDirections);
+        var cells = GridMapCells.ReadFixed(map, settings.BoundsOrigin, grid, binding);
+        var errors = new System.Collections.Generic.List<string>();
+        var boundary = settings.ParseBoundary(errors);
+        int stairs = binding.TileForItem(settings.TileSet.Library.FindItemByName("Path Stairs"));
+        int solved = 0, climbing = 0;
+        for (long seed = 1; seed <= 20; seed++)
+        {
+            var job = new SolveJob(grid, binding.Compiled, cells.Initial, new SolveOptions { Seed = seed, Boundary = boundary },
+                paths: new PathRequest(settings.PathSocket, settings.PathWander));
+            job.Start();
+            AssertThat(job.Wait(20000)).IsTrue();
+            AssertThat(job.Plan.IsValid).IsTrue();
+            if (job.Result.Status != SolveStatus.Solved)
+                continue;
+            solved++;
+            if (job.Result.Cells.Any(v => binding.Compiled.Variants[v].TileIndex == stairs))
+                climbing++;
+        }
+        root.Free();
+        AssertThat(solved).IsEqual(20);
+        AssertThat(climbing).IsEqual(20);   // the ends are two layers apart
     }
 }

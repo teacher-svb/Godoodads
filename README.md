@@ -39,10 +39,13 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### WFC Generator
 
-Guided paths, the 2D adapter, socket editing and measured tile shares are planned for 1.3 (epic *WFC 1.3*). Region weights and multi-cell tiles are idea cards in the epic *WFC 2.0*. Not planned yet:
+Guided paths, socket editing and measured tile shares are planned for 1.3 (epic *WFC 1.3*), and the 2D `TileMapLayer` adapter for 1.4 (epic *WFC 1.4*). Region weights and multi-cell tiles are idea cards in the epic *WFC 2.0*. Not planned yet:
 
 - Runtime (in-game) generation
 - Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)
 - Guaranteed connected paths and reachability (needs a brief)
 - Learning rules from example scenes, and the overlapping WFC model
 - Suggesting sockets by comparing the outlines of mesh faces that meet (experimental; needs a brief)
+- Terrain-first paths: generate the terrain, then find a route over it with A* using a cost per tile, and fit path tiles in afterwards (1.3 lays the route out first instead)
+- Renaming a socket across a whole tile set, and thumbnails of matching faces in the preview
+- Suggesting 2D sockets from Godot terrain sets

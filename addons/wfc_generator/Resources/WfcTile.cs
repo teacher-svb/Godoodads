@@ -43,6 +43,17 @@ public partial class WfcTile : Resource
     [Export] public string SocketPosZ { get; set; } = "";
     [Export] public string SocketNegZ { get; set; } = "";
 
+    private static readonly StringName[] SocketProperties =
+    {
+        PropertyName.SocketPosX, PropertyName.SocketNegX, PropertyName.SocketPosY,
+        PropertyName.SocketNegY, PropertyName.SocketPosZ, PropertyName.SocketNegZ,
+    };
+
+    /// <summary>The socket property of the face in <paramref name="direction"/> (see <see cref="Directions"/>).</summary>
+    public static StringName SocketProperty(int direction) => SocketProperties[direction];
+
+    public string GetSocket(int direction) => Get(SocketProperty(direction)).AsString();
+
     public TileDefinition ToDefinition() =>
         new(new[] { SocketPosX, SocketNegX, SocketPosY, SocketNegY, SocketPosZ, SocketNegZ }, Rotation, Weight, SampleHeightCurve());
 
