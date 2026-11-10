@@ -280,3 +280,51 @@ Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.2*. One releas
 #### 12.7 Not in 1.2
 
 Region weight masks, measured tile shares, multi-cell tiles, guided paths, the 2D adapter and socket editing stay in *WFC 2.0*.
+
+---
+
+### 13. Release 1.3
+
+Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.3*. One release, in this order: socket editing and measured shares, then guided paths, then the 2D adapter. The 2D adapter may move to 1.4 without holding back the rest. Everything is additive: 1.2 tile sets and scenes keep working and give the same result when the new options are unused.
+
+#### 13.1 Socket editing in the preview
+
+- Clicking a face label in the tile set preview edits that socket in place. A suggestion list shows the labels already used in the tile set, including the partner of one-sided labels (`path+` suggests `path-`).
+- The edit applies to the tile's own face, also when the preview shows a rotated variant, and goes through `EditorUndoRedoManager` as a change of the `WfcTile` property.
+- A face label is drawn in red when no variant of any tile can face it.
+- Not in 1.3: renaming a label across the tile set, and thumbnails of matching faces.
+
+#### 13.2 Measured tile shares
+
+- The preview gets a **Measure** button with a sample size (default 16×8×16 in 3D and 32×32 in 2D) and a seed. It runs one solve in the background with the same `SolveJob` and cancellation as Generate; changing the tile set cancels it and clears the result.
+- Each tile shows "weight share / measured share", flagged when one is more than twice the other. Tiles with a height curve also show their measured share in the bottom, middle and top third of the sample.
+- A sample that cannot be solved shows the failure message instead.
+
+#### 13.3 Guided paths
+
+- `WfcSettings` gets a **Paths** group: **Path Socket**, a socket name such as `path` (empty turns paths off), and **Path Wander**, 0 to 1 (default 0.3).
+- A variant's **path faces** are its faces whose socket has the path socket's name, ignoring a `+`/`-` suffix. Path faces may be vertical, which is how a path climbs.
+- **Endpoints** are the placed cells in the bounds (hand-placed or pinned) that have at least one path face. Placed path cells that face each other through path faces form one group. All groups are joined into one connected network: each next group, nearest first, routes to the network built so far. Two placed path cells give one path; three or more give branches. Every free path face of a placed cell (one that does not face another placed path cell) must end up on a route, so an end tile has one route and a straight tile has two.
+- The **route** runs from cell to cell through faces, inside the bounds. A route cell must end up with path faces exactly towards its route neighbours, so a step is only allowed when the tile set has a path variant with that pair of faces (or, where a route joins another one, the larger set, such as a T). That is how climbing is learned from the tile set: a path through stairs needs, for example, a stairs variant with path faces on its low side and top, and a variant above it with path faces on its bottom and high side.
+- The route is the cheapest one over seeded random cell costs. Path Wander 0 gives the shortest route, and higher values meander. Same seed, same route.
+- The route does not place tiles. It restricts each route cell to the path variants with exactly its path faces, and cells next to the route to variants that do not show a path face towards it. The normal solve then picks everything, so the result is always valid.
+- Errors before solving: a path socket that no tile uses, a group of placed path cells with no free path face while other groups need joining, and free path faces that cannot be connected (with their coordinates). A route that the solve cannot fill is reported like any other failure.
+- Route cells are generated cells: regenerate routes again, and Pin keeps them.
+
+#### 13.4 2D TileMapLayer adapter
+
+- New resources **`WfcTile2D`** (atlas source id, atlas coordinates, alternative tile, sockets on the four edges, Rotation, **Mirror**, Weight, Marker) and **`WfcTileSet2D`** (a `TileSet` and the tiles). The 3D resources do not change. Core is shared, and the 2D grid is the existing X/Z grid with +Z = down.
+- **Mirror** (none, horizontal, vertical, both) adds mirrored variants next to the rotations. Mirroring swaps `+` and `-` on every one-sided socket. Rotations and mirrors are written as the `TileMapLayer` flip and transpose flags.
+- Selecting a `TileMapLayer` shows a **Generate WFC (GDDS)** button in the 2D editor toolbar. It opens the same dialog, which shows only the settings that apply in 2D (no height, no top and bottom boundary, no height curves).
+- Everything else works as in 3D: fixed cells, unknown cells, undo, cancel, failure messages, weights, the generated record and regenerate, the pin box, bounds and pin box handles in the 2D viewport, boundary sockets per edge, markers (Node2D scenes in a `WfcMarkers` child) and guided paths.
+- The inspector shows a 2D tile set preview with the same parts as the 3D one, including socket editing and measured shares.
+- The facts this relies on (flip and transpose flags, metadata on `TileMapLayer`, the 2D toolbar and viewport input) are checked first and recorded on the first 2D card.
+
+#### 13.5 Demo
+
+- The hillside ruin gets path tiles (straight, corner, T, cross, end, and path stairs with the cell above them) and a `hillside_paths` scene with two placed path ends.
+- A new top-down 2D demo. Its atlas is drawn by the demo builder. It has one-sided shore edges, mirrored tiles, a path, and a marker.
+
+#### 13.6 Not in 1.3
+
+Region weight masks and multi-cell tiles stay in *WFC 2.0*. Renaming sockets across a tile set, matching-face thumbnails and suggesting sockets from terrain sets go to the README backlog.

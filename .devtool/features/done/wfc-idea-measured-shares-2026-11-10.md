@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-measured-shares-2026-11-10"
-status: "backlog"
+status: "done"
 priority: "low"
 assignee: null
-epic: "WFC 2.0"
+epic: "WFC 1.3"
 dueDate: null
 created: "2026-11-10T09:19:39.000Z"
-modified: "2026-11-10T09:19:39.000Z"
-completedAt: null
+modified: "2026-11-10T13:00:00.000Z"
+completedAt: "2026-11-10T13:00:00.000Z"
 labels: ["idea", "editor"]
 order: "b11"
 ---
@@ -20,3 +20,9 @@ Show each tile's real share next to its weight share in the tile set preview. In
 ## Design notes
 - Run a small background solve (for example 16×8×16, a fixed seed) whenever the tile set changes, with the same `SolveJob` and cancellation as Generate.
 - Show "weight share / measured share" per tile, and flag big gaps.
+
+## Decision (2026-11-10, 1.3 review)
+Moved to *WFC 1.3*.
+
+## Result
+Split into tickets for 1.3 (2026-11-10, brief §13). Decisions are recorded in the brief.

@@ -39,7 +39,7 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### WFC Generator
 
-Region weights, multi-cell tiles, guided paths, the 2D adapter, socket editing and measured tile shares are idea cards in the epic *WFC 2.0*. Not planned yet:
+Guided paths, the 2D adapter, socket editing and measured tile shares are planned for 1.3 (epic *WFC 1.3*). Region weights and multi-cell tiles are idea cards in the epic *WFC 2.0*. Not planned yet:
 
 - Runtime (in-game) generation
 - Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)

@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-tilemap-2d-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "medium"
 assignee: null
-epic: "WFC 2.0"
+epic: "WFC 1.3"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T22:55:00.000Z"
-completedAt: null
+modified: "2026-11-10T13:00:00.000Z"
+completedAt: "2026-11-10T13:00:00.000Z"
 labels: ["idea", "2d"]
 order: "b4"
 ---
@@ -15,7 +15,7 @@ order: "b4"
 
 Generate into a `TileMapLayer`, reusing the solver, which already supports 2D.
 
-**Size:** M
+**Size:** L
 
 ## Design notes
 - A 2D tile resource maps a TileSet source, atlas coordinates and an alternative tile to sockets on four faces.
@@ -25,3 +25,9 @@ Generate into a `TileMapLayer`, reusing the solver, which already supports 2D.
 ## Open questions
 - Should mirrored variants be generated automatically, like rotations?
 - Use Godot's terrain sets to suggest sockets, or keep sockets fully manual?
+
+## Decision (2026-11-10, 1.3 review)
+Moved to *WFC 1.3*. Re-sized to L: a reader, writer, undo, dialog entry, 2D preview, demo and mirrored variants are all new.
+
+## Result
+Split into tickets for 1.3 (2026-11-10, brief §13). Decisions are recorded in the brief.

@@ -6,7 +6,7 @@ assignee: null
 epic: "WFC 2.0"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T22:55:00.000Z"
+modified: "2026-11-10T12:00:00.000Z"
 completedAt: null
 labels: ["idea", "core"]
 order: "b1"
@@ -25,3 +25,6 @@ Modules larger than one cell, such as a 2×1×2 house or a tall tower.
 ## Open questions
 - How does the user author the footprint: a size field on `WfcTile`, with outer sockets per cell face?
 - How do occupied-but-empty cells survive a reload of the scene?
+
+## Decision (2026-11-10, 1.3 review)
+Not in 1.3; stays in *WFC 2.0*.
