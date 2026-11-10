@@ -32,6 +32,18 @@ public sealed record SolveOptions
     /// outside that face of the grid. Null, or a null entry, leaves the face unconstrained.
     /// </summary>
     public IReadOnlyList<Socket?> Boundary { get; init; }
+
+    /// <summary>Optional limits on the variants of free cells, such as those of a guided path.</summary>
+    public CellRestrictions Restrictions { get; init; }
+}
+
+/// <summary>
+/// Per cell, a class of variants it may use, or -1 for no limit. Fixed and excluded cells are
+/// never limited. A limit only removes options: weights still decide among the rest.
+/// </summary>
+public sealed record CellRestrictions(int[] ClassOfCell, IReadOnlyList<IReadOnlyList<int>> Classes)
+{
+    public const int None = -1;
 }
 
 /// <summary>Receives every change to the solved state. Replaying the calls reproduces the final grid.</summary>

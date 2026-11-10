@@ -1,0 +1,387 @@
+[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_o3eja"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_a5cjl"]
+[ext_resource type="PackedScene" path="res://demo/wfc_generator/assets/tower_light.tscn" id="3_58w75"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="4_od1a0"]
+
+[sub_resource type="Resource" id="Resource_y1ggg"]
+resource_name = "Rock"
+script = ExtResource("2_a5cjl")
+Item = 0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "rock"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_k0h16"]
+resource_name = "Grass"
+script = ExtResource("2_a5cjl")
+Item = 1
+Weight = 5.0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_2o0of"]
+resource_name = "Paving"
+script = ExtResource("2_a5cjl")
+Item = 2
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_14t2a"]
+resource_name = "Ramp"
+script = ExtResource("2_a5cjl")
+Item = 3
+Rotation = 2
+Weight = 4.0
+SocketPosX = "solid"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_46k86"]
+resource_name = "Outer Corner"
+script = ExtResource("2_a5cjl")
+Item = 4
+Rotation = 2
+Weight = 4.0
+SocketPosX = "side-"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ieag1"]
+resource_name = "Inner Corner"
+script = ExtResource("2_a5cjl")
+Item = 5
+Rotation = 2
+Weight = 4.0
+SocketPosX = "solid"
+SocketNegX = "side+"
+SocketPosY = "air"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_1l4j8"]
+resource_name = "Wall"
+script = ExtResource("2_a5cjl")
+Item = 6
+Rotation = 2
+Weight = 2.0
+SocketPosX = "wall"
+SocketNegX = "wall"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_2tkg8"]
+resource_name = "Wall Arch"
+script = ExtResource("2_a5cjl")
+Item = 7
+Rotation = 2
+Weight = 2.0
+SocketPosX = "wall"
+SocketNegX = "wall"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_bepbv"]
+resource_name = "Broken Wall"
+script = ExtResource("2_a5cjl")
+Item = 8
+Rotation = 2
+Weight = 2.0
+SocketPosX = "wall"
+SocketNegX = "wall"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ij7oy"]
+resource_name = "Wall End"
+script = ExtResource("2_a5cjl")
+Item = 9
+Rotation = 2
+Weight = 4.0
+SocketPosX = "wall"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_cfslc"]
+resource_name = "Wall Corner"
+script = ExtResource("2_a5cjl")
+Item = 10
+Rotation = 2
+Weight = 4.0
+SocketPosX = "wall"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "wall"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_etass"]
+resource_name = "Tower Base"
+script = ExtResource("2_a5cjl")
+Item = 11
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "tower"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_tn2e7"]
+resource_name = "Tower Top"
+script = ExtResource("2_a5cjl")
+Item = 12
+Marker = ExtResource("3_58w75")
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "tower"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ltsw8"]
+resource_name = "Pillar"
+script = ExtResource("2_a5cjl")
+Item = 13
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "pier"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_ypicy"]
+resource_name = "Stairs"
+script = ExtResource("2_a5cjl")
+Item = 14
+Rotation = 2
+Weight = 4.0
+SocketPosX = "landing"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_e7ok2"]
+resource_name = "Plinth"
+script = ExtResource("2_a5cjl")
+Item = 15
+Rotation = 2
+Weight = 4.0
+SocketPosX = "open"
+SocketNegX = "landing"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_gjlg6"]
+resource_name = "Bridge Head"
+script = ExtResource("2_a5cjl")
+Item = 16
+Rotation = 2
+Weight = 4.0
+SocketPosX = "span+"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "pier"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_e14tj"]
+resource_name = "Bridge Deck"
+script = ExtResource("2_a5cjl")
+Item = 17
+Rotation = 2
+Weight = 4.0
+SocketPosX = "mid"
+SocketNegX = "span-"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_h2dhv"]
+resource_name = "Air"
+script = ExtResource("2_a5cjl")
+Weight = 40.0
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "air"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_rvw54"]
+resource_name = "Air Above Ground"
+script = ExtResource("2_a5cjl")
+Weight = 40.0
+SocketPosX = "open"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_75eai"]
+resource_name = "Grass 1"
+script = ExtResource("2_a5cjl")
+Item = 18
+Weight = 3.0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_00fd2"]
+resource_name = "Grass 2"
+script = ExtResource("2_a5cjl")
+Item = 19
+Weight = 3.0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_6aqxc"]
+resource_name = "Grass 3"
+script = ExtResource("2_a5cjl")
+Item = 20
+Weight = 3.0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_62aeh"]
+resource_name = "Grass 4"
+script = ExtResource("2_a5cjl")
+Item = 21
+Weight = 3.0
+SocketPosX = "solid"
+SocketNegX = "solid"
+SocketPosY = "ground"
+SocketNegY = "rock"
+SocketPosZ = "solid"
+SocketNegZ = "solid"
+
+[sub_resource type="Resource" id="Resource_28lwe"]
+resource_name = "Path End"
+script = ExtResource("2_a5cjl")
+Item = 22
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_xfhwp"]
+resource_name = "Path Straight"
+script = ExtResource("2_a5cjl")
+Item = 23
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_htud8"]
+resource_name = "Path Corner"
+script = ExtResource("2_a5cjl")
+Item = 24
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "path"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_8csmm"]
+resource_name = "Path T"
+script = ExtResource("2_a5cjl")
+Item = 25
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "path"
+SocketNegZ = "open"
+
+[sub_resource type="Resource" id="Resource_wgxcs"]
+resource_name = "Path Cross"
+script = ExtResource("2_a5cjl")
+Item = 26
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "air"
+SocketNegY = "ground"
+SocketPosZ = "path"
+SocketNegZ = "path"
+
+[sub_resource type="Resource" id="Resource_fyawk"]
+resource_name = "Path Stairs"
+script = ExtResource("2_a5cjl")
+Item = 27
+Rotation = 2
+SocketPosX = "solid"
+SocketNegX = "path"
+SocketPosY = "path@0"
+SocketNegY = "rock"
+SocketPosZ = "side+"
+SocketNegZ = "side-"
+
+[sub_resource type="Resource" id="Resource_qg5r5"]
+resource_name = "Path Stair Top"
+script = ExtResource("2_a5cjl")
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "open"
+SocketPosY = "air"
+SocketNegY = "path@0"
+SocketPosZ = "open"
+SocketNegZ = "open"
+
+[resource]
+script = ExtResource("4_od1a0")
+Library = ExtResource("1_o3eja")
+Tiles = Array[ExtResource("2_a5cjl")]([SubResource("Resource_y1ggg"), SubResource("Resource_k0h16"), SubResource("Resource_2o0of"), SubResource("Resource_14t2a"), SubResource("Resource_46k86"), SubResource("Resource_ieag1"), SubResource("Resource_1l4j8"), SubResource("Resource_2tkg8"), SubResource("Resource_bepbv"), SubResource("Resource_ij7oy"), SubResource("Resource_cfslc"), SubResource("Resource_etass"), SubResource("Resource_tn2e7"), SubResource("Resource_ltsw8"), SubResource("Resource_ypicy"), SubResource("Resource_e7ok2"), SubResource("Resource_gjlg6"), SubResource("Resource_e14tj"), SubResource("Resource_h2dhv"), SubResource("Resource_rvw54"), SubResource("Resource_75eai"), SubResource("Resource_00fd2"), SubResource("Resource_6aqxc"), SubResource("Resource_62aeh"), SubResource("Resource_28lwe"), SubResource("Resource_xfhwp"), SubResource("Resource_htud8"), SubResource("Resource_8csmm"), SubResource("Resource_wgxcs"), SubResource("Resource_fyawk"), SubResource("Resource_qg5r5")])

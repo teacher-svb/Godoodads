@@ -269,7 +269,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var cells = _settings.ClearBoundsFirst ? GridMapCells.AllFree(grid) : GridMapCells.ReadFixed(_target, origin, grid, binding, record);
         var options = new SolveOptions { Seed = _settings.Seed, MaxBacktracks = _settings.MaxBacktracks, MaxRestarts = _settings.MaxRestarts, Boundary = boundary };
         int cellsPerFrame = Mathf.Max(_settings.CellsPerFrame, 0);
-        var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0);
+        var paths = _settings.HasPaths ? new PathRequest(_settings.PathSocket, _settings.PathWander, origin) : null;
+        var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0, paths);
         _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, cellsPerFrame, Stopwatch.StartNew(),
             binding.Warnings(), new Dictionary<int, (int, int)>(), record);
         _sinceProgress = ProgressInterval;
@@ -360,6 +361,20 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             return;
         }
 
+        if (run.Job.Plan is { IsValid: false } plan)
+        {
+            Notify.Report(_dialog, "The paths cannot be laid out. The GridMap was not changed.", ToolDialog.Severity.Error);
+            for (int i = 0; i < plan.Errors.Count && i < MaxReportedErrors; i++)
+            {
+                _dialog.AddStatus(plan.Errors[i].Message, ToolDialog.Severity.Error);
+                foreach (var cell in plan.Errors[i].Cells)
+                    _failedCells.Add(cell);
+            }
+            if (plan.Errors.Count > MaxReportedErrors)
+                _dialog.AddStatus($"And {plan.Errors.Count - MaxReportedErrors} more.", ToolDialog.Severity.Error);
+            return;
+        }
+
         var result = run.Job.Result;
         switch (result.Status)
         {
@@ -372,12 +387,14 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             case SolveStatus.Impossible:
                 Notify.Report(_dialog, ImpossibleMessage(result), ToolDialog.Severity.Error);
                 ReportDetails(run, result);
+                ReportPathHint(run);
                 break;
             case SolveStatus.OutOfAttempts:
                 Notify.Report(_dialog, $"Ran out of attempts after {result.Backtracks:N0} backtracks and {result.Restarts} restarts. "
                     + "A solution may still exist: try another seed or raise the limits. "
                     + $"Seed {run.Seed}. The GridMap was not changed.", ToolDialog.Severity.Error);
                 ReportDetails(run, result);
+                ReportPathHint(run);
                 break;
         }
 
@@ -390,6 +407,13 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     private static string ImpossibleMessage(SolveResult result) => result.FixedConflicts.Count > 0 || result.Failure?.HasFixedCells == true
         ? "No solution exists with the cells already in the bounds. Clear the bounds or change those cells. The GridMap was not changed."
         : "This tile set has no solution for these bounds and boundary sockets. The GridMap was not changed.";
+
+    private void ReportPathHint(ActiveRun run)
+    {
+        if (run.Job.Plan is { RouteCount: > 0 })
+            _dialog.AddStatus($"{run.Job.RouteAttempts} route(s) were tried, but the tiles around them could not be filled in. "
+                + "Try another seed or Path Wander, or check that path tiles fit the tiles next to them.", ToolDialog.Severity.Info);
+    }
 
     private void ReportDetails(ActiveRun run, SolveResult result)
     {
@@ -442,6 +466,14 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
 
         _dialog.SetStatus($"Solved {run.Grid.CellCount:N0} cells in {seconds:F1} s "
             + $"({result.Backtracks:N0} backtracks, {result.Restarts} restarts). Seed {run.Seed}.", ToolDialog.Severity.Success);
+        if (run.Job.Plan is { } paths)
+        {
+            if (paths.PlacedPathCells == 0)
+                _dialog.AddStatus("Paths are on, but no placed cell in the bounds has a path face, so no path tiles were generated.", ToolDialog.Severity.Warning);
+            else if (paths.RouteCount > 0)
+                _dialog.AddStatus($"Laid {paths.RouteCount} path route(s) over {paths.RouteCellCount:N0} cells"
+                    + (run.Job.RouteAttempts > 1 ? $", after trying {run.Job.RouteAttempts - 1} route(s) the tiles around could not fit." : "."));
+        }
         if (run.Cells.Replaced > 0)
             _dialog.AddStatus($"Replaced {run.Cells.Replaced:N0} cells from the previous generation.");
         if (markers.Placed > 0 || markers.Removed > 0)

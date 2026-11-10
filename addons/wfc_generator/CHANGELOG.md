@@ -2,6 +2,17 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.0] - 2026-11-10
+
+### Added
+- **Guided paths:** set a path socket, place two or more path cells, and Generate lays routes between them before solving, so the path is always connected. Routes branch through T and cross tiles, climb where the tile set has path faces on top, and meander with **Path Wander**. Path tiles appear only on routes. Up to 8 routes are tried when the tiles around one cannot be filled in. Problems are reported with their cells.
+- **Socket editing in the preview:** click a face label to edit it, with suggestions from the labels already used and undo. Labels no tile can face are shown in red.
+- **Measured tile shares:** the preview solves a sample in the background and shows each tile's real share next to its weight share, flagging big gaps.
+- Demo: `hillside_paths` with path tiles in a second tile set, `ruin_paths_tileset`, and path stairs cut into the slope.
+
+### Changed
+- Nothing changes for tile sets and scenes without paths: the same seed gives the same result as in 1.2.
+
 ## [1.2.0] - 2026-11-10
 
 ### Added

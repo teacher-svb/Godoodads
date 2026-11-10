@@ -285,7 +285,7 @@ Region weight masks, measured tile shares, multi-cell tiles, guided paths, the 2
 
 ### 13. Release 1.3
 
-Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.3*. One release, in this order: socket editing and measured shares, then guided paths, then the 2D adapter. The 2D adapter may move to 1.4 without holding back the rest. Everything is additive: 1.2 tile sets and scenes keep working and give the same result when the new options are unused.
+Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.3*. One release, in this order: socket editing and measured shares, then guided paths. The 2D adapter, first planned here, became its own release on 2026-11-10 (§14). Everything is additive: 1.2 tile sets and scenes keep working and give the same result when the new options are unused.
 
 #### 13.1 Socket editing in the preview
 
@@ -307,24 +307,39 @@ Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.3*. One releas
 - **Endpoints** are the placed cells in the bounds (hand-placed or pinned) that have at least one path face. Placed path cells that face each other through path faces form one group. All groups are joined into one connected network: each next group, nearest first, routes to the network built so far. Two placed path cells give one path; three or more give branches. Every free path face of a placed cell (one that does not face another placed path cell) must end up on a route, so an end tile has one route and a straight tile has two.
 - The **route** runs from cell to cell through faces, inside the bounds. A route cell must end up with path faces exactly towards its route neighbours, so a step is only allowed when the tile set has a path variant with that pair of faces (or, where a route joins another one, the larger set, such as a T). That is how climbing is learned from the tile set: a path through stairs needs, for example, a stairs variant with path faces on its low side and top, and a variant above it with path faces on its bottom and high side.
 - The route is the cheapest one over seeded random cell costs. Path Wander 0 gives the shortest route, and higher values meander. Same seed, same route.
-- The route does not place tiles. It restricts each route cell to the path variants with exactly its path faces, and cells next to the route to variants that do not show a path face towards it. The normal solve then picks everything, so the result is always valid.
+- The route does not place tiles. It restricts each route cell to the path variants with exactly its path faces, and every other free cell to variants without a path face, so path tiles only appear on routes. The normal solve then picks everything, so the result is always valid. A path face out of the bounds counts as connected, so a path can enter from outside.
 - Errors before solving: a path socket that no tile uses, a group of placed path cells with no free path face while other groups need joining, and free path faces that cannot be connected (with their coordinates). A route that the solve cannot fill is reported like any other failure.
+- A route can leave the tiles around it no way to fit (for example a climb next to a hill edge). When the solve then proves impossible, up to 8 routes are tried, each from a seed derived from the Generate seed, so the same seed still gives the same result. Ties between equally short routes are also broken by the seed.
 - Route cells are generated cells: regenerate routes again, and Pin keeps them.
+- Decided on 2026-11-10: the route is laid out before the terrain, not found over a generated terrain with A*. Route-first is always valid; terrain-first goes to the README backlog.
 
-#### 13.4 2D TileMapLayer adapter
+#### 13.4 Demo
+
+- The hillside ruin gets path tiles (straight, corner, T, cross, end, and path stairs with the cell above them) in a second tile set, `ruin_paths_tileset`, so the existing scenes do not change, and a `hillside_paths` scene with two placed path ends on different heights. The path stairs are cut into a ramp (ramp sockets on their sides), because stairs with open sides cannot meet the edge of a hill.
+
+#### 13.5 Not in 1.3
+
+The 2D adapter moves to 1.4 (§14). Region weight masks and multi-cell tiles stay in *WFC 2.0*. Renaming sockets across a tile set, matching-face thumbnails and suggesting sockets from terrain sets go to the README backlog.
+
+---
+
+### 14. Release 1.4
+
+Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. Tracked under the epic *WFC 1.4*. Everything is additive: 1.3 tile sets and scenes keep working unchanged.
+
+#### 14.1 2D TileMapLayer adapter
 
 - New resources **`WfcTile2D`** (atlas source id, atlas coordinates, alternative tile, sockets on the four edges, Rotation, **Mirror**, Weight, Marker) and **`WfcTileSet2D`** (a `TileSet` and the tiles). The 3D resources do not change. Core is shared, and the 2D grid is the existing X/Z grid with +Z = down.
 - **Mirror** (none, horizontal, vertical, both) adds mirrored variants next to the rotations. Mirroring swaps `+` and `-` on every one-sided socket. Rotations and mirrors are written as the `TileMapLayer` flip and transpose flags.
 - Selecting a `TileMapLayer` shows a **Generate WFC (GDDS)** button in the 2D editor toolbar. It opens the same dialog, which shows only the settings that apply in 2D (no height, no top and bottom boundary, no height curves).
-- Everything else works as in 3D: fixed cells, unknown cells, undo, cancel, failure messages, weights, the generated record and regenerate, the pin box, bounds and pin box handles in the 2D viewport, boundary sockets per edge, markers (Node2D scenes in a `WfcMarkers` child) and guided paths.
+- Everything else works as in 3D: fixed cells, unknown cells, undo, cancel, failure messages, weights, the generated record and regenerate, the pin box, bounds and pin box handles in the 2D viewport, boundary sockets per edge, markers (Node2D scenes in a `WfcMarkers` child) and guided paths (§13.3).
 - The inspector shows a 2D tile set preview with the same parts as the 3D one, including socket editing and measured shares.
 - The facts this relies on (flip and transpose flags, metadata on `TileMapLayer`, the 2D toolbar and viewport input) are checked first and recorded on the first 2D card.
 
-#### 13.5 Demo
+#### 14.2 Demo
 
-- The hillside ruin gets path tiles (straight, corner, T, cross, end, and path stairs with the cell above them) and a `hillside_paths` scene with two placed path ends.
 - A new top-down 2D demo. Its atlas is drawn by the demo builder. It has one-sided shore edges, mirrored tiles, a path, and a marker.
 
-#### 13.6 Not in 1.3
+#### 14.3 Not in 1.4
 
-Region weight masks and multi-cell tiles stay in *WFC 2.0*. Renaming sockets across a tile set, matching-face thumbnails and suggesting sockets from terrain sets go to the README backlog.
+Suggesting sockets from Godot terrain sets stays in the README backlog. Region weight masks and multi-cell tiles stay in *WFC 2.0*.

@@ -68,6 +68,18 @@ public partial class WfcSettings : Resource
     [Export] public string BoundaryPosZ { get; set; } = "";
     [Export] public string BoundaryNegZ { get; set; } = "";
 
+    /// <summary>
+    /// The socket name of path faces, such as "path". Placed cells with path faces are joined by
+    /// routes before solving, and path tiles appear nowhere else. Empty turns paths off.
+    /// </summary>
+    [ExportGroup("Paths", "Path")]
+    [Export] public string PathSocket { get; set; } = "";
+
+    /// <summary>0 gives the shortest routes, 1 the most meandering. The seed decides the route.</summary>
+    [Export(PropertyHint.Range, "0,1,0.01")] public float PathWander { get; set; } = 0.3f;
+
+    public bool HasPaths => !string.IsNullOrWhiteSpace(PathSocket);
+
     /// <summary>Cells shown per frame while solving. 0 shows only the final result.</summary>
     [ExportGroup("Animation")]
     [Export(PropertyHint.Range, "0,20000,50,or_greater")] public int CellsPerFrame { get; set; } = 1000;
