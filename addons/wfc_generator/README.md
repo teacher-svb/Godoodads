@@ -67,6 +67,17 @@ A cell whose item has no tile, or whose rotation is not one the tile allows, is 
 
 While the dialog is open, the bounds (orange) and the pin box (blue) are drawn in the 3D viewport. With the GridMap selected, drag the dots on their faces to resize them by whole cells. Each drag is one undo step; right-click or Escape cancels it. Clicks away from the dots still paint the GridMap as usual.
 
+### Paths between placed cells
+
+Give some tiles **path faces**: faces whose socket has one name, such as `path` (`path+`, `path-` and `path@0` count too). Set **Paths → Socket** to that name, place two or more path cells by hand, for example two path ends, and press Generate. Before solving, a route is laid through the empty cells between them, and the solve then fills in the path tiles and everything around them, so the path is always connected and always fits.
+
+- Every open path face of a placed cell gets a route. Two ends give one path; three or more give branches, joined through a T or cross tile. A path face pointing out of the bounds counts as connected, so a path can run off the edge.
+- A route only takes steps the tile set allows: a turn needs a corner tile, a branch a T tile, and a climb a tile with a path face on top (or below). The demo's path stairs have path faces on their low side and on top, and the empty cell above them has path faces below and towards the high side.
+- With paths on, path tiles appear only on routes.
+- **Paths → Wander** goes from 0 (the shortest route) to 1 (meandering). The seed decides the route.
+- If the tiles around a route cannot be filled in, up to 8 other routes are tried. The status area reports how many routes were laid and over how many cells.
+- Route cells are generated cells: Generate lays a new route, and pinning keeps a path you like.
+
 ## Options
 
 | Option | What it does |
@@ -77,6 +88,8 @@ While the dialog is open, the bounds (orange) and the pin box (blue) are drawn i
 | Bounds → Origin, Size | The box of cells to fill, in GridMap cell coordinates. You can also drag its handles in the viewport. |
 | Pin Box → Origin, Size, buttons | A second box for pinning generated cells (see above). A size of 0 hides it. |
 | Boundary → Pos X … Neg Z | Optional socket per face of the bounds, as if a fixed neighbour with that socket sat outside it. For example `rock` on Neg Y gives a solid floor without painting a ground layer. Empty leaves the face unconstrained. |
+| Paths → Socket | The socket name of path faces, such as `path`. Placed cells with path faces are joined by routes before solving (see above). Empty turns paths off. |
+| Paths → Wander | 0 gives the shortest routes, 1 the most meandering. |
 | Animation → Cells Per Frame | How fast the solve is shown. 0 shows only the final result. The result never depends on this. About 1,000 keeps the editor responsive. |
 | Solver Limits → Max Backtracks | Backtracks allowed per attempt before starting over with a new seed derived from yours. |
 | Solver Limits → Max Restarts | Attempts after the first one before giving up. |
@@ -95,6 +108,9 @@ A `WfcTileSet` holds a `MeshLibrary` and a list of `WfcTile` entries. The rules 
 | Sockets | One label per face: +X, -X, +Y, -Y, +Z, -Z, as the module is modelled. |
 
 The tile set's inspector shows a preview: the selected tile in 3D with its socket labels (drag to orbit), its weight and share of the total, the tiles allowed next to each face, and a check for problems.
+
+- **Edit sockets in the preview.** Click a face label to change it. The list suggests the labels already used in the tile set, including the partner of a one-sided label. On a rotated variant, the edit goes to the face of the tile itself. Each edit is one undo step. A label shown in red is one no tile can face.
+- **Measure the real shares.** Weights also decide which cells are filled first, so a tile's share of a result can differ a lot from its share of the weights. Under **Tile shares**, choose a sample size and seed and press **Measure**: a sample is solved in the background, and each tile shows "weight share / measured share", in red when they differ more than twice. Tiles with a height curve also show their share in the bottom, middle and top third. Changing the tile set cancels a measurement.
 
 <img src="docs/preview.png" alt="The tile set preview: a stair module with its socket labels and valid neighbours" width="560">
 
@@ -118,6 +134,8 @@ Labels use letters, digits and underscores. Every face needs a label.
 - **Keep requirements local.** Rules only see direct neighbours. A bridge that may run for any length but must end on a pillar often fails at large sizes. Give it a fixed length instead (head, deck, deck, head), using one-sided sockets so a deck can only meet a head at its outer end.
 - **Use one-sided sockets for direction.** `span+` against `span-` stops a module from connecting to a rotated copy of itself.
 - **Anchor the ground.** Edges are unconstrained unless you set a boundary socket, so empty columns can reach the bottom. Set the bottom boundary to a socket only ground tiles offer (the demo uses `rock`), paint a ground layer, or design sockets that keep air above ground.
+- **Path tiles need Quarter Turns.** A straight path with Half Turn has only 0° and 180°, which are the same, so it cannot run along Z. Keep path tiles in a tile set used with paths on, or they appear anywhere like other tiles.
+- **Climbs need room.** The cells beside a climbing tile must fit whatever is next to it. In the demo, path stairs are cut into a ramp, so the slope can go on beside them; stairs with open sides could never meet the edge of a hill.
 - **Shape by height.** A height curve that falls to 0 near the top keeps heavy modules low; one that rises keeps towers and lights high.
 
 ### The tile set check
@@ -133,16 +151,19 @@ Labels use letters, digits and underscores. Every face needs a label.
 - **This tile set has no solution for these bounds and boundary sockets.** The search proved it, without placed cells being involved. Check the tile set warnings and the boundary sockets.
 - **At some heights every tile has weight 0.** The height curves leave nothing to generate in the listed GridMap layers.
 - **Ran out of attempts.** A solution may still exist. Try another seed, or raise the limits.
+- **The paths cannot be laid out.** No tile uses the path socket, a path face leads nowhere (place another path cell), a placed path has no open face left to join the others, or no route through the tiles' path faces connects them. The cells are named and marked red.
+- **Routes were tried, but the tiles around them could not be filled in.** Try another seed or Wander, or check that path tiles fit the tiles next to them.
 
 In every case the GridMap is left unchanged.
 
 ## How it works
 
 1. Each tile becomes one variant per allowed rotation, and an adjacency table records which variants may face each other in each direction.
-2. Every cell starts with all variants of weight above 0 at its height as options. Placed cells start with one, which may have weight 0. Cells on a face with a boundary socket lose the options that cannot face it.
-3. The cell with the least total weight left among its options (ties broken by the seed) is set to one of them, chosen at random in proportion to weight, and the options of its neighbours are narrowed, repeatedly. A tile's weight is split evenly over its rotations. With equal weights, this is the classic "fewest options first" order.
-4. When a cell runs out of options, the solver backtracks: it undoes its last choice and rules that option out. After Max Backtracks, it starts over with a seed derived from yours.
-5. The result, its markers and the record of what was written are applied as one undoable action.
+2. With paths on, routes are laid first: an A* search over the empty cells, where a step needs a path variant with that pair of path faces and a fitting socket. Route cells may then only use those variants, and other cells no path variant.
+3. Every cell starts with all variants of weight above 0 at its height as options. Placed cells start with one, which may have weight 0. Cells on a face with a boundary socket lose the options that cannot face it.
+4. The cell with the least total weight left among its options (ties broken by the seed) is set to one of them, chosen at random in proportion to weight, and the options of its neighbours are narrowed, repeatedly. A tile's weight is split evenly over its rotations. With equal weights, this is the classic "fewest options first" order.
+5. When a cell runs out of options, the solver backtracks: it undoes its last choice and rules that option out. After Max Backtracks, it starts over with a seed derived from yours.
+6. The result, its markers and the record of what was written are applied as one undoable action.
 
 The solver runs on a background thread and touches no engine objects, so the editor stays responsive. A rebuild of the C# project cancels a running solve first.
 
@@ -150,15 +171,15 @@ The solver runs on a background thread and touches no engine objects, so the edi
 
 ## Demo
 
-`demo/wfc_generator/hillside_ground.tscn` rests on a `rock` bottom boundary socket, and `hillside_free.tscn` has no boundary. Tower tops carry a light marker (`assets/tower_light.tscn`). Both use the stacked hillside ruin tile set in `demo/wfc_generator/assets/`, which `demo/wfc_generator/tools/build_demo.tscn` rebuilds.
+`demo/wfc_generator/hillside_ground.tscn` rests on a `rock` bottom boundary socket, and `hillside_free.tscn` has no boundary. Tower tops carry a light marker (`assets/tower_light.tscn`). Both use the stacked hillside ruin tile set in `demo/wfc_generator/assets/`. `hillside_paths.tscn` uses the same tiles plus path tiles (`ruin_paths_tileset.tres`) and has two path ends placed on different heights; Generate joins them with a path that climbs through stairs cut into the slope. `demo/wfc_generator/tools/build_demo.tscn` rebuilds all of them.
 
 ## Limitations
 
 - Editor-only. There is no runtime generation yet.
 - Weights vary by height only. There are no weights per region yet.
 - Rotation is around Y only, and one item fills one cell. Mirrored modules need their own items.
-- Rules are local. Connected paths and reachability are not guaranteed.
+- Rules are local. Paths connect the path cells you place; other reachability is not guaranteed. Routes are laid before the terrain, so the terrain adapts to the path rather than the other way round.
 - Edges without a boundary socket are unconstrained.
 - Markers are placed when a generation is committed, not during the animated preview.
 - While a solve is being shown, the GridMap holds a preview. Saving the scene at that moment saves the preview.
-- 3D `GridMap` only. The solver also supports 2D, but there is no `TileMapLayer` support yet.
+- 3D `GridMap` only. The solver also supports 2D; `TileMapLayer` support is planned for 1.4.
