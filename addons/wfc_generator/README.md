@@ -110,7 +110,7 @@ A `WfcTileSet` holds a `MeshLibrary` and a list of `WfcTile` entries. The rules 
 The tile set's inspector shows a preview: the selected tile in 3D with its socket labels (drag to orbit), its weight and share of the total, the tiles allowed next to each face, and a check for problems.
 
 - **Edit sockets in the preview.** Click a face label to change it. The list suggests the labels already used in the tile set, including the partner of a one-sided label. On a rotated variant, the edit goes to the face of the tile itself. Each edit is one undo step. A label shown in red is one no tile can face.
-- **Measure the real shares.** Weights also decide which cells are filled first, so a tile's share of a result can differ a lot from its share of the weights. Under **Tile shares**, choose a sample size and seed and press **Measure**: a sample is solved in the background, and each tile shows "weight share / measured share", in red when they differ more than twice. Tiles with a height curve also show their share in the bottom, middle and top third. Changing the tile set cancels a measurement.
+- **Measure the real shares.** Under **Tile shares**, press **Measure** to see how much of a sample result each tile really covers, next to its share of the weights (see [Measuring tile shares](#measuring-tile-shares)).
 
 <img src="docs/preview.png" alt="The tile set preview: a stair module with its socket labels and valid neighbours" width="560">
 
@@ -144,6 +144,24 @@ Labels use letters, digits and underscores. Every face needs a label.
 |---|---|
 | Socket has no partner | No tile in any rotation can face this socket. The tile can only appear where that face is at the edge of the bounds. |
 | Only fits at the edges of the grid | The tile depends on tiles that cannot be placed themselves. |
+
+### Measuring tile shares
+
+Weights look like they set the mix of tiles directly: a tile with 10% of the total weight should cover about 10% of the map. In practice the result can be far off, for two reasons:
+
+- **Weights do two jobs.** They decide which tile a cell gets, but also which cell is filled next: the cell with the least weight left goes first. So weights shape the order the map is built in, and with it the room left for everything else.
+- **Sockets limit where a tile fits.** A tile can have a large weight and still be rare because it seldom fits: a tower top only sits on a tower base.
+
+The share shown next to a tile's weight is what you asked for. **Measure** shows what you get:
+
+1. Set the sample size (16 × 8 × 16 by default) and the seed under **Tile shares**, and press **Measure**.
+2. An empty grid of that size is solved with the tile set, in the background, so you can keep working. Press **Stop** to cancel. Changing the tile set cancels it too, because the result would describe the old tile set.
+3. Each tile shows **weight share / measured share**, for example `Grass: 12.0% / 30.1%`, most common first. A line is red when the two differ more than twice, either way: that tile is much more or much less common than its weight suggests.
+4. A tile with a height curve also shows its share in the bottom, middle and top third of the sample, so you can check the curve does what you meant.
+
+If the sample cannot be solved, the failure is shown instead. Change a weight, measure again, and compare.
+
+The result is an estimate: one sample with one seed, without boundary sockets, placed cells or paths. Another seed or size gives somewhat different numbers, and your scene's settings (a `rock` floor, for example) change the mix too. Larger samples give steadier numbers but take longer.
 
 ## When a solve fails
 
