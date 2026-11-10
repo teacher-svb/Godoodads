@@ -3,10 +3,10 @@ id: "wfc-idea-boundary-sockets-2026-11-09"
 status: "backlog"
 priority: "low"
 assignee: null
-epic: "WFC 2.0"
+epic: "WFC 1.2"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T23:03:56.000Z"
+modified: "2026-11-10T09:19:39.000Z"
 completedAt: null
 labels: ["idea", "core"]
 order: "b3"
@@ -23,3 +23,6 @@ Optionally give each of the six bounds faces a socket, such as ground below or a
 
 ## Decision (2026-11-10)
 Not in 1.1. Moved to the *WFC 2.0* epic.
+
+## Decision (2026-11-10, 1.2 planning)
+Moved to *WFC 1.2*. A bottom socket such as `rock` would replace the painted ground layer the demo needs, and it removes the "edges are unconstrained" limitation.

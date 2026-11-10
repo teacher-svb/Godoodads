@@ -34,9 +34,10 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### WFC Generator
 
-Boundary sockets, multi-cell tiles, marker tiles, guided paths, the 2D adapter and socket editing are idea cards on the kanban board (epic *WFC 2.0*). Not planned yet:
+Boundary sockets, per-height weights, marker tiles, bounds handles and pinning generated cells are planned for 1.2 (epic *WFC 1.2*). Region weights, multi-cell tiles, guided paths, the 2D adapter, socket editing and measured tile shares are idea cards in the epic *WFC 2.0*. Not planned yet:
 
 - Runtime (in-game) generation
 - Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)
 - Guaranteed connected paths and reachability (needs a brief)
 - Learning rules from example scenes, and the overlapping WFC model
+- Suggesting sockets by comparing the outlines of mesh faces that meet (experimental; needs a brief)

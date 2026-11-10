@@ -6,7 +6,7 @@ assignee: null
 epic: "WFC 2.0"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T22:55:00.000Z"
+modified: "2026-11-10T09:19:39.000Z"
 completedAt: null
 labels: ["idea", "core"]
 order: "b0"
@@ -24,3 +24,6 @@ Vary tile weights across the bounds, for example more rock low down or more ruin
 ## Open questions
 - Height curves first, or region masks first?
 - How is a region authored: a texture, a second GridMap layer, or boxes?
+
+## Decision (2026-11-10, 1.2 planning)
+Height curves split off into `wfc-idea-height-weights` (*WFC 1.2*). This card keeps region masks and stays in *WFC 2.0*.

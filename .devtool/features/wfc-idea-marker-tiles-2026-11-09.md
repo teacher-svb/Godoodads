@@ -3,10 +3,10 @@ id: "wfc-idea-marker-tiles-2026-11-09"
 status: "backlog"
 priority: "medium"
 assignee: null
-epic: "WFC 2.0"
+epic: "WFC 1.2"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T22:55:00.000Z"
+modified: "2026-11-10T09:19:39.000Z"
 completedAt: null
 labels: ["idea", "editor"]
 order: "b2"
@@ -24,3 +24,6 @@ Tiles that also place a scene, such as a door, spawn point or light, as a node a
 ## Open questions
 - Where do marker nodes live: a child of the GridMap, or a sibling container?
 - Should markers also be allowed on empty tiles (a spawn point in the air above ground)?
+
+## Decision (2026-11-10, 1.2 planning)
+Moved to *WFC 1.2*. Regenerate must remove markers it placed earlier; tag them the way the 1.1 regenerate record tracks cells, and treat edited or moved markers like hand-edited cells.
