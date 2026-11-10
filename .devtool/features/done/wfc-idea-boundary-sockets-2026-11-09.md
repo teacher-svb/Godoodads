@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-boundary-sockets-2026-11-09"
-status: "backlog"
+status: "done"
 priority: "low"
 assignee: null
 epic: "WFC 1.2"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-10T09:19:39.000Z"
-completedAt: null
+modified: "2026-11-10T09:29:58.000Z"
+completedAt: "2026-11-10T09:29:58.000Z"
 labels: ["idea", "core"]
 order: "b3"
 ---
@@ -26,3 +26,6 @@ Not in 1.1. Moved to the *WFC 2.0* epic.
 
 ## Decision (2026-11-10, 1.2 planning)
 Moved to *WFC 1.2*. A bottom socket such as `rock` would replace the painted ground layer the demo needs, and it removes the "edges are unconstrained" limitation.
+
+## Result
+Split into tickets for 1.2 (2026-11-10, brief §12). Decisions are recorded in the brief.

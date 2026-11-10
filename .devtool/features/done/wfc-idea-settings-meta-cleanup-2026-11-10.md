@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-settings-meta-cleanup-2026-11-10"
-status: "backlog"
+status: "done"
 priority: "low"
 assignee: null
 epic: "WFC 1.2"
 dueDate: null
 created: "2026-11-10T09:19:39.000Z"
-modified: "2026-11-10T09:19:39.000Z"
-completedAt: null
+modified: "2026-11-10T09:29:58.000Z"
+completedAt: "2026-11-10T09:29:58.000Z"
 labels: ["bug", "editor"]
 order: "b9"
 ---
@@ -20,3 +20,6 @@ Undoing a first generation leaves an empty `godoodads_wfc_settings` metadata ent
 ## Design notes
 - Use do/undo methods that remove the entry, like `ApplyRecord` for the regenerate record.
 - The dialog already ignores a settings entry that is not a `WfcSettings`, so scenes saved with an empty entry keep working.
+
+## Result
+Split into tickets for 1.2 (2026-11-10, brief §12). Decisions are recorded in the brief.
