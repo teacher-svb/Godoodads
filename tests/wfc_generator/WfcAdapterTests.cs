@@ -229,4 +229,48 @@ public class WfcAdapterTests
         AssertThat(binding.IsValid).IsFalse();
         AssertThat(binding.Errors[0]).StartsWith("Tile 1: Weight");
     }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Boundary_sockets_round_trip_and_invalid_labels_are_errors()
+    {
+        const string path = "user://wfc_boundary_settings.tres";
+        var settings = new WfcSettings { BoundaryNegY = "rock", BoundaryPosX = " path- " };
+        AssertThat(ResourceSaver.Save(settings, path)).IsEqual(Error.Ok);
+        var loaded = ResourceLoader.Load<WfcSettings>(path, null, ResourceLoader.CacheMode.Ignore);
+        DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(path));
+
+        var errors = new System.Collections.Generic.List<string>();
+        var boundary = loaded.ParseBoundary(errors);
+        AssertThat(errors.Count).IsEqual(0);
+        AssertThat(boundary[Directions.NegY].ToString()).IsEqual("rock");
+        AssertThat(boundary[Directions.PosX].ToString()).IsEqual("path-");
+        AssertThat(boundary[Directions.PosY] == null).IsTrue();
+
+        loaded.BoundaryPosY = "stair+";   // one-sided labels are for side faces only
+        loaded.ParseBoundary(errors);
+        AssertThat(errors.Count).IsEqual(1);
+        AssertThat(errors[0]).StartsWith("Boundary +Y");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Height_curves_are_sampled_from_bottom_to_top()
+    {
+        var curve = new Curve();
+        curve.AddPoint(new Vector2(0, 0));
+        curve.AddPoint(new Vector2(1, 1));
+        var tile = Tile(0, "a");
+        tile.HeightCurve = curve;
+
+        var samples = tile.ToDefinition().HeightProfile;
+        AssertThat(samples.Count).IsEqual(64);
+        AssertThat(samples[0]).IsEqualApprox(0.0, 1e-4);
+        AssertThat(samples[^1]).IsEqualApprox(1.0, 1e-4);
+        AssertThat(Tile(0, "a").ToDefinition().HeightProfile == null).IsTrue();
+
+        var binding = TileSetBinding.Create(TileSet(tile, Tile(1, "a")), Directions.All3D);
+        AssertThat(binding.Compiled.LayersWithoutWeight(4).Count).IsEqual(0);
+        AssertThat(binding.Compiled.WeightAt(binding.Compiled.FindVariant(0, 0), 0)).IsEqualApprox(0.0, 1e-4);
+    }
 }

@@ -1,13 +1,13 @@
 ---
 id: "wfc-idea-pin-cells-2026-11-10"
-status: "backlog"
+status: "done"
 priority: "medium"
 assignee: null
 epic: "WFC 1.2"
 dueDate: null
 created: "2026-11-10T09:19:39.000Z"
-modified: "2026-11-10T09:19:39.000Z"
-completedAt: null
+modified: "2026-11-10T09:29:58.000Z"
+completedAt: "2026-11-10T09:29:58.000Z"
 labels: ["idea", "editor"]
 order: "b8"
 ---
@@ -24,3 +24,6 @@ Keep a good part of a generated result while regenerating the rest. Today you ha
 
 ## Open questions
 - How is the selection made: a box drag, or the GridMap editor's own selection?
+
+## Result
+Split into tickets for 1.2 (2026-11-10, brief §12). Decisions are recorded in the brief.

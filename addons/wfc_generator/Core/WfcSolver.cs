@@ -31,8 +31,12 @@ public sealed class WfcSolver
     private readonly ulong[] _domains;
     private readonly int[] _counts;
     private readonly ulong[] _full;
+    // Weights, start options and byte tables per layer. With no height profiles there is one
+    // layer for the whole grid, so a 1.1 tile set takes exactly the 1.1 path.
+    private readonly int _layers;
+    private readonly int _layerSize;
     private readonly ulong[] _start;
-    private readonly int _startCount;
+    private readonly int[] _startCount;
     private readonly double[] _weights;
     private readonly ulong[] _scratch;
 
@@ -40,8 +44,9 @@ public sealed class WfcSolver
     private readonly double[] _mass;
     private readonly double _perUnit;
 
-    // Weight of every byte value at every byte position of a domain: 8 lookups per 64-bit word.
+    // Weight of every byte value at every byte position of a domain, per layer: 8 lookups per 64-bit word.
     private readonly double[] _byteMass;
+    private const int WordTable = 8 * 256;
 
     // Unresolved cells grouped by remaining weight on a log scale (see BucketOf), with each
     // cell's bucket and position in it. Buckets below _lowestBucket are empty.
@@ -61,6 +66,9 @@ public sealed class WfcSolver
 
     private (int TrailMark, int Cell, int Variant)[] _decisions;
     private int _decisionCount;
+
+    // Per direction, the variants allowed against the boundary socket, or null when unconstrained.
+    private ulong[][] _boundaryMasks = new ulong[Directions.Count][];
 
     private WfcRandom _random;
     private ISolveObserver _observer;
@@ -101,25 +109,37 @@ public sealed class WfcSolver
             _full[v >> 6] |= 1UL << v;
 
         // Free cells start without weight-0 variants. Fixed cells start full, so they may use them.
-        _start = (ulong[])tiles.Generatable.Clone();
-        foreach (ulong word in _start)
-            _startCount += BitOperations.PopCount(word);
-        _weights = new double[_variantCount];
-        for (int v = 0; v < _variantCount; v++)
-            _weights[v] = tiles.VariantWeights[v];
-
-        _byteMass = new double[_words * 8 * 256];
-        for (int v = 0; v < _variantCount; v++)
+        _layers = tiles.HasHeightProfiles ? grid.Size.Y : 1;
+        _layerSize = grid.Size.X * grid.Size.Z;
+        _weights = new double[_layers * _variantCount];
+        _start = new ulong[_layers * _words];
+        _startCount = new int[_layers];
+        _byteMass = new double[_layers * _words * WordTable];
+        double heaviest = 0;
+        for (int layer = 0; layer < _layers; layer++)
         {
-            int table = (v >> 3) * 256, bit = 1 << (v & 7);
-            for (int value = 0; value < 256; value++)
-                if ((value & bit) != 0)
-                    _byteMass[table + value] += _weights[v];
+            double height = CompiledTileSet.RelativeHeight(layer, _layers);
+            double sum = 0;
+            for (int v = 0; v < _variantCount; v++)
+            {
+                double weight = _layers == 1 ? tiles.VariantWeights[v] : tiles.WeightAt(v, height);
+                _weights[layer * _variantCount + v] = weight;
+                sum += weight;
+                if (weight <= 0)
+                    continue;
+                _start[layer * _words + (v >> 6)] |= 1UL << v;
+                _startCount[layer]++;
+                int table = layer * _words * WordTable + (v >> 3) * 256, bit = 1 << (v & 7);
+                for (int value = 0; value < 256; value++)
+                    if ((value & bit) != 0)
+                        _byteMass[table + value] += weight;
+            }
+            heaviest = Math.Max(heaviest, sum);
         }
         _mass = new double[cells];
         _bucketOf = new int[cells];
-        _perUnit = 1 / _weights.Where(w => w > 0).Min();
-        int bucketCount = BucketOf(2, _weights.Sum()) + 1;
+        _perUnit = 1 / _weights.Where(w => w > 0).DefaultIfEmpty(1).Min();
+        int bucketCount = BucketOf(2, heaviest) + 1;
         _buckets = new List<int>[bucketCount];
         for (int i = 0; i < bucketCount; i++)
             _buckets[i] = new List<int>();
@@ -130,8 +150,9 @@ public sealed class WfcSolver
         options ??= new SolveOptions();
         _observer = observer;
         _failure = null;
+        SetBoundary(options.Boundary);
 
-        var conflicts = FindFixedConflicts();
+        var conflicts = FindFixedConflicts(options.Boundary);
         if (conflicts.Count > 0)
             return new SolveResult { Status = SolveStatus.Impossible, FixedConflicts = conflicts };
 
@@ -176,8 +197,7 @@ public sealed class WfcSolver
     private Outcome RunAttempt(int maxBacktracks, bool lastAttempt, CancellationToken cancellation, out long backtracks)
     {
         backtracks = 0;
-        Reset();
-        bool consistent = Propagate();
+        bool consistent = Reset() && Propagate();
 
         while (true)
         {
@@ -223,8 +243,10 @@ public sealed class WfcSolver
         }
     }
 
-    private void Reset()
+    /// <summary>Resets every cell. Returns false when the boundary leaves a cell without options.</summary>
+    private bool Reset()
     {
+        bool consistent = true;
         foreach (var bucket in _buckets)
             bucket.Clear();
         _lowestBucket = 0;
@@ -236,12 +258,22 @@ public sealed class WfcSolver
         for (int cell = 0; cell < _grid.CellCount; cell++)
         {
             bool free = _initial[cell] == Free;
-            (free ? _start : _full).CopyTo(_domains, cell * _words);
-            _counts[cell] = free ? _startCount : _variantCount;
+            int layer = LayerOf(cell);
+            if (free)
+                Array.Copy(_start, layer * _words, _domains, cell * _words, _words);
+            else
+                _full.CopyTo(_domains, cell * _words);
+            _counts[cell] = free ? _startCount[layer] : _variantCount;
             _mass[cell] = MassOf(cell);
             if (_initial[cell] == Excluded)
                 continue;
             AddToBucket(cell, BucketOf(_counts[cell], _mass[cell]));
+            if (_counts[cell] == 0 && consistent)
+            {
+                // A layer where every tile has weight 0.
+                _contradiction = cell;
+                consistent = false;
+            }
             if (_counts[cell] == 1)
                 _observer?.OnCellResolved(cell, FirstVariant(cell));
         }
@@ -254,10 +286,51 @@ public sealed class WfcSolver
             Narrow(cell);
         }
 
+        // Edge cells against the boundary sockets. Fixed cells were checked in FindFixedConflicts.
+        foreach (int direction in _grid.ActiveDirections)
+        {
+            var mask = _boundaryMasks[direction];
+            if (mask == null)
+                continue;
+            mask.CopyTo(_scratch, 0);
+            for (int cell = 0; cell < _grid.CellCount; cell++)
+            {
+                if (_initial[cell] == Excluded || _grid.Neighbour(cell, direction) >= 0)
+                    continue;
+                Narrow(cell);
+                if (_counts[cell] == 0 && consistent)
+                {
+                    _contradiction = cell;
+                    consistent = false;
+                }
+            }
+        }
+
         // Starting from every cell also removes tiles that can never fit before any choice is made.
         for (int cell = 0; cell < _grid.CellCount; cell++)
             if (_initial[cell] != Excluded)
                 Enqueue(cell);
+        if (!consistent)
+            ClearQueue();
+        return consistent;
+    }
+
+    private void SetBoundary(IReadOnlyList<Socket?> boundary)
+    {
+        for (int direction = 0; direction < Directions.Count; direction++)
+        {
+            var socket = boundary != null && direction < boundary.Count ? boundary[direction] : null;
+            if (socket == null || Array.IndexOf(_grid.ActiveDirections, direction) < 0)
+            {
+                _boundaryMasks[direction] = null;
+                continue;
+            }
+            var mask = new ulong[_words];
+            for (int v = 0; v < _variantCount; v++)
+                if (_tiles.Variants[v].Sockets[direction].Matches(socket.Value))
+                    mask[v >> 6] |= 1UL << v;
+            _boundaryMasks[direction] = mask;
+        }
     }
 
     private bool Propagate()
@@ -296,27 +369,32 @@ public sealed class WfcSolver
         Array.Clear(_scratch);
         int cellBase = cell * _words;
         int neighbourBase = neighbour * _words;
-        var compatible = _tiles.Compatible;
+        var members = _tiles.ClassMembers;
+        var rows = _tiles.ClassRows;
 
-        for (int word = 0; word < _words; word++)
+        // One row per class of identical rows that has a variant in the cell's domain.
+        for (int c = _tiles.ClassStart[direction], end = _tiles.ClassStart[direction + 1]; c < end; c++)
         {
-            ulong bits = _domains[cellBase + word];
-            while (bits != 0)
-            {
-                int variant = word * 64 + BitOperations.TrailingZeroCount(bits);
-                bits &= bits - 1;
-
-                int offset = _tiles.CompatibleOffset(variant, direction);
-                bool covered = true;
-                for (int w = 0; w < _words; w++)
+            int offset = c * _words;
+            bool present = false;
+            for (int w = 0; w < _words; w++)
+                if ((members[offset + w] & _domains[cellBase + w]) != 0)
                 {
-                    _scratch[w] |= compatible[offset + w];
-                    if ((_domains[neighbourBase + w] & ~_scratch[w]) != 0)
-                        covered = false;
+                    present = true;
+                    break;
                 }
-                if (covered)
-                    return false;
+            if (!present)
+                continue;
+
+            bool covered = true;
+            for (int w = 0; w < _words; w++)
+            {
+                _scratch[w] |= rows[offset + w];
+                if ((_domains[neighbourBase + w] & ~_scratch[w]) != 0)
+                    covered = false;
             }
+            if (covered)
+                return false;
         }
         return true;
     }
@@ -333,7 +411,7 @@ public sealed class WfcSolver
             ulong after = before & _scratch[word];
             if (after != before)
             {
-                _mass[cell] -= WordMass(word, before & ~after);
+                _mass[cell] -= WordMass(LayerOf(cell), word, before & ~after);
                 PushTrail(cellBase + word, before);
                 _domains[cellBase + word] = after;
                 changed = true;
@@ -356,7 +434,7 @@ public sealed class WfcSolver
             {
                 i--;
                 int index = _trailWord[i];
-                _mass[cell] += WordMass(index - cell * _words, _trailOld[i] & ~_domains[index]);
+                _mass[cell] += WordMass(LayerOf(cell), index - cell * _words, _trailOld[i] & ~_domains[index]);
                 _domains[index] = _trailOld[i];
             }
 
@@ -423,15 +501,18 @@ public sealed class WfcSolver
     private double MassOf(int cell)
     {
         double mass = 0;
+        int layer = LayerOf(cell);
         for (int word = 0; word < _words; word++)
-            mass += WordMass(word, _domains[cell * _words + word]);
+            mass += WordMass(layer, word, _domains[cell * _words + word]);
         return mass;
     }
 
-    private double WordMass(int word, ulong bits)
+    private int LayerOf(int cell) => _layers == 1 ? 0 : cell / _layerSize;
+
+    private double WordMass(int layer, int word, ulong bits)
     {
         double mass = 0;
-        for (int table = word * 8 * 256; bits != 0; bits >>= 8, table += 256)
+        for (int table = (layer * _words + word) * WordTable; bits != 0; bits >>= 8, table += 256)
             mass += _byteMass[table + (int)(bits & 0xFF)];
         return mass;
     }
@@ -453,13 +534,14 @@ public sealed class WfcSolver
     {
         int cellBase = cell * _words;
         double target = _random.NextDouble() * _mass[cell];
+        int weights = LayerOf(cell) * _variantCount;
         int last = -1;
         for (int word = 0; word < _words; word++)
         {
             for (ulong bits = _domains[cellBase + word]; bits != 0; bits &= bits - 1)
             {
                 last = word * 64 + BitOperations.TrailingZeroCount(bits);
-                target -= _weights[last];
+                target -= _weights[weights + last];
                 if (target < 0)
                     return last;
             }
@@ -530,7 +612,11 @@ public sealed class WfcSolver
         return cells;
     }
 
-    private List<FixedConflict> FindFixedConflicts()
+    /// <summary>
+    /// Fixed cells that do not fit each other, or the boundary. A boundary conflict names the
+    /// position just outside the grid as its second cell.
+    /// </summary>
+    private List<FixedConflict> FindFixedConflicts(IReadOnlyList<Socket?> boundary)
     {
         var conflicts = new List<FixedConflict>();
         for (int cell = 0; cell < _grid.CellCount; cell++)
@@ -540,6 +626,14 @@ public sealed class WfcSolver
                 continue;
             foreach (int direction in _grid.ActiveDirections)
             {
+                var mask = _boundaryMasks[direction];
+                if (mask != null && _grid.Neighbour(cell, direction) < 0 && (mask[variant >> 6] & (1UL << variant)) == 0)
+                {
+                    var position = _grid.Coordinates(cell);
+                    conflicts.Add(new FixedConflict(position, position + Directions.Offset(direction), direction,
+                        _tiles.Variants[variant].Sockets[direction].ToString(), boundary[direction].ToString()));
+                }
+
                 // Each pair is checked once, from its positive side.
                 if ((direction & 1) != 0)
                     continue;

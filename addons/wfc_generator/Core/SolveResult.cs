@@ -26,6 +26,12 @@ public sealed record SolveOptions
 
     /// <summary>Restarts allowed after the first attempt.</summary>
     public int MaxRestarts { get; init; } = 20;
+
+    /// <summary>
+    /// Per direction (see <see cref="Directions"/>), the socket of a fixed neighbour imagined
+    /// outside that face of the grid. Null, or a null entry, leaves the face unconstrained.
+    /// </summary>
+    public IReadOnlyList<Socket?> Boundary { get; init; }
 }
 
 /// <summary>Receives every change to the solved state. Replaying the calls reproduces the final grid.</summary>

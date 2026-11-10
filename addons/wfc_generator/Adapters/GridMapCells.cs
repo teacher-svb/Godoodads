@@ -7,9 +7,10 @@ namespace Godoodads.WfcGenerator.Adapters;
 
 /// <summary>
 /// The solver's starting state, read from the cells already in a GridMap. Replaced counts cells a
-/// previous generation wrote, which are free again; Edited counts those changed since, which are kept.
+/// previous generation wrote, which are free again; Edited counts those changed since and Pinned
+/// those pinned, which are both kept (and included in Kept).
 /// </summary>
-public sealed record FixedCells(int[] Initial, int Kept, int Ignored, int Replaced = 0, int Edited = 0);
+public sealed record FixedCells(int[] Initial, int Kept, int Ignored, int Replaced = 0, int Edited = 0, int Pinned = 0);
 
 /// <summary>Cell changes as flat (x, y, z, item, orientation) records, so undo stores plain ints.</summary>
 public sealed record CellChanges(int[] Do, int[] Undo)
@@ -36,7 +37,7 @@ public static class GridMapCells
     public static FixedCells ReadFixed(GridMap map, Vector3I origin, GridTopology grid, TileSetBinding binding, GeneratedRecord previous = null)
     {
         var result = AllFree(grid);
-        int kept = 0, ignored = 0, replaced = 0, edited = 0;
+        int kept = 0, ignored = 0, replaced = 0, edited = 0, pinned = 0;
         for (int cell = 0; cell < grid.CellCount; cell++)
         {
             var position = origin + grid.Coordinates(cell);
@@ -45,12 +46,15 @@ public static class GridMapCells
                 continue;
             if (previous != null)
             {
-                if (previous.Matches(position, item, map.GetCellItemOrientation(position)))
+                bool matches = previous.Matches(position, item, map.GetCellItemOrientation(position));
+                if (matches && !previous.IsPinned(position))
                 {
                     replaced++;
                     continue;
                 }
-                if (previous.Contains(position))
+                if (matches)
+                    pinned++;
+                else if (previous.Contains(position))
                     edited++;
             }
 
@@ -63,7 +67,7 @@ public static class GridMapCells
             else
                 ignored++;
         }
-        return result with { Kept = kept, Ignored = ignored, Replaced = replaced, Edited = edited };
+        return result with { Kept = kept, Ignored = ignored, Replaced = replaced, Edited = edited, Pinned = pinned };
     }
 
     /// <summary>
@@ -75,8 +79,8 @@ public static class GridMapCells
         var record = new GeneratedRecord();
         if (previous != null)
             foreach (var (position, written) in previous.Cells)
-                record.Set(position, written.Item, written.Orientation);
-        record.RemoveInside(origin, grid.Size);
+                record.Set(position, written.Item, written.Orientation, written.Pinned);
+        record.RemoveInside(origin, grid.Size, keepPinned: true);
 
         for (int cell = 0; cell < grid.CellCount; cell++)
         {
@@ -102,6 +106,18 @@ public static class GridMapCells
     /// <summary>The encoded record stored on a GridMap, or an empty array.</summary>
     public static byte[] StoredRecord(GridMap map) =>
         map.HasMeta(WfcSettings.GeneratedKey) ? map.GetMeta(WfcSettings.GeneratedKey).AsByteArray() ?? System.Array.Empty<byte>() : System.Array.Empty<byte>();
+
+    /// <summary>
+    /// Pins the recorded cells inside a box that still hold what was generated, or unpins the pinned
+    /// ones. Returns the new record and how many cells changed.
+    /// </summary>
+    public static (GeneratedRecord Record, int Changed) Pin(GridMap map, Vector3I origin, Vector3I size, bool pin)
+    {
+        var record = ReadRecord(map);
+        int changed = record.SetPinnedInside(origin, size, pin,
+            (position, written) => map.GetCellItem(position) == written.Item && map.GetCellItemOrientation(position) == written.Orientation);
+        return (record, changed);
+    }
 
     /// <summary>The record stored on a GridMap, or an empty one.</summary>
     public static GeneratedRecord ReadRecord(GridMap map) =>

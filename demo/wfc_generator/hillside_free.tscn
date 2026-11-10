@@ -21,15 +21,15 @@ sky = SubResource("Sky_526ag")
 ambient_light_source = 3
 tonemap_mode = 2
 
-[node name="HillsideFree" type="Node3D" unique_id=1766367886]
+[node name="HillsideFree" type="Node3D" unique_id=7940229]
 
-[node name="GridMap" type="GridMap" parent="." unique_id=897989670]
+[node name="GridMap" type="GridMap" parent="." unique_id=1842296185]
 mesh_library = ExtResource("1_5sbhy")
 metadata/godoodads_wfc_settings = SubResource("Resource_i3qry")
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1190918755]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1014411018]
 transform = Transform3D(0.81915206, 0.46984634, -0.32898995, 0, 0.57357645, 0.81915206, 0.57357645, -0.6710101, 0.46984634, 0, 0, 0)
 shadow_enabled = true
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1856790463]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2123485641]
 environment = SubResource("Environment_j0ou0")

@@ -2,6 +2,22 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-10
+
+### Added
+- **Boundary sockets:** an optional socket per face of the bounds, as if a fixed neighbour sat outside it. A placed cell that cannot face it is reported with its coordinates.
+- **Height curves** on tiles: the weight is multiplied by height, from the bottom layer of the bounds to the top. Layers where nothing can be generated are reported before solving.
+- **Handles in the viewport** for the bounds, with undo.
+- **Pin box:** pin generated cells so the next Generate keeps them, and unpin them again. Pins are stored in the regenerate record.
+- **Marker tiles:** a scene per tile, placed and rotated at every generated cell of that tile in a `WfcMarkers` container, replaced by the next generation and part of the undo step.
+- Demo: the ground scene rests on a `rock` boundary socket instead of a painted layer, and tower tops carry a light.
+
+### Changed
+- Propagation handles variants with identical neighbour rules together. Results are unchanged, and solving is about 2.5 times faster on the demo.
+
+### Fixed
+- Undoing a first generation no longer leaves an empty settings entry on the GridMap.
+
 ## [1.1.0] - 2026-11-10
 
 ### Added

@@ -69,4 +69,32 @@ public class WfcGeneratedRecordTests
         int bytes = record.Encode().Length;
         Assert.True(bytes < 100_000, $"{record.Count} cells took {bytes} bytes.");
     }
+
+    [Fact]
+    public void PinnedFlagsRoundTripAndOldDataIsUnpinned()
+    {
+        var record = new GeneratedRecord();
+        record.Set(new Vector3I(1, 0, 0), 2, 22, pinned: true);
+        record.Set(new Vector3I(2, 0, 0), 2, 22);
+        var decoded = GeneratedRecord.Decode(record.Encode());
+        Assert.True(decoded.IsPinned(new Vector3I(1, 0, 0)));
+        Assert.False(decoded.IsPinned(new Vector3I(2, 0, 0)));
+        Assert.True(decoded.Matches(new Vector3I(1, 0, 0), 2, 22));
+    }
+
+    [Fact]
+    public void PinningInsideABoxRespectsTheFilterAndRemoveInsideCanKeepPins()
+    {
+        var record = new GeneratedRecord();
+        for (int x = 0; x < 4; x++)
+            record.Set(new Vector3I(x, 0, 0), x, 0);
+        int pinned = record.SetPinnedInside(new Vector3I(1, 0, 0), new Vector3I(2, 1, 1), true, (_, written) => written.Item != 2);
+        Assert.Equal(1, pinned);
+        Assert.True(record.IsPinned(new Vector3I(1, 0, 0)));
+        Assert.False(record.IsPinned(new Vector3I(2, 0, 0)));
+
+        record.RemoveInside(Vector3I.Zero, new Vector3I(4, 1, 1), keepPinned: true);
+        Assert.Equal(1, record.Count);
+        Assert.Equal(1, record.SetPinnedInside(Vector3I.Zero, new Vector3I(4, 1, 1), false));
+    }
 }
