@@ -1,4 +1,5 @@
 #if TOOLS
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,7 @@ public partial class TileSetPreview : VBoxContainer
     private Node3D _pivot;
     private MeshInstance3D _mesh;
     private Godot.Collections.Array<Label3D> _labels = new();
+    private Label _weight;
     private RichTextLabel _neighbours;
     private RichTextLabel _problems;
     private Godot.Collections.Array<int> _tileForOption = new();
@@ -50,6 +52,9 @@ public partial class TileSetPreview : VBoxContainer
         _rotationPicker = new OptionButton();
         _rotationPicker.Connect(OptionButton.SignalName.ItemSelected, new Callable(this, MethodName.OnRotationSelected));
         pickers.AddChild(_rotationPicker);
+
+        _weight = new Label { AutowrapMode = TextServer.AutowrapMode.WordSmart };
+        AddChild(_weight);
 
         BuildViewport();
 
@@ -134,7 +139,7 @@ public partial class TileSetPreview : VBoxContainer
         text.Append(_tileSet.Library?.GetInstanceId() ?? 0);
         foreach (var tile in _tileSet.Tiles)
             if (tile != null)
-                text.Append('|').Append(tile.Item).Append(tile.Rotation).Append(string.Join(",", tile.ToDefinition().Sockets)).Append(tile.ResourceName);
+                text.Append('|').Append(TileKey(tile));
         return text.ToString();
     }
 
@@ -160,7 +165,7 @@ public partial class TileSetPreview : VBoxContainer
         {
             if (tile != null)
             {
-                string key = $"{tile.ResourceName}|{tile.Item}|{tile.Rotation}|{string.Join(",", tile.ToDefinition().Sockets)}";
+                string key = TileKey(tile);
                 if (seen.TryGetValue(key, out int option))
                 {
                     if (index == previous)
@@ -181,6 +186,9 @@ public partial class TileSetPreview : VBoxContainer
             _tilePicker.Select(selected >= 0 ? selected : 0);
         FillRotationPicker();
     }
+
+    private static string TileKey(WfcTile tile) =>
+        $"{tile.ResourceName}|{tile.Item}|{tile.Rotation}|{tile.Weight}|{string.Join(",", tile.ToDefinition().Sockets)}";
 
     private string DisplayName(int index, WfcTile tile)
     {
@@ -238,8 +246,11 @@ public partial class TileSetPreview : VBoxContainer
             foreach (var label in _labels)
                 label.Text = "";
             _neighbours.Text = "Add a tile to preview it.";
+            _weight.Text = "";
             return;
         }
+
+        ShowWeight(tile);
 
         int turns = SelectedTurns;
         var hasMesh = tile.Item != WfcTile.EmptyItem && _tileSet.Library != null && _tileSet.Library.GetItemList().Contains(tile.Item);
@@ -249,6 +260,24 @@ public partial class TileSetPreview : VBoxContainer
 
         ShowFaceLabels(tile, turns);
         ShowNeighbours(turns);
+    }
+
+    /// <summary>The tile's weight and its share of the total, counting identical copies together.</summary>
+    private void ShowWeight(WfcTile tile)
+    {
+        var tiles = _tileSet.Tiles.Where(t => t != null).ToArray();
+        string key = TileKey(tile);
+        int copies = tiles.Count(t => TileKey(t) == key);
+        double own = Math.Max(0, tile.Weight) * copies;
+        double total = tiles.Sum(t => Math.Max(0, (double)t.Weight));
+        string copiesText = copies > 1 ? $" ({copies} copies)" : "";
+
+        if (tile.Weight < 0)
+            _weight.Text = $"Weight {tile.Weight:0.###} is not allowed.";
+        else if (tile.Weight == 0)
+            _weight.Text = $"Weight 0{copiesText}: never generated, but it can be placed by hand.";
+        else
+            _weight.Text = $"Weight {tile.Weight:0.###}{copiesText}: {own / total:P1} of the total weight, shared by its rotations.";
     }
 
     private void ShowFaceLabels(WfcTile tile, int turns)

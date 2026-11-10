@@ -15,6 +15,12 @@ public partial class WfcTile : Resource
 
     [Export] public TileRotation Rotation { get; set; } = TileRotation.None;
 
+    /// <summary>
+    /// How often the solver chooses this tile, relative to the others. Shared by its rotations.
+    /// 0 means never generated, but the tile can still be placed by hand.
+    /// </summary>
+    [Export(PropertyHint.Range, "0,100,0.01,or_greater")] public float Weight { get; set; } = 1f;
+
     [ExportGroup("Sockets")]
     [Export] public string SocketPosX { get; set; } = "";
     [Export] public string SocketNegX { get; set; } = "";
@@ -24,7 +30,7 @@ public partial class WfcTile : Resource
     [Export] public string SocketNegZ { get; set; } = "";
 
     public TileDefinition ToDefinition() =>
-        new(new[] { SocketPosX, SocketNegX, SocketPosY, SocketNegY, SocketPosZ, SocketNegZ }, Rotation);
+        new(new[] { SocketPosX, SocketNegX, SocketPosY, SocketNegY, SocketPosZ, SocketNegZ }, Rotation, Weight);
 
     public override void _ValidateProperty(Dictionary property)
     {

@@ -31,11 +31,24 @@ public sealed class WfcSolver
     private readonly ulong[] _domains;
     private readonly int[] _counts;
     private readonly ulong[] _full;
+    private readonly ulong[] _start;
+    private readonly int _startCount;
+    private readonly double[] _weights;
     private readonly ulong[] _scratch;
 
-    // Cells grouped by option count, with each cell's position in its bucket.
+    // Total weight of each cell's remaining options. Unresolved cells are chosen lightest first.
+    private readonly double[] _mass;
+    private readonly double _perUnit;
+
+    // Weight of every byte value at every byte position of a domain: 8 lookups per 64-bit word.
+    private readonly double[] _byteMass;
+
+    // Unresolved cells grouped by remaining weight on a log scale (see BucketOf), with each
+    // cell's bucket and position in it. Buckets below _lowestBucket are empty.
     private readonly List<int>[] _buckets;
+    private readonly int[] _bucketOf;
     private readonly int[] _bucketPosition;
+    private int _lowestBucket;
 
     private readonly int[] _queue;
     private readonly bool[] _queued;
@@ -87,8 +100,28 @@ public sealed class WfcSolver
         for (int v = 0; v < _variantCount; v++)
             _full[v >> 6] |= 1UL << v;
 
-        _buckets = new List<int>[_variantCount + 1];
-        for (int i = 0; i <= _variantCount; i++)
+        // Free cells start without weight-0 variants. Fixed cells start full, so they may use them.
+        _start = (ulong[])tiles.Generatable.Clone();
+        foreach (ulong word in _start)
+            _startCount += BitOperations.PopCount(word);
+        _weights = new double[_variantCount];
+        for (int v = 0; v < _variantCount; v++)
+            _weights[v] = tiles.VariantWeights[v];
+
+        _byteMass = new double[_words * 8 * 256];
+        for (int v = 0; v < _variantCount; v++)
+        {
+            int table = (v >> 3) * 256, bit = 1 << (v & 7);
+            for (int value = 0; value < 256; value++)
+                if ((value & bit) != 0)
+                    _byteMass[table + value] += _weights[v];
+        }
+        _mass = new double[cells];
+        _bucketOf = new int[cells];
+        _perUnit = 1 / _weights.Where(w => w > 0).Min();
+        int bucketCount = BucketOf(2, _weights.Sum()) + 1;
+        _buckets = new List<int>[bucketCount];
+        for (int i = 0; i < bucketCount; i++)
             _buckets[i] = new List<int>();
     }
 
@@ -192,11 +225,9 @@ public sealed class WfcSolver
 
     private void Reset()
     {
-        for (int cell = 0; cell < _grid.CellCount; cell++)
-            _full.CopyTo(_domains, cell * _words);
-        Array.Fill(_counts, _variantCount);
         foreach (var bucket in _buckets)
             bucket.Clear();
+        _lowestBucket = 0;
         _trailLength = 0;
         _decisionCount = 0;
         _queueHead = _queueTail = 0;
@@ -204,11 +235,15 @@ public sealed class WfcSolver
 
         for (int cell = 0; cell < _grid.CellCount; cell++)
         {
+            bool free = _initial[cell] == Free;
+            (free ? _start : _full).CopyTo(_domains, cell * _words);
+            _counts[cell] = free ? _startCount : _variantCount;
+            _mass[cell] = MassOf(cell);
             if (_initial[cell] == Excluded)
                 continue;
-            AddToBucket(cell, _variantCount);
-            if (_variantCount == 1)
-                _observer?.OnCellResolved(cell, 0);
+            AddToBucket(cell, BucketOf(_counts[cell], _mass[cell]));
+            if (_counts[cell] == 1)
+                _observer?.OnCellResolved(cell, FirstVariant(cell));
         }
 
         for (int cell = 0; cell < _grid.CellCount; cell++)
@@ -298,6 +333,7 @@ public sealed class WfcSolver
             ulong after = before & _scratch[word];
             if (after != before)
             {
+                _mass[cell] -= WordMass(word, before & ~after);
                 PushTrail(cellBase + word, before);
                 _domains[cellBase + word] = after;
                 changed = true;
@@ -319,7 +355,9 @@ public sealed class WfcSolver
             while (i > mark && _trailWord[i - 1] / _words == cell)
             {
                 i--;
-                _domains[_trailWord[i]] = _trailOld[i];
+                int index = _trailWord[i];
+                _mass[cell] += WordMass(index - cell * _words, _trailOld[i] & ~_domains[index]);
+                _domains[index] = _trailOld[i];
             }
 
             int count = 0;
@@ -333,17 +371,23 @@ public sealed class WfcSolver
     private void SetCount(int cell, int count)
     {
         int previous = _counts[cell];
-        if (previous == count)
+        int key = BucketOf(count, _mass[cell]);
+        if (previous == count && key == _bucketOf[cell])
             return;
 
-        var bucket = _buckets[previous];
-        int position = _bucketPosition[cell];
-        int last = bucket[^1];
-        bucket[position] = last;
-        _bucketPosition[last] = position;
-        bucket.RemoveAt(bucket.Count - 1);
-        AddToBucket(cell, count);
+        if (key != _bucketOf[cell])
+        {
+            var bucket = _buckets[_bucketOf[cell]];
+            int position = _bucketPosition[cell];
+            int last = bucket[^1];
+            bucket[position] = last;
+            _bucketPosition[last] = position;
+            bucket.RemoveAt(bucket.Count - 1);
+            AddToBucket(cell, key);
+        }
         _counts[cell] = count;
+        if (previous == count)
+            return;
 
         if (_observer == null)
             return;
@@ -353,41 +397,75 @@ public sealed class WfcSolver
             _observer.OnCellReset(cell);
     }
 
-    private void AddToBucket(int cell, int count)
+    private void AddToBucket(int cell, int bucket)
     {
-        _bucketPosition[cell] = _buckets[count].Count;
-        _buckets[count].Add(cell);
+        _bucketOf[cell] = bucket;
+        _bucketPosition[cell] = _buckets[bucket].Count;
+        _buckets[bucket].Add(cell);
+        if (bucket < _lowestBucket)
+            _lowestBucket = bucket;
     }
 
-    /// <summary>A random cell among those with the fewest options above one, or -1 when all are resolved.</summary>
+    /// <summary>
+    /// Buckets 0 and 1 hold contradicted and resolved cells. Unresolved cells go from bucket 2 up,
+    /// by remaining weight to within about 1%. With equal weights this is the fewest-options order.
+    /// </summary>
+    private int BucketOf(int count, double mass)
+    {
+        if (count <= 1)
+            return count;
+        // The exponent and top six mantissa bits of a double grow with its logarithm.
+        long bits = BitConverter.DoubleToInt64Bits(Math.Max(1, mass * _perUnit));
+        int bucket = 2 + (int)((bits >> 46) - (1023L << 6));
+        return _buckets == null ? bucket : Math.Min(bucket, _buckets.Length - 1);
+    }
+
+    private double MassOf(int cell)
+    {
+        double mass = 0;
+        for (int word = 0; word < _words; word++)
+            mass += WordMass(word, _domains[cell * _words + word]);
+        return mass;
+    }
+
+    private double WordMass(int word, ulong bits)
+    {
+        double mass = 0;
+        for (int table = word * 8 * 256; bits != 0; bits >>= 8, table += 256)
+            mass += _byteMass[table + (int)(bits & 0xFF)];
+        return mass;
+    }
+
+    /// <summary>A random cell among the unresolved ones with the least weight left, or -1 when all are resolved.</summary>
     private int PickCell()
     {
-        for (int count = 2; count <= _variantCount; count++)
+        for (_lowestBucket = Math.Max(_lowestBucket, 2); _lowestBucket < _buckets.Length; _lowestBucket++)
         {
-            var bucket = _buckets[count];
+            var bucket = _buckets[_lowestBucket];
             if (bucket.Count > 0)
                 return bucket[_random.Next(bucket.Count)];
         }
         return -1;
     }
 
+    /// <summary>A random option of the cell, chosen in proportion to the variant weights.</summary>
     private int PickVariant(int cell)
     {
-        int remaining = _random.Next(_counts[cell]);
+        int cellBase = cell * _words;
+        double target = _random.NextDouble() * _mass[cell];
+        int last = -1;
         for (int word = 0; word < _words; word++)
         {
-            ulong bits = _domains[cell * _words + word];
-            int population = BitOperations.PopCount(bits);
-            if (remaining >= population)
+            for (ulong bits = _domains[cellBase + word]; bits != 0; bits &= bits - 1)
             {
-                remaining -= population;
-                continue;
+                last = word * 64 + BitOperations.TrailingZeroCount(bits);
+                target -= _weights[last];
+                if (target < 0)
+                    return last;
             }
-            for (; remaining > 0; remaining--)
-                bits &= bits - 1;
-            return word * 64 + BitOperations.TrailingZeroCount(bits);
         }
-        throw new InvalidOperationException("The option count does not match the domain.");
+        // Rounding can leave a tiny remainder; the last option then takes it.
+        return last >= 0 ? last : throw new InvalidOperationException("The cell has no options.");
     }
 
     private int FirstVariant(int cell)
@@ -509,13 +587,17 @@ internal sealed class WfcRandom
 
     public WfcRandom(long seed, int attempt) => _state = unchecked((ulong)seed + (ulong)attempt * 0xA0761D6478BD642FUL);
 
-    public int Next(int bound)
+    public int Next(int bound) => (int)Math.BigMul(Mix(), (ulong)bound, out _);
+
+    /// <summary>A double in [0, 1) from the top 53 bits.</summary>
+    public double NextDouble() => (Mix() >> 11) * (1.0 / (1UL << 53));
+
+    private ulong Mix()
     {
         _state = unchecked(_state + 0x9E3779B97F4A7C15UL);
         ulong z = _state;
         z = unchecked((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL);
         z = unchecked((z ^ (z >> 27)) * 0x94D049BB133111EBUL);
-        z ^= z >> 31;
-        return (int)Math.BigMul(z, (ulong)bound, out _);
+        return z ^ (z >> 31);
     }
 }

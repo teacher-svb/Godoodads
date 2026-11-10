@@ -175,4 +175,58 @@ public class WfcAdapterTests
         AssertThat(read.Kept).IsEqual(1);
         AssertThat(map.GetCellItem(new Vector3I(2, 1, 2))).IsEqual(1);
     }
+
+    // A tile written by 1.0, before the Weight field existed.
+    private const string LegacyTile = """
+        [gd_resource type="Resource" script_class="WfcTile" format=3]
+
+        [ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="1"]
+
+        [resource]
+        script = ExtResource("1")
+        Item = 2
+        SocketPosX = "solid"
+        """;
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Tiles_saved_by_1_0_load_with_weight_one()
+    {
+        const string path = "user://wfc_legacy_tile.tres";
+        using (var file = FileAccess.Open(path, FileAccess.ModeFlags.Write))
+            file.StoreString(LegacyTile);
+
+        var tile = ResourceLoader.Load<WfcTile>(path, null, ResourceLoader.CacheMode.Ignore);
+        AssertThat(tile.Item).IsEqual(2);
+        AssertThat(tile.Weight).IsEqual(1f);
+        AssertThat(tile.ToDefinition().Weight).IsEqual(1.0);
+        DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(path));
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Saved_weights_round_trip()
+    {
+        const string path = "user://wfc_weighted_tile_set.tres";
+        var tileSet = TileSet(Tile(0, "a"), Tile(1, "a"));
+        tileSet.Tiles[0].Weight = 2.5f;
+        tileSet.Tiles[1].Weight = 0f;
+        AssertThat(ResourceSaver.Save(tileSet, path)).IsEqual(Error.Ok);
+
+        var loaded = ResourceLoader.Load<WfcTileSet>(path, null, ResourceLoader.CacheMode.Ignore);
+        AssertThat(loaded.Tiles[0].Weight).IsEqual(2.5f);
+        AssertThat(loaded.Tiles[1].Weight).IsEqual(0f);
+        DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(path));
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Weight_errors_name_the_tile()
+    {
+        var bad = Tile(0, "a");
+        bad.Weight = -1f;
+        var binding = TileSetBinding.Create(TileSet(Tile(1, "a"), bad), Directions.All3D);
+        AssertThat(binding.IsValid).IsFalse();
+        AssertThat(binding.Errors[0]).StartsWith("Tile 1: Weight");
+    }
 }

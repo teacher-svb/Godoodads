@@ -3,7 +3,7 @@
 ## Sub-project 2: WFC Generator
 
 **Decisions by:** the board (Syndias)
-**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review).
+**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate.
 **Reference material:** none. The demo tileset is created for this project.
 
 ---
@@ -224,7 +224,7 @@ Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.1*.
 
 - `WfcTile` gets a **Weight** (default 1). A tile's weight is **shared by its rotations**: each of its variants gets weight ÷ variant count, so a 4-way ramp with weight 1 is as likely as grass with weight 1.
 - **Weight 0** means the solver never chooses the tile, but cells you place yourself may still use it. A negative weight, or a tile set where every tile has weight 0, is a validation error.
-- The solver still collapses the cell with the **fewest remaining options**. Weights only decide which variant is chosen there.
+- ~~The solver still collapses the cell with the fewest remaining options.~~ **Changed on 2026-11-10:** the solver collapses the cell with the **least remaining weight** (the sum of its options' weights, bucketed to about 1%). With equal weights this is the fewest-options order. Weights decide both the cell order and the variant chosen there, so a tile of weight 3 acts like three copies of weight 1. Reason: without the air copies, the fewest-options order turned the demo into tall rock plateaus (rock 87k cells instead of 16.5k at 100×16×100), because cells at the edge of the air were resolved before the terrain below. Weights alone could not fix that. Measurements are on the card `wfc-1-1-demo-weights`.
 - Same seed, same result still holds within 1.1. Results **differ from 1.0** for the same tile set and seed. The CHANGELOG says so, and the release stays a minor version (1.1.0).
 - The demo drops its copies of the air tiles and uses weights instead.
 

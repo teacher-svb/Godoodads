@@ -1,6 +1,7 @@
 #if TOOLS
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using Godot;
 using Godoodads.Common;
 using Godoodads.WfcGenerator.Adapters;
@@ -27,7 +28,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     /// is shown, Preview holds the original item and orientation of every cell written so far.
     /// </summary>
     private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin,
-        long Seed, int CellsPerFrame, Stopwatch Clock, List<string> Warnings, Dictionary<int, (int Item, int Orientation)> Preview);
+        long Seed, int CellsPerFrame, Stopwatch Clock, List<string> Warnings, Dictionary<int, (int Item, int Orientation)> Preview,
+        GeneratedRecord Record);
 
     private SpatialMenuHook _menu;
     private DialogInspectorFilterPlugin _dialogFilter;
@@ -227,12 +229,14 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         }
 
         var origin = _settings.BoundsOrigin;
-        var cells = _settings.ClearBoundsFirst ? GridMapCells.AllFree(grid) : GridMapCells.ReadFixed(_target, origin, grid, binding);
+        // Cells the last generation wrote are free again unless they were edited since (brief §11.2).
+        var record = GridMapCells.ReadRecord(_target);
+        var cells = _settings.ClearBoundsFirst ? GridMapCells.AllFree(grid) : GridMapCells.ReadFixed(_target, origin, grid, binding, record);
         var options = new SolveOptions { Seed = _settings.Seed, MaxBacktracks = _settings.MaxBacktracks, MaxRestarts = _settings.MaxRestarts };
         int cellsPerFrame = Mathf.Max(_settings.CellsPerFrame, 0);
         var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0);
         _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, cellsPerFrame, Stopwatch.StartNew(),
-            binding.Warnings(), new Dictionary<int, (int, int)>());
+            binding.Warnings(), new Dictionary<int, (int, int)>(), record);
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         job.Start();
@@ -382,6 +386,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var changes = GridMapCells.Diff(_target, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells);
         var stored = (WfcSettings)_settings.Duplicate();
         string metaProperty = "metadata/" + WfcSettings.MetaKey;
+        byte[] written = GridMapCells.RecordAfter(run.Record, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells).Encode();
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
@@ -389,12 +394,23 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         undoRedo.AddUndoMethod(this, MethodName.ApplyCells, _target, changes.Undo);
         undoRedo.AddDoProperty(_target, metaProperty, stored);
         undoRedo.AddUndoProperty(_target, metaProperty, _target.Get(metaProperty));
+        undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, written);
+        undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, GridMapCells.StoredRecord(_target));
         undoRedo.CommitAction();
 
         _dialog.SetStatus($"Solved {run.Grid.CellCount:N0} cells in {seconds:F1} s "
             + $"({result.Backtracks:N0} backtracks, {result.Restarts} restarts). Seed {run.Seed}.", ToolDialog.Severity.Success);
+        if (run.Cells.Replaced > 0)
+            _dialog.AddStatus($"Replaced {run.Cells.Replaced:N0} cells from the previous generation.");
         if (run.Cells.Kept > 0)
-            _dialog.AddStatus($"Kept {run.Cells.Kept:N0} existing cells.");
+            _dialog.AddStatus(run.Cells.Edited > 0
+                ? $"Kept {run.Cells.Kept:N0} existing cells, including {run.Cells.Edited:N0} generated cells you edited since."
+                : $"Kept {run.Cells.Kept:N0} existing cells.");
+        var compiled = run.Binding.Compiled;
+        int unused = Enumerable.Range(0, compiled.Variants.Count).Where(v => compiled.VariantWeights[v] == 0)
+            .Select(v => compiled.Variants[v].TileIndex).Distinct().Count();
+        if (unused > 0)
+            _dialog.AddStatus($"{unused} tile(s) have weight 0: they are only used where you place them by hand.");
         if (run.Cells.Ignored > 0)
             _dialog.AddStatus($"Left {run.Cells.Ignored:N0} cells alone because no tile matches their item or rotation.", ToolDialog.Severity.Warning);
     }
@@ -404,6 +420,13 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     {
         if (IsInstanceValid(map))
             GridMapCells.Apply(map, changes);
+    }
+
+    /// <summary>Do and undo target for the record of what a generation wrote.</summary>
+    public void ApplyRecord(GridMap map, byte[] record)
+    {
+        if (IsInstanceValid(map))
+            GridMapCells.WriteRecord(map, record);
     }
 
     /// <summary>Cancels a running solve, waits for its thread and removes its preview. Returns true if one was running.</summary>

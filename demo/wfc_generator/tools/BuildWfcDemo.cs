@@ -18,9 +18,7 @@ public partial class BuildWfcDemo : Node
     public const string TileSetPath = AssetDirectory + "/ruin_tileset.tres";
     private const string SceneDirectory = "res://demo/wfc_generator";
 
-    private const int AboveGroundCopies = 40;
-    private const int SkyCopies = 40;
-    private const int GrassVariants = 16;
+    private const int GrassVariants = 4;
 
     private static readonly Vector3I DemoBounds = new(32, 12, 32);
 
@@ -33,42 +31,43 @@ public partial class BuildWfcDemo : Node
     private static readonly Color StoneDark = new(0.62f, 0.58f, 0.52f);
     private static readonly Color WoodColour = new(0.50f, 0.34f, 0.20f);
 
-    private sealed record Module(string Name, string[] Sockets, TileRotation Rotation, Action<BlockBuilder> Build, int Copies = 1);
+    private sealed record Module(string Name, string[] Sockets, TileRotation Rotation, Action<BlockBuilder> Build, float Weight = 1);
 
     // Socket order: +X, -X, +Y, -Y, +Z, -Z.
     // "ground" is a surface you can build on: grass, paving, wall tops and bridge decks.
     // Air sits on "air" and rises forever. AboveGround air is the one layer that may rest on "ground".
+    // A weight is shared by a tile's rotations: a four-way ramp of weight 4 gives each rotation 1.
     private static readonly Module[] BaseModules =
     {
         new("Rock", S("solid", "solid", "rock", "rock", "solid", "solid"), TileRotation.None, b => b.Slope(1, 1, 1, 1, RockColour)),
-        new("Grass", S("solid", "solid", "ground", "rock", "solid", "solid"), TileRotation.None, b => b.Slope(1, 1, 1, 1, GrassColour)),
+        new("Grass", S("solid", "solid", "ground", "rock", "solid", "solid"), TileRotation.None, b => b.Slope(1, 1, 1, 1, GrassColour), 5),
         new("Paving", S("solid", "solid", "ground", "rock", "solid", "solid"), TileRotation.None, b => b.Slope(1, 1, 1, 1, PavingColour)),
-        new("Ramp", S("solid", "open", "air", "rock", "side+", "side-"), TileRotation.FourWay, b => b.Slope(1, 1, -1, -1, SlopeColour)),
-        new("Outer Corner", S("side-", "open", "air", "rock", "side+", "open"), TileRotation.FourWay, b => b.Slope(1, -1, -1, -1, SlopeColour)),
-        new("Inner Corner", S("solid", "side+", "air", "rock", "solid", "side-"), TileRotation.FourWay, b => b.Slope(1, 1, 1, -1, SlopeColour)),
+        new("Ramp", S("solid", "open", "air", "rock", "side+", "side-"), TileRotation.FourWay, b => b.Slope(1, 1, -1, -1, SlopeColour), 4),
+        new("Outer Corner", S("side-", "open", "air", "rock", "side+", "open"), TileRotation.FourWay, b => b.Slope(1, -1, -1, -1, SlopeColour), 4),
+        new("Inner Corner", S("solid", "side+", "air", "rock", "solid", "side-"), TileRotation.FourWay, b => b.Slope(1, 1, 1, -1, SlopeColour), 4),
 
-        new("Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, b => BuildWall(b, -1, 1)),
-        new("Wall Arch", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, BuildArch),
-        new("Broken Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, BuildBrokenWall),
-        new("Wall End", S("wall", "open", "air", "ground", "open", "open"), TileRotation.FourWay, b => BuildWall(b, -0.4f, 1)),
-        new("Wall Corner", S("wall", "open", "air", "ground", "wall", "open"), TileRotation.FourWay, BuildCorner),
+        new("Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, b => BuildWall(b, -1, 1), 2),
+        new("Wall Arch", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, BuildArch, 2),
+        new("Broken Wall", S("wall", "wall", "air", "ground", "open", "open"), TileRotation.FourWay, BuildBrokenWall, 2),
+        new("Wall End", S("wall", "open", "air", "ground", "open", "open"), TileRotation.FourWay, b => BuildWall(b, -0.4f, 1), 4),
+        new("Wall Corner", S("wall", "open", "air", "ground", "wall", "open"), TileRotation.FourWay, BuildCorner, 4),
         new("Tower Base", S("open", "open", "tower", "ground", "open", "open"), TileRotation.None, BuildTowerBase),
         new("Tower Top", S("open", "open", "air", "tower", "open", "open"), TileRotation.None, BuildTowerTop),
         new("Pillar", S("open", "open", "pier", "ground", "open", "open"), TileRotation.None, b => b.Box(new(-0.35f, -1, -0.35f), new(0.35f, 1, 0.35f), StoneColour)),
-        new("Stairs", S("landing", "open", "air", "ground", "open", "open"), TileRotation.FourWay, BuildStairs),
-        new("Plinth", S("open", "landing", "air", "ground", "open", "open"), TileRotation.FourWay, b => b.Box(new(-1, -1, -1), new(1, 1, 1), StoneDark)),
+        new("Stairs", S("landing", "open", "air", "ground", "open", "open"), TileRotation.FourWay, BuildStairs, 4),
+        new("Plinth", S("open", "landing", "air", "ground", "open", "open"), TileRotation.FourWay, b => b.Box(new(-1, -1, -1), new(1, 1, 1), StoneDark), 4),
         // A bridge is always head, deck, deck, head. A fixed length keeps both supports within local reach.
-        new("Bridge Head", S("span+", "open", "air", "pier", "open", "open"), TileRotation.FourWay, BuildBridgeHead),
-        new("Bridge Deck", S("mid", "span-", "air", "air", "open", "open"), TileRotation.FourWay, BuildDeck),
+        new("Bridge Head", S("span+", "open", "air", "pier", "open", "open"), TileRotation.FourWay, BuildBridgeHead, 4),
+        new("Bridge Deck", S("mid", "span-", "air", "air", "open", "open"), TileRotation.FourWay, BuildDeck, 4),
 
-        // No weights in v1, so copies of the empty tiles are what keep most of the map open.
-        new("Air", S("open", "open", "air", "air", "open", "open"), TileRotation.None, null, SkyCopies),
-        new("Air Above Ground", S("open", "open", "air", "ground", "open", "open"), TileRotation.None, null, AboveGroundCopies),
+        // Heavy empty tiles keep most of the map open.
+        new("Air", S("open", "open", "air", "air", "open", "open"), TileRotation.None, null, 40),
+        new("Air Above Ground", S("open", "open", "air", "ground", "open", "open"), TileRotation.None, null, 40),
     };
 
-    // Variety that also makes flat ground as likely as the many rotations of the slopes.
+    // Variety on flat ground. With the plain grass tile, flat grass weighs 17 in total.
     private static readonly Module[] Modules = BaseModules.Concat(Enumerable.Range(0, GrassVariants).Select(i =>
-        new Module($"Grass {i + 1}", S("solid", "solid", "ground", "rock", "solid", "solid"), TileRotation.None, b => BuildGrass(b, i)))).ToArray();
+        new Module($"Grass {i + 1}", S("solid", "solid", "ground", "rock", "solid", "solid"), TileRotation.None, b => BuildGrass(b, i), 3))).ToArray();
 
     private static string[] S(params string[] sockets) => sockets;
 
@@ -117,16 +116,16 @@ public partial class BuildWfcDemo : Node
         for (int i = 0; i < Modules.Length; i++)
         {
             var s = Modules[i].Sockets;
-            for (int copy = 0; copy < Modules[i].Copies; copy++)
-                tileSet.Tiles.Add(new WfcTile
-                {
-                    ResourceName = Modules[i].Name,
-                    Item = items[i],
-                    Rotation = Modules[i].Rotation,
-                    SocketPosX = s[Directions.PosX], SocketNegX = s[Directions.NegX],
-                    SocketPosY = s[Directions.PosY], SocketNegY = s[Directions.NegY],
-                    SocketPosZ = s[Directions.PosZ], SocketNegZ = s[Directions.NegZ],
-                });
+            tileSet.Tiles.Add(new WfcTile
+            {
+                ResourceName = Modules[i].Name,
+                Item = items[i],
+                Rotation = Modules[i].Rotation,
+                Weight = Modules[i].Weight,
+                SocketPosX = s[Directions.PosX], SocketNegX = s[Directions.NegX],
+                SocketPosY = s[Directions.PosY], SocketNegY = s[Directions.NegY],
+                SocketPosZ = s[Directions.PosZ], SocketNegZ = s[Directions.NegZ],
+            });
         }
         return tileSet;
     }
