@@ -1,13 +1,13 @@
 ---
 id: "wfc-1-2-settings-meta-2026-11-10"
-status: "todo"
+status: "done"
 priority: "low"
 assignee: "claude"
 epic: "WFC 1.2"
 dueDate: null
 created: "2026-11-10T09:29:58.000Z"
-modified: "2026-11-10T09:29:58.000Z"
-completedAt: null
+modified: "2026-11-10T09:31:27.000Z"
+completedAt: "2026-11-10T09:31:27.000Z"
 labels: ["editor", "bug"]
 order: "d0"
 ---
@@ -20,3 +20,7 @@ Brief: §12.5.
 ## Done when
 - Engine test: undoing a first generation leaves no settings entry, and redo puts it back.
 - A GridMap with an empty settings entry opens the dialog with default settings.
+
+## Result
+- Settings are written through `ApplySettings` do/undo methods (`WfcSettings.StoreOn`), which remove the entry for null. `WfcSettings.StoredOn` reads an empty entry left by 1.1 as no settings.
+- Engine tests: undoing a first generation leaves no entry and redo restores it; an empty 1.1 entry reads as none.

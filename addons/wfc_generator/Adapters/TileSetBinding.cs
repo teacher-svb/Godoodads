@@ -11,6 +11,9 @@ public sealed class TileSetBinding
 
     public CompiledTileSet Compiled { get; private set; }
     public int[] Items { get; private set; }
+
+    /// <summary>The marker scene per tile, or null (brief §12.4).</summary>
+    public PackedScene[] Markers { get; private set; }
     public List<string> Errors { get; } = new();
     public bool IsValid => Errors.Count == 0;
 
@@ -29,6 +32,7 @@ public sealed class TileSetBinding
         var definitions = new List<TileDefinition>();
         var items = new List<int>();
         var names = new List<string>();
+        var markers = new List<PackedScene>();
         for (int i = 0; i < tileSet.Tiles.Count; i++)
         {
             var tile = tileSet.Tiles[i];
@@ -40,11 +44,13 @@ public sealed class TileSetBinding
             binding.CheckItem(tileSet.Library, tile.Item, items.Count, i);
             definitions.Add(tile.ToDefinition());
             items.Add(tile.Item);
+            markers.Add(tile.Marker);
             names.Add(NameOf(tile, tileSet.Library, i));
         }
 
         binding.Items = items.ToArray();
         binding.TileNames = names.ToArray();
+        binding.Markers = markers.ToArray();
         binding.Compiled = CompiledTileSet.Compile(definitions, directions);
         foreach (var issue in binding.Compiled.Errors)
             binding.Errors.Add(issue.TileIndex < 0 ? issue.Message

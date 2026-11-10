@@ -16,6 +16,7 @@ public partial class BuildWfcDemo : Node
     public const string AssetDirectory = "res://demo/wfc_generator/assets";
     public const string LibraryPath = AssetDirectory + "/ruin_library.tres";
     public const string TileSetPath = AssetDirectory + "/ruin_tileset.tres";
+    public const string TowerLightPath = AssetDirectory + "/tower_light.tscn";
     private const string SceneDirectory = "res://demo/wfc_generator";
 
     private const int GrassVariants = 4;
@@ -78,7 +79,11 @@ public partial class BuildWfcDemo : Node
         library.TakeOverPath(LibraryPath);
         Check(ResourceSaver.Save(library, LibraryPath), LibraryPath);
 
-        var tileSet = BuildTileSet(library, items);
+        var towerLight = BuildTowerLight();
+        towerLight.TakeOverPath(TowerLightPath);
+        Check(ResourceSaver.Save(towerLight, TowerLightPath), TowerLightPath);
+
+        var tileSet = BuildTileSet(library, items, towerLight);
         tileSet.TakeOverPath(TileSetPath);
         Check(ResourceSaver.Save(tileSet, TileSetPath), TileSetPath);
 
@@ -110,7 +115,7 @@ public partial class BuildWfcDemo : Node
         return library;
     }
 
-    private static WfcTileSet BuildTileSet(MeshLibrary library, int[] items)
+    private static WfcTileSet BuildTileSet(MeshLibrary library, int[] items, PackedScene towerLight)
     {
         var tileSet = new WfcTileSet { Library = library };
         for (int i = 0; i < Modules.Length; i++)
@@ -122,6 +127,7 @@ public partial class BuildWfcDemo : Node
                 Item = items[i],
                 Rotation = Modules[i].Rotation,
                 Weight = Modules[i].Weight,
+                Marker = Modules[i].Name == "Tower Top" ? towerLight : null,
                 SocketPosX = s[Directions.PosX], SocketNegX = s[Directions.NegX],
                 SocketPosY = s[Directions.PosY], SocketNegY = s[Directions.NegY],
                 SocketPosZ = s[Directions.PosZ], SocketNegZ = s[Directions.NegZ],
@@ -137,15 +143,11 @@ public partial class BuildWfcDemo : Node
         root.AddChild(map);
         map.Owner = root;
 
-        if (ground)
+        // The ground scene rests on rock through a bottom boundary socket instead of a painted layer.
+        map.SetMeta(WfcSettings.MetaKey, new WfcSettings
         {
-            int rock = library.FindItemByName("Rock");
-            for (int z = 0; z < DemoBounds.Z; z++)
-                for (int x = 0; x < DemoBounds.X; x++)
-                    map.SetCellItem(new Vector3I(x, 0, z), rock);
-        }
-
-        map.SetMeta(WfcSettings.MetaKey, new WfcSettings { TileSet = tileSet, Seed = seed, BoundsSize = DemoBounds });
+            TileSet = tileSet, Seed = seed, BoundsSize = DemoBounds, BoundaryNegY = ground ? "rock" : "",
+        });
 
         var sun = new DirectionalLight3D { Name = "Sun", ShadowEnabled = true, RotationDegrees = new Vector3(-55, -35, 0) };
         root.AddChild(sun);
@@ -214,6 +216,35 @@ public partial class BuildWfcDemo : Node
 
     private static void BuildTowerBase(BlockBuilder b) =>
         b.Box(new(-0.8f, -1, -0.8f), new(0.8f, 1, 0.8f), StoneColour);
+
+    /// <summary>The Tower Top marker: a warm light with a small flame above the battlements.</summary>
+    private static PackedScene BuildTowerLight()
+    {
+        var root = new Node3D { Name = "TowerLight" };
+        var light = new OmniLight3D
+        {
+            Name = "Light", Position = new Vector3(0, 1.2f, 0), LightColor = new Color(1f, 0.72f, 0.42f),
+            LightEnergy = 2.5f, OmniRange = 7f,
+        };
+        var flame = new MeshInstance3D
+        {
+            Name = "Flame", Position = new Vector3(0, 0.8f, 0),
+            Mesh = new SphereMesh { Radius = 0.18f, Height = 0.36f, RadialSegments = 12, Rings = 6 },
+            MaterialOverride = new StandardMaterial3D
+            {
+                AlbedoColor = new Color(1f, 0.6f, 0.25f), EmissionEnabled = true,
+                Emission = new Color(1f, 0.55f, 0.2f), EmissionEnergyMultiplier = 3f,
+            },
+        };
+        root.AddChild(light);
+        light.Owner = root;
+        root.AddChild(flame);
+        flame.Owner = root;
+        var packed = new PackedScene();
+        Check(packed.Pack(root), "tower light");
+        root.Free();
+        return packed;
+    }
 
     private static void BuildTowerTop(BlockBuilder b)
     {

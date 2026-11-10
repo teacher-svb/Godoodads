@@ -35,6 +35,12 @@ A cell whose item has no tile, or whose rotation is not one the tile allows, is 
 
 **Generate replaces the previous result.** The GridMap remembers which cells the last generation wrote, so pressing Generate again with another seed replaces them, without undoing first. Cells you placed yourself stay. A generated cell that you changed since (another item or rotation) counts as placed by you and stays too. The status area reports how many cells were replaced and how many edited cells were kept. What was written is stored compressed in the GridMap's metadata (about 20 KB for 100 × 16 × 100 cells) and is part of the undo step.
 
+**Pin cells to keep them.** To keep a good part of a result while regenerating the rest, press **Pin Box → Place Around Bounds**, drag the blue box over that part, and press **Pin Generated Cells**. Pinned cells count as placed by you until you press **Unpin**.
+
+### Boxes in the viewport
+
+While the dialog is open, the bounds (orange) and the pin box (blue) are drawn in the 3D viewport. With the GridMap selected, drag the dots on their faces to resize them by whole cells. Each drag is one undo step; right-click or Escape cancels it. Clicks away from the dots still paint the GridMap as usual.
+
 ## Options
 
 | Option | What it does |
@@ -42,7 +48,9 @@ A cell whose item has no tile, or whose rotation is not one the tile allows, is 
 | Tile Set | The `WfcTileSet` to generate with. Its `MeshLibrary` must be the GridMap's. |
 | Seed, Randomise Seed | The same seed, settings and placed cells give the same result. |
 | Clear Bounds First | Removes everything in the bounds before solving, including cells you placed. Otherwise placed cells are kept. |
-| Bounds → Origin, Size | The box of cells to fill, in GridMap cell coordinates. |
+| Bounds → Origin, Size | The box of cells to fill, in GridMap cell coordinates. You can also drag its handles in the viewport. |
+| Pin Box → Origin, Size, buttons | A second box for pinning generated cells (see above). A size of 0 hides it. |
+| Boundary → Pos X … Neg Z | Optional socket per face of the bounds, as if a fixed neighbour with that socket sat outside it. For example `rock` on Neg Y gives a solid floor without painting a ground layer. Empty leaves the face unconstrained. |
 | Animation → Cells Per Frame | How fast the solve is shown. 0 shows only the final result. The result never depends on this. About 1,000 keeps the editor responsive. |
 | Solver Limits → Max Backtracks | Backtracks allowed per attempt before starting over with a new seed derived from yours. |
 | Solver Limits → Max Restarts | Attempts after the first one before giving up. |
@@ -56,6 +64,8 @@ A `WfcTileSet` holds a `MeshLibrary` and a list of `WfcTile` entries. The rules 
 | Item | The MeshLibrary item this tile places, or -1 for an empty tile (air). |
 | Rotation | **None**, **Half Turn** (0° and 180°) or **Quarter Turns** (all four). Rotations whose sockets are identical are merged. Straight pieces such as walls need Quarter Turns to run in both directions. |
 | Weight | How often the tile is chosen, relative to the others (default 1). The weight is shared by the tile's rotations, so a ramp with Quarter Turns and weight 1 is as common as a plain block with weight 1. 0 means the solver never chooses the tile, but you can still place it by hand. |
+| Height Curve | Optional. Multiplies the weight by height: the curve's start is the bottom layer of the bounds, its end the top layer. 0 at a height means the tile is never generated there. |
+| Marker | Optional scene placed at every cell this tile is generated in, rotated with it, such as a light, a spawn point or a trigger. It works on empty tiles too. |
 | Sockets | One label per face: +X, -X, +Y, -Y, +Z, -Z, as the module is modelled. |
 
 The tile set's inspector shows a preview: the selected tile in 3D with its socket labels (drag to orbit), its weight and share of the total, the tiles allowed next to each face, and a check for problems.
@@ -81,7 +91,8 @@ Labels use letters, digits and underscores. Every face needs a label.
 - **Control density with weights.** Heavy empty tiles keep a map open; the demo gives each air tile weight 40, against 1 to 5 for the modules. Weight also decides which cells are filled first (see How it works), so it shapes the terrain, not only how often a tile appears. A tile of weight 3 behaves like three copies of weight 1, so copies are no longer needed. Extra variants with their own items, such as several grass tiles, are still useful for looks.
 - **Keep requirements local.** Rules only see direct neighbours. A bridge that may run for any length but must end on a pillar often fails at large sizes. Give it a fixed length instead (head, deck, deck, head), using one-sided sockets so a deck can only meet a head at its outer end.
 - **Use one-sided sockets for direction.** `span+` against `span-` stops a module from connecting to a rotated copy of itself.
-- **Anchor the ground.** Edges are unconstrained, so empty columns can reach the bottom. Paint a ground layer, or design sockets that keep air above ground.
+- **Anchor the ground.** Edges are unconstrained unless you set a boundary socket, so empty columns can reach the bottom. Set the bottom boundary to a socket only ground tiles offer (the demo uses `rock`), paint a ground layer, or design sockets that keep air above ground.
+- **Shape by height.** A height curve that falls to 0 near the top keeps heavy modules low; one that rises keeps towers and lights high.
 
 ### The tile set check
 
@@ -92,8 +103,9 @@ Labels use letters, digits and underscores. Every face needs a label.
 
 ## When a solve fails
 
-- **No solution exists with the cells already in the bounds.** Two placed cells do not fit together, or nothing fits between them. The cells are named in the status area and marked red in the viewport.
-- **This tile set has no solution for these bounds.** The search proved it, without placed cells being involved. Check the tile set warnings.
+- **No solution exists with the cells already in the bounds.** Two placed cells do not fit together, a placed cell cannot face a boundary socket, or nothing fits between them. The cells are named in the status area and marked red in the viewport.
+- **This tile set has no solution for these bounds and boundary sockets.** The search proved it, without placed cells being involved. Check the tile set warnings and the boundary sockets.
+- **At some heights every tile has weight 0.** The height curves leave nothing to generate in the listed GridMap layers.
 - **Ran out of attempts.** A solution may still exist. Try another seed, or raise the limits.
 
 In every case the GridMap is left unchanged.
@@ -101,25 +113,26 @@ In every case the GridMap is left unchanged.
 ## How it works
 
 1. Each tile becomes one variant per allowed rotation, and an adjacency table records which variants may face each other in each direction.
-2. Every cell starts with all variants of weight above 0 as options. Placed cells start with one, which may have weight 0.
+2. Every cell starts with all variants of weight above 0 at its height as options. Placed cells start with one, which may have weight 0. Cells on a face with a boundary socket lose the options that cannot face it.
 3. The cell with the least total weight left among its options (ties broken by the seed) is set to one of them, chosen at random in proportion to weight, and the options of its neighbours are narrowed, repeatedly. A tile's weight is split evenly over its rotations. With equal weights, this is the classic "fewest options first" order.
 4. When a cell runs out of options, the solver backtracks: it undoes its last choice and rules that option out. After Max Backtracks, it starts over with a seed derived from yours.
-5. The result is written to the GridMap as one undoable action.
+5. The result, its markers and the record of what was written are applied as one undoable action.
 
 The solver runs on a background thread and touches no engine objects, so the editor stays responsive. A rebuild of the C# project cancels a running solve first.
 
-**Performance** (100 × 16 × 100 cells, demo tile set with 54 variants): about 1.7 s with a placed ground layer and 2.3 s without, with every one of 20 seeds solved first time.
+**Performance** (100 × 16 × 100 cells, demo tile set with 54 variants): about 0.7 s with a rock boundary below and 0.8 s without, with every one of 20 seeds solved first time.
 
 ## Demo
 
-`demo/wfc_generator/hillside_ground.tscn` has a placed rock layer, and `hillside_free.tscn` starts empty. Both use the stacked hillside ruin tile set in `demo/wfc_generator/assets/`, which `demo/wfc_generator/tools/build_demo.tscn` rebuilds.
+`demo/wfc_generator/hillside_ground.tscn` rests on a `rock` bottom boundary socket, and `hillside_free.tscn` has no boundary. Tower tops carry a light marker (`assets/tower_light.tscn`). Both use the stacked hillside ruin tile set in `demo/wfc_generator/assets/`, which `demo/wfc_generator/tools/build_demo.tscn` rebuilds.
 
 ## Limitations
 
 - Editor-only. There is no runtime generation yet.
-- Weights are global. There are no weights per region or per height yet.
+- Weights vary by height only. There are no weights per region yet.
 - Rotation is around Y only, and one item fills one cell. Mirrored modules need their own items.
 - Rules are local. Connected paths and reachability are not guaranteed.
-- The edges of the bounds are unconstrained.
+- Edges without a boundary socket are unconstrained.
+- Markers are placed when a generation is committed, not during the animated preview.
 - While a solve is being shown, the GridMap holds a preview. Saving the scene at that moment saves the preview.
 - 3D `GridMap` only. The solver also supports 2D, but there is no `TileMapLayer` support yet.

@@ -3,7 +3,7 @@
 ## Sub-project 2: WFC Generator
 
 **Decisions by:** the board (Syndias)
-**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2 (§12) is planned.
+**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2.0 (§12) adds boundary sockets, height curves, viewport handles, pinning and marker tiles.
 **Reference material:** none. The demo tileset is created for this project.
 
 ---
@@ -265,7 +265,7 @@ Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.2*. One releas
 
 - `WfcTile` gets an optional **Marker** scene. After a successful solve, it is instanced at each generated cell of that tile, with the cell's transform and rotation, in the same undo action.
 - Markers live in a `WfcMarkers` Node3D child of the GridMap, owned by the edited scene so they are saved. Empty tiles (Item -1) may have markers, for example spawn points.
-- Markers are tagged with metadata. Generate always removes the tagged markers inside the bounds, even ones the user moved or edited. To keep a marker, move it out of the container. Markers are not placed for hand-placed cells.
+- Markers are tagged with metadata. Generate always removes the tagged markers on the cells it regenerates, even ones the user moved or edited (a marker belongs to the cell it is in now). Markers on cells that stay (hand-placed, edited or pinned) stay with them. To keep a marker, move it out of the container. Markers are not placed for hand-placed cells.
 
 #### 12.5 Follow-ups from 1.1
 

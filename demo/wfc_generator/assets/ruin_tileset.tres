@@ -1,12 +1,13 @@
 [gd_resource type="Resource" script_class="WfcTileSet" format=3]
 
-[ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_gjyxb"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_peesb"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="3_git1y"]
+[ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_peesb"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_git1y"]
+[ext_resource type="PackedScene" path="res://demo/wfc_generator/assets/tower_light.tscn" id="3_rjvwt"]
+[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="4_ncfjc"]
 
-[sub_resource type="Resource" id="Resource_rjvwt"]
+[sub_resource type="Resource" id="Resource_j6o2k"]
 resource_name = "Rock"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 0
 SocketPosX = "solid"
 SocketNegX = "solid"
@@ -15,9 +16,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "solid"
 
-[sub_resource type="Resource" id="Resource_ncfjc"]
+[sub_resource type="Resource" id="Resource_5yxxh"]
 resource_name = "Grass"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 1
 Weight = 5.0
 SocketPosX = "solid"
@@ -27,9 +28,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "solid"
 
-[sub_resource type="Resource" id="Resource_j6o2k"]
+[sub_resource type="Resource" id="Resource_atr7y"]
 resource_name = "Paving"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 2
 SocketPosX = "solid"
 SocketNegX = "solid"
@@ -38,9 +39,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "solid"
 
-[sub_resource type="Resource" id="Resource_5yxxh"]
+[sub_resource type="Resource" id="Resource_wsyjo"]
 resource_name = "Ramp"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 3
 Rotation = 2
 Weight = 4.0
@@ -51,9 +52,9 @@ SocketNegY = "rock"
 SocketPosZ = "side+"
 SocketNegZ = "side-"
 
-[sub_resource type="Resource" id="Resource_atr7y"]
+[sub_resource type="Resource" id="Resource_j6d8g"]
 resource_name = "Outer Corner"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 4
 Rotation = 2
 Weight = 4.0
@@ -64,9 +65,9 @@ SocketNegY = "rock"
 SocketPosZ = "side+"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_wsyjo"]
+[sub_resource type="Resource" id="Resource_be6y0"]
 resource_name = "Inner Corner"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 5
 Rotation = 2
 Weight = 4.0
@@ -77,9 +78,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "side-"
 
-[sub_resource type="Resource" id="Resource_j6d8g"]
+[sub_resource type="Resource" id="Resource_ust8y"]
 resource_name = "Wall"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 6
 Rotation = 2
 Weight = 2.0
@@ -90,9 +91,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_be6y0"]
+[sub_resource type="Resource" id="Resource_1gme5"]
 resource_name = "Wall Arch"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 7
 Rotation = 2
 Weight = 2.0
@@ -103,9 +104,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_ust8y"]
+[sub_resource type="Resource" id="Resource_l7lro"]
 resource_name = "Broken Wall"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 8
 Rotation = 2
 Weight = 2.0
@@ -116,9 +117,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_1gme5"]
+[sub_resource type="Resource" id="Resource_heqh7"]
 resource_name = "Wall End"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 9
 Rotation = 2
 Weight = 4.0
@@ -129,9 +130,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_l7lro"]
+[sub_resource type="Resource" id="Resource_slsgs"]
 resource_name = "Wall Corner"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 10
 Rotation = 2
 Weight = 4.0
@@ -142,9 +143,9 @@ SocketNegY = "ground"
 SocketPosZ = "wall"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_heqh7"]
+[sub_resource type="Resource" id="Resource_0e85m"]
 resource_name = "Tower Base"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 11
 SocketPosX = "open"
 SocketNegX = "open"
@@ -153,10 +154,11 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_slsgs"]
+[sub_resource type="Resource" id="Resource_met20"]
 resource_name = "Tower Top"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 12
+Marker = ExtResource("3_rjvwt")
 SocketPosX = "open"
 SocketNegX = "open"
 SocketPosY = "air"
@@ -164,9 +166,9 @@ SocketNegY = "tower"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_0e85m"]
+[sub_resource type="Resource" id="Resource_5d6au"]
 resource_name = "Pillar"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 13
 SocketPosX = "open"
 SocketNegX = "open"
@@ -175,9 +177,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_met20"]
+[sub_resource type="Resource" id="Resource_8hdjm"]
 resource_name = "Stairs"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 14
 Rotation = 2
 Weight = 4.0
@@ -188,9 +190,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_5d6au"]
+[sub_resource type="Resource" id="Resource_63tpu"]
 resource_name = "Plinth"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 15
 Rotation = 2
 Weight = 4.0
@@ -201,9 +203,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_8hdjm"]
+[sub_resource type="Resource" id="Resource_twyd1"]
 resource_name = "Bridge Head"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 16
 Rotation = 2
 Weight = 4.0
@@ -214,9 +216,9 @@ SocketNegY = "pier"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_63tpu"]
+[sub_resource type="Resource" id="Resource_qp7og"]
 resource_name = "Bridge Deck"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 17
 Rotation = 2
 Weight = 4.0
@@ -227,9 +229,9 @@ SocketNegY = "air"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_twyd1"]
+[sub_resource type="Resource" id="Resource_swxcu"]
 resource_name = "Air"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Weight = 40.0
 SocketPosX = "open"
 SocketNegX = "open"
@@ -238,9 +240,9 @@ SocketNegY = "air"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_qp7og"]
+[sub_resource type="Resource" id="Resource_vhtv4"]
 resource_name = "Air Above Ground"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Weight = 40.0
 SocketPosX = "open"
 SocketNegX = "open"
@@ -249,9 +251,9 @@ SocketNegY = "ground"
 SocketPosZ = "open"
 SocketNegZ = "open"
 
-[sub_resource type="Resource" id="Resource_swxcu"]
+[sub_resource type="Resource" id="Resource_uyuh2"]
 resource_name = "Grass 1"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 18
 Weight = 3.0
 SocketPosX = "solid"
@@ -261,9 +263,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "solid"
 
-[sub_resource type="Resource" id="Resource_vhtv4"]
+[sub_resource type="Resource" id="Resource_o0kwa"]
 resource_name = "Grass 2"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 19
 Weight = 3.0
 SocketPosX = "solid"
@@ -273,9 +275,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "solid"
 
-[sub_resource type="Resource" id="Resource_uyuh2"]
+[sub_resource type="Resource" id="Resource_awxvr"]
 resource_name = "Grass 3"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 20
 Weight = 3.0
 SocketPosX = "solid"
@@ -285,9 +287,9 @@ SocketNegY = "rock"
 SocketPosZ = "solid"
 SocketNegZ = "solid"
 
-[sub_resource type="Resource" id="Resource_o0kwa"]
+[sub_resource type="Resource" id="Resource_p0gws"]
 resource_name = "Grass 4"
-script = ExtResource("2_peesb")
+script = ExtResource("2_git1y")
 Item = 21
 Weight = 3.0
 SocketPosX = "solid"
@@ -298,6 +300,6 @@ SocketPosZ = "solid"
 SocketNegZ = "solid"
 
 [resource]
-script = ExtResource("3_git1y")
-Library = ExtResource("1_gjyxb")
-Tiles = Array[ExtResource("2_peesb")]([SubResource("Resource_rjvwt"), SubResource("Resource_ncfjc"), SubResource("Resource_j6o2k"), SubResource("Resource_5yxxh"), SubResource("Resource_atr7y"), SubResource("Resource_wsyjo"), SubResource("Resource_j6d8g"), SubResource("Resource_be6y0"), SubResource("Resource_ust8y"), SubResource("Resource_1gme5"), SubResource("Resource_l7lro"), SubResource("Resource_heqh7"), SubResource("Resource_slsgs"), SubResource("Resource_0e85m"), SubResource("Resource_met20"), SubResource("Resource_5d6au"), SubResource("Resource_8hdjm"), SubResource("Resource_63tpu"), SubResource("Resource_twyd1"), SubResource("Resource_qp7og"), SubResource("Resource_swxcu"), SubResource("Resource_vhtv4"), SubResource("Resource_uyuh2"), SubResource("Resource_o0kwa")])
+script = ExtResource("4_ncfjc")
+Library = ExtResource("1_peesb")
+Tiles = Array[ExtResource("2_git1y")]([SubResource("Resource_j6o2k"), SubResource("Resource_5yxxh"), SubResource("Resource_atr7y"), SubResource("Resource_wsyjo"), SubResource("Resource_j6d8g"), SubResource("Resource_be6y0"), SubResource("Resource_ust8y"), SubResource("Resource_1gme5"), SubResource("Resource_l7lro"), SubResource("Resource_heqh7"), SubResource("Resource_slsgs"), SubResource("Resource_0e85m"), SubResource("Resource_met20"), SubResource("Resource_5d6au"), SubResource("Resource_8hdjm"), SubResource("Resource_63tpu"), SubResource("Resource_twyd1"), SubResource("Resource_qp7og"), SubResource("Resource_swxcu"), SubResource("Resource_vhtv4"), SubResource("Resource_uyuh2"), SubResource("Resource_o0kwa"), SubResource("Resource_awxvr"), SubResource("Resource_p0gws")])

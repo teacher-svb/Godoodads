@@ -188,7 +188,8 @@ public partial class TileSetPreview : VBoxContainer
     }
 
     private static string TileKey(WfcTile tile) =>
-        $"{tile.ResourceName}|{tile.Item}|{tile.Rotation}|{tile.Weight}|{string.Join(",", tile.ToDefinition().Sockets)}";
+        $"{tile.ResourceName}|{tile.Item}|{tile.Rotation}|{tile.Weight}|{string.Join(",", tile.ToDefinition().Sockets)}"
+        + (tile.HeightCurve == null ? "" : "|" + string.Join(",", tile.SampleHeightCurve()));
 
     private string DisplayName(int index, WfcTile tile)
     {
@@ -278,6 +279,8 @@ public partial class TileSetPreview : VBoxContainer
             _weight.Text = $"Weight 0{copiesText}: never generated, but it can be placed by hand.";
         else
             _weight.Text = $"Weight {tile.Weight:0.###}{copiesText}: {own / total:P1} of the total weight, shared by its rotations.";
+        if (tile.Weight > 0 && tile.SampleHeightCurve() is { } curve)
+            _weight.Text += $"\nHeight curve: ×{curve[0]:0.##} at the bottom, ×{curve[curve.Length / 2]:0.##} in the middle, ×{curve[^1]:0.##} at the top.";
     }
 
     private void ShowFaceLabels(WfcTile tile, int turns)

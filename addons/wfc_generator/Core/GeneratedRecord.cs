@@ -10,19 +10,39 @@ namespace Godoodads.WfcGenerator.Core;
 /// <summary>
 /// The non-empty cells a generation wrote, so the next one can replace them (brief §11.2). Stored
 /// compressed: positions sorted, then each field as its own plane, which Deflate packs well.
-/// Positions must fit in 16 bits, which the dialog's bounds check guarantees.
+/// Positions must fit in 16 bits, which the dialog's bounds check guarantees. A pinned cell
+/// (brief §12.3) is kept by the next generation like a hand-placed one; the flag is the top bit of
+/// the orientation byte, which 1.1 never set.
 /// </summary>
 public sealed class GeneratedRecord
 {
     private const byte FormatVersion = 1;
+    private const int PinnedBit = 0x80;
 
-    private readonly Dictionary<Vector3I, (int Item, int Orientation)> _cells = new();
+    private readonly Dictionary<Vector3I, (int Item, int Orientation, bool Pinned)> _cells = new();
 
     public int Count => _cells.Count;
 
-    public IEnumerable<KeyValuePair<Vector3I, (int Item, int Orientation)>> Cells => _cells;
+    public IEnumerable<KeyValuePair<Vector3I, (int Item, int Orientation, bool Pinned)>> Cells => _cells;
 
-    public void Set(Vector3I position, int item, int orientation) => _cells[position] = (item, orientation);
+    public void Set(Vector3I position, int item, int orientation, bool pinned = false) => _cells[position] = (item, orientation, pinned);
+
+    public bool IsPinned(Vector3I position) => _cells.TryGetValue(position, out var written) && written.Pinned;
+
+    /// <summary>Pins or unpins the recorded cells inside a box that pass the filter. Returns how many changed.</summary>
+    public int SetPinnedInside(Vector3I origin, Vector3I size, bool pinned, Func<Vector3I, (int Item, int Orientation), bool> filter = null)
+    {
+        int changed = 0;
+        foreach (var (position, written) in _cells.ToArray())
+        {
+            if (written.Pinned == pinned || !Inside(position, origin, size)
+                || (filter != null && !filter(position, (written.Item, written.Orientation))))
+                continue;
+            _cells[position] = written with { Pinned = pinned };
+            changed++;
+        }
+        return changed;
+    }
 
     public void Remove(Vector3I position) => _cells.Remove(position);
 
@@ -32,14 +52,21 @@ public sealed class GeneratedRecord
 
     public bool Contains(Vector3I position) => _cells.ContainsKey(position);
 
-    /// <summary>Removes every cell inside the box from origin (inclusive) to origin + size (exclusive).</summary>
-    public void RemoveInside(Vector3I origin, Vector3I size)
+    /// <summary>
+    /// Removes every cell inside the box from origin (inclusive) to origin + size (exclusive),
+    /// except pinned cells when <paramref name="keepPinned"/> is set.
+    /// </summary>
+    public void RemoveInside(Vector3I origin, Vector3I size, bool keepPinned = false)
+    {
+        foreach (var (position, written) in _cells.ToArray())
+            if (Inside(position, origin, size) && !(keepPinned && written.Pinned))
+                _cells.Remove(position);
+    }
+
+    private static bool Inside(Vector3I p, Vector3I origin, Vector3I size)
     {
         var end = origin + size;
-        foreach (var position in _cells.Keys.ToArray())
-            if (position.X >= origin.X && position.Y >= origin.Y && position.Z >= origin.Z
-                && position.X < end.X && position.Y < end.Y && position.Z < end.Z)
-                _cells.Remove(position);
+        return p.X >= origin.X && p.Y >= origin.Y && p.Z >= origin.Z && p.X < end.X && p.Y < end.Y && p.Z < end.Z;
     }
 
     public byte[] Encode()
@@ -55,7 +82,7 @@ public sealed class GeneratedRecord
             foreach (var c in sorted) writer.Write(checked((short)c.Key.Y));
             foreach (var c in sorted) writer.Write(checked((short)c.Key.Z));
             foreach (var c in sorted) writer.Write(c.Value.Item);
-            foreach (var c in sorted) writer.Write(checked((byte)c.Value.Orientation));
+            foreach (var c in sorted) writer.Write((byte)(checked((byte)c.Value.Orientation) | (c.Value.Pinned ? PinnedBit : 0)));
         }
         return output.ToArray();
     }
@@ -83,7 +110,10 @@ public sealed class GeneratedRecord
             var items = new int[count];
             for (int i = 0; i < count; i++) items[i] = reader.ReadInt32();
             for (int i = 0; i < count; i++)
-                record.Set(new Vector3I(x[i], y[i], z[i]), items[i], reader.ReadByte());
+            {
+                int flags = reader.ReadByte();
+                record.Set(new Vector3I(x[i], y[i], z[i]), items[i], flags & ~PinnedBit, (flags & PinnedBit) != 0);
+            }
         }
         catch (Exception e) when (e is IOException or InvalidDataException or EndOfStreamException)
         {
