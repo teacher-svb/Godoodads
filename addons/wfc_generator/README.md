@@ -4,14 +4,40 @@ Fill a `GridMap` with modules using wave function collapse, straight from the Go
 
 ![A stacked hillside with ruins, generated from the demo tile set](docs/hillside.png)
 
-**Requirements:** Godot 4.7 or later, .NET build.
+**Requirements:** Godot 4.7 or later, the **.NET** edition (the download labelled ".NET" or "mono"), and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
 ## Install
 
-1. Copy `addons/wfc_generator/` and `addons/editor_tools_common/` into your project's `addons/` folder.
-2. If your project has no C# solution yet, create one with *Project → Tools → C# → Create C# solution*.
-3. Build the C# project (the hammer icon, or `dotnet build`).
-4. Enable **WFC Generator** in *Project → Project Settings → Plugins*.
+1. **Download** `wfc_generator-<version>.zip` from the [Releases page](https://github.com/teacher-svb/Godoodads/releases). Pick the newest release whose name starts with `wfc_generator`.
+2. **Extract it into your project's root folder**, the folder that holds `project.godot`. The zip contains two folders, which end up as:
+   ```
+   your_project/
+   ├── project.godot
+   └── addons/
+       ├── editor_tools_common/   shared helpers of the Godoodads addons
+       └── wfc_generator/
+   ```
+   If your project already has `addons/editor_tools_common/` from another Godoodads addon, let the newer copy replace it.
+3. **Create a C# solution** if your project has none yet: *Project → Tools → C# → Create C# solution*. Skip this if your project already has a `.csproj` file.
+4. **Build** the project with the hammer icon at the top right of the editor, or run `dotnet build` in the project folder.
+5. **Enable the plugin** in *Project → Project Settings → Plugins* by ticking **WFC Generator**.
+6. **Check it works:** select a `GridMap` node. The 3D viewport toolbar shows a **GridMap** menu with **Generate WFC (GDDS)** in it.
+
+To try it straight away, the demo scenes are in this repository under `demo/wfc_generator/` (see [Demo](#demo)); the zip contains only the addon.
+
+### Updating
+
+Close Godot, delete `addons/wfc_generator/`, then extract the new zip as above, so files removed in the new version do not linger. Build again before you reopen the dialog. Scenes and tile sets from older versions keep working; the CHANGELOG lists what changed.
+
+### If something goes wrong
+
+| Problem | Fix |
+|---|---|
+| WFC Generator is not in the plugin list | The files are one level too deep. The plugin must be at `addons/wfc_generator/plugin.cfg`, not `addons/addons/…` or `wfc_generator-1.2.0/addons/…`. |
+| "Unable to load addon script" when enabling it | The C# project has not been built yet, or the build failed. Build (step 4), read the errors in the MSBuild panel at the bottom of the editor, then enable the plugin again. |
+| Build error about a missing SDK or framework | Install the .NET SDK 8.0 or later, then restart Godot. |
+| No GridMap menu in the toolbar | Select a `GridMap` node; the menu only appears for GridMaps. |
+| After a rebuild, the editor still runs the old code | Godot reloads C# when its window gets focus. Click into the editor window, then disable and enable the plugin. |
 
 ## Use
 

@@ -11,10 +11,15 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 
 ## Install an addon
 
-1. Download the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `multimesh_scatter-1.0.1.zip`, and extract it into your project's root folder. Its files go under `addons/`.
-2. If your project has no C# solution yet, create one with *Project → Tools → C# → Create C# solution*.
-3. Build the C# project (the hammer icon, or `dotnet build`).
-4. Enable the addon in *Project → Project Settings → Plugins*.
+The addons need Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
+
+1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `wfc_generator-1.2.0.zip` or `multimesh_scatter-1.0.1.zip`. Each release is named after its addon.
+2. **Extract it into your project's root folder**, next to `project.godot`. Every zip contains the addon's folder and `editor_tools_common`, the shared helpers, both under `addons/`. When you install a second Godoodads addon, let the newer `editor_tools_common` replace the older one.
+3. **Create a C# solution** if your project has none: *Project → Tools → C# → Create C# solution*.
+4. **Build** the project (the hammer icon, or `dotnet build`).
+5. **Enable** the addon in *Project → Project Settings → Plugins*.
+
+If the addon is missing from the plugin list, the zip was extracted one folder too deep: the file must be at `addons/<addon>/plugin.cfg`. If enabling it reports "Unable to load addon script", build first and check the MSBuild panel for errors. The [WFC Generator README](addons/wfc_generator/README.md#install) has more fixes and how to update an addon.
 
 ## Working on this repository
 
