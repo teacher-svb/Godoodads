@@ -48,7 +48,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         _presets.PresetLoaded += OnPresetLoaded;
         _presets.SaveRequested += OnPresetSaveRequested;
         _dialog.Header.AddChild(_presets);
-        _surfacePicker = new NodePickerRow("Surface", "MeshInstance3D", "CSGShape3D");
+        _surfacePicker = new NodePickerRow("Surface", "MeshInstance3D", "CSGShape3D", "GridMap");
         _surfacePicker.NodePicked += OnSurfacePicked;
         _dialog.Header.AddChild(_surfacePicker);
         _dialog.ActionPressed += OnPopulatePressed;
@@ -97,6 +97,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         if (surface == null && _surfacePicker.Value is { } previous && IsInstanceValid(previous) && previous.IsInsideTree())
             surface = previous;
         _surfacePicker.SetValue(surface);
+        _settings.SurfaceIsGridMap = surface is GridMap;
 
         _dialog.Edit(_settings);
         _presets.Refresh();
@@ -104,7 +105,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         _dialog.SetStatus($"Target: {_target.Name}");
         if (_target.Multimesh?.Mesh == null)
             _dialog.AddStatus("The MultiMesh has no mesh assigned; instances will be invisible until it has one.", ToolDialog.Severity.Warning);
-        if (surface is Node3D surfaceNode && SurfaceSource.FromNode(surfaceNode, UsesTangentSpaceMap, out _, out _) is { } data)
+        if (surface is Node3D surfaceNode && ReadSurface(surfaceNode, out _, out _, out _) is { } data)
         {
             BuildFilters(data, out var problem);
             if (problem == null)
@@ -129,7 +130,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
             return;
         }
 
-        var surface = SurfaceSource.FromNode(surfaceNode, UsesTangentSpaceMap, out var error, out bool generatedTangents);
+        var surface = ReadSurface(surfaceNode, out var error, out bool generatedTangents, out var gridStats);
         if (surface == null)
         {
             Notify.Report(_dialog, error, ToolDialog.Severity.Error);
@@ -170,13 +171,30 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
             ("metadata/" + SettingsMeta, stored));
 
         ReportResult(result, existing, clock.ElapsedMilliseconds);
+        if (gridStats is { } cells)
+            _dialog.AddStatus($"Read {cells.Cells:N0} GridMap cells; left out {cells.CoveredTriangles:N0} triangles covered by neighbouring cells.");
         if (_settings.NormalSource != NormalSource.Face && !surface.HasNormals)
             _dialog.AddStatus("The surface has no vertex normals; face normals were used instead.", ToolDialog.Severity.Warning);
         if (generatedTangents)
             _dialog.AddStatus("The surface has no tangents, so they were generated on a temporary copy for the normal map. Your mesh is unchanged.", ToolDialog.Severity.Info);
     }
 
-    private void OnSurfacePicked(Node node) => _dialog.SetActionEnabled(node != null);
+    private void OnSurfacePicked(Node node)
+    {
+        _settings.SurfaceIsGridMap = node is GridMap;
+        _dialog.SetActionEnabled(node != null);
+    }
+
+    /// <summary>The surface's triangles; for a GridMap with the dialog's item filter and box, and its counts.</summary>
+    private SurfaceData ReadSurface(Node3D node, out string error, out bool generatedTangents, out GridMapSurfaceStats? gridStats)
+    {
+        gridStats = null;
+        if (node is not GridMap map)
+            return SurfaceSource.FromNode(node, UsesTangentSpaceMap, out error, out generatedTangents);
+        var data = SurfaceSource.FromGridMap(map, _settings.ToGridMapSelection(), UsesTangentSpaceMap, out error, out generatedTangents, out var stats);
+        gridStats = stats;
+        return data;
+    }
 
     /// <summary>Copies a preset's values into the dialog, keeping the chosen surface.</summary>
     private void OnPresetLoaded(Resource preset)
@@ -189,6 +207,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         var surfacePath = _settings.SurfacePath;
         _settings = (ScatterSettings)settings.Duplicate();
         _settings.SurfacePath = surfacePath;
+        _settings.SurfaceIsGridMap = _surfacePicker.Value is GridMap;
         _dialog.Edit(_settings);
         string name = string.IsNullOrEmpty(settings.ResourceName) ? settings.ResourcePath.GetFile() : settings.ResourceName;
         _dialog.SetStatus($"Loaded preset '{name}'.", ToolDialog.Severity.Info);
@@ -255,7 +274,8 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
             return filters;
 
         bool secondSet = _settings.MaskUvSet == UvSet.Uv2;
-        if (secondSet ? !surface.HasUv2 : !surface.HasUv)
+        bool topDown = _settings.MaskProjection == MaskProjection.TopDown;
+        if (!topDown && (secondSet ? !surface.HasUv2 : !surface.HasUv))
         {
             error = $"A mask texture is set, but the surface has no {(secondSet ? "UV2" : "UV1")} coordinates.";
             return filters;
@@ -263,8 +283,28 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         var mask = MaskSource.FromTexture(_settings.MaskTexture, _settings.MaskChannel, out error);
         if (mask == null)
             return filters;
-        filters.Add(new MaskFilter(mask, _settings.MaskMode, _settings.MaskThreshold, _settings.MaskInvert, secondSet));
+        filters.Add(new MaskFilter(mask, _settings.MaskMode, _settings.MaskThreshold, _settings.MaskInvert, secondSet,
+            topDown ? TopDownArea(surface) : null));
         return filters;
+    }
+
+    /// <summary>
+    /// The area a top-down mask covers: the GridMap's cell box when one is set, so the mask lines
+    /// up with the box, otherwise the surface seen from above.
+    /// </summary>
+    private Rect2 TopDownArea(SurfaceData surface)
+    {
+        if (_surfacePicker.Value is GridMap map && _settings.ToGridMapSelection() is { HasBox: true } box)
+        {
+            var size = map.CellSize;
+            var low = new Vector3(box.BoxOrigin.X * size.X, box.BoxOrigin.Y * size.Y, box.BoxOrigin.Z * size.Z);
+            var high = low + new Vector3(box.BoxSize.X * size.X, box.BoxSize.Y * size.Y, box.BoxSize.Z * size.Z);
+            var corners = new List<Vector3>();
+            for (int i = 0; i < 8; i++)
+                corners.Add(map.GlobalTransform * new Vector3((i & 1) != 0 ? high.X : low.X, (i & 2) != 0 ? high.Y : low.Y, (i & 4) != 0 ? high.Z : low.Z));
+            return MaskFilter.TopDownArea(corners);
+        }
+        return MaskFilter.TopDownArea(surface.Positions);
     }
 
     /// <summary>Positions that new instances keep their distance from.</summary>

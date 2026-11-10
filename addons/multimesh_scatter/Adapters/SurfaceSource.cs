@@ -4,20 +4,39 @@ using Godoodads.MultiMeshScatter.Core;
 
 namespace Godoodads.MultiMeshScatter.Adapters;
 
-/// <summary>Reads the triangles of a MeshInstance3D or root CSG shape into <see cref="SurfaceData"/>.</summary>
+/// <summary>
+/// Which cells of a GridMap surface are used (brief §10.1): items by name, included or excluded
+/// (none listed means all), and a box of cells (a size of 0 means the whole map).
+/// </summary>
+public sealed record GridMapSelection(IReadOnlyList<string> Items = null, bool Exclude = false, Vector3I BoxOrigin = default, Vector3I BoxSize = default)
+{
+    public bool HasBox => BoxSize.X > 0 && BoxSize.Y > 0 && BoxSize.Z > 0;
+
+    public bool Contains(Vector3I cell) => !HasBox
+        || (cell.X >= BoxOrigin.X && cell.Y >= BoxOrigin.Y && cell.Z >= BoxOrigin.Z
+            && cell.X < BoxOrigin.X + BoxSize.X && cell.Y < BoxOrigin.Y + BoxSize.Y && cell.Z < BoxOrigin.Z + BoxSize.Z);
+}
+
+/// <summary>What a GridMap surface was built from, for the report.</summary>
+public readonly record struct GridMapSurfaceStats(int Cells, int CoveredTriangles);
+
+/// <summary>Reads the triangles of a MeshInstance3D, root CSG shape or GridMap into <see cref="SurfaceData"/>.</summary>
 public static class SurfaceSource
 {
-    public static bool IsSupported(Node node) => node is MeshInstance3D or CsgShape3D;
+    public static bool IsSupported(Node node) => node is MeshInstance3D or CsgShape3D or GridMap;
 
     /// <summary>Returns null and sets <paramref name="error"/> if the node has no usable triangles.</summary>
     public static SurfaceData FromNode(Node3D node, out string error) => FromNode(node, false, out error, out _);
 
     /// <param name="ensureTangents">Generate tangents, on a copy, for surfaces that have none.</param>
     /// <param name="generatedTangents">True when tangents had to be generated.</param>
-    public static SurfaceData FromNode(Node3D node, bool ensureTangents, out string error, out bool generatedTangents)
+    public static SurfaceData FromNode(Node3D node, bool ensureTangents, out string error, out bool generatedTangents,
+        GridMapSelection selection = null)
     {
         generatedTangents = false;
         error = null;
+        if (node is GridMap map)
+            return FromGridMap(map, selection, ensureTangents, out error, out generatedTangents, out _);
         Mesh mesh = node switch
         {
             MeshInstance3D mi => mi.Mesh,
@@ -42,6 +61,11 @@ public static class SurfaceSource
     public static SurfaceData FromMesh(Mesh mesh, Transform3D toWorld, bool ensureTangents, out bool generatedTangents)
     {
         generatedTangents = false;
+        return SurfaceData.Build(ReadSurfaces(mesh, ensureTangents, ref generatedTangents), toWorld);
+    }
+
+    private static List<SurfaceArrays> ReadSurfaces(Mesh mesh, bool ensureTangents, ref bool generatedTangents)
+    {
         var surfaces = new List<SurfaceArrays>();
         for (int s = 0; s < mesh.GetSurfaceCount(); s++)
         {
@@ -55,7 +79,120 @@ public static class SurfaceSource
             }
             surfaces.Add(ToArrays(arrays));
         }
-        return SurfaceData.Build(surfaces, toWorld);
+        return surfaces;
+    }
+
+    /// <summary>
+    /// The item meshes of a GridMap's used cells, placed as GridMap renders them (brief §10.1).
+    /// A triangle on a boundary face of its cell is left out when the neighbouring cell on that
+    /// side is occupied, also outside the selection box. The MeshLibrary is only read.
+    /// </summary>
+    public static SurfaceData FromGridMap(GridMap map, GridMapSelection selection, bool ensureTangents,
+        out string error, out bool generatedTangents, out GridMapSurfaceStats stats)
+    {
+        error = null;
+        generatedTangents = false;
+        stats = default;
+        selection ??= new GridMapSelection();
+        var library = map.MeshLibrary;
+        if (library == null)
+        {
+            error = $"'{map.Name}' has no MeshLibrary.";
+            return null;
+        }
+
+        var names = new HashSet<string>(selection.Items ?? System.Array.Empty<string>());
+        var itemSurfaces = new Dictionary<int, List<SurfaceArrays>>();
+        var faceCache = new Dictionary<(int Item, int Orientation), int[][]>();
+        var cellSize = map.CellSize;
+        var surfaces = new List<SurfaceArrays>();
+        int cells = 0, covered = 0;
+
+        foreach (var cell in map.GetUsedCells())
+        {
+            if (!selection.Contains(cell))
+                continue;
+            int item = map.GetCellItem(cell);
+            if (names.Count > 0 && names.Contains(library.GetItemName(item)) == selection.Exclude)
+                continue;
+            if (!itemSurfaces.TryGetValue(item, out var parts))
+            {
+                var mesh = library.GetItemMesh(item);
+                parts = mesh == null ? new List<SurfaceArrays>() : ReadSurfaces(mesh, ensureTangents, ref generatedTangents);
+                itemSurfaces[item] = parts;
+            }
+            if (parts.Count == 0)
+                continue;
+            cells++;
+
+            int orientation = map.GetCellItemOrientation(cell);
+            var placement = new Transform3D(map.GetCellItemBasis(cell).Scaled(Vector3.One * map.CellScale), map.MapToLocal(cell))
+                * library.GetItemMeshTransform(item);
+            var cellMin = new Vector3(cell.X * cellSize.X, cell.Y * cellSize.Y, cell.Z * cellSize.Z);
+
+            // Which face each triangle lies on depends only on the item and its orientation.
+            if (!faceCache.TryGetValue((item, orientation), out var faces))
+            {
+                var relative = placement;
+                relative.Origin -= cellMin;
+                faces = new int[parts.Count][];
+                for (int s = 0; s < parts.Count; s++)
+                    faces[s] = TriangleFaces(parts[s], relative, cellSize);
+                faceCache[(item, orientation)] = faces;
+            }
+
+            for (int s = 0; s < parts.Count; s++)
+            {
+                var part = parts[s];
+                var kept = new List<int>();
+                int triangles = faces[s].Length;
+                for (int tri = 0; tri < triangles; tri++)
+                {
+                    int face = faces[s][tri];
+                    if (face >= 0 && map.GetCellItem(cell + GridFaces.Offsets[face]) != GridMap.InvalidCellItem)
+                    {
+                        covered++;
+                        continue;
+                    }
+                    for (int k = 0; k < 3; k++)
+                        kept.Add(part.Indices != null ? part.Indices[tri * 3 + k] : tri * 3 + k);
+                }
+                if (kept.Count == 0)
+                    continue;
+                surfaces.Add(new SurfaceArrays
+                {
+                    Vertices = part.Vertices, Normals = part.Normals, Tangents = part.Tangents, Uv = part.Uv, Uv2 = part.Uv2,
+                    Indices = kept.ToArray(), Local = placement,
+                });
+            }
+        }
+
+        stats = new GridMapSurfaceStats(cells, covered);
+        if (cells == 0)
+        {
+            error = $"No cells of '{map.Name}' match the GridMap filter and box.";
+            return null;
+        }
+        var data = SurfaceData.Build(surfaces, map.GlobalTransform);
+        if (data.TriangleCount == 0)
+        {
+            error = $"Every face of the chosen cells of '{map.Name}' is covered by a neighbouring cell.";
+            return null;
+        }
+        return data;
+    }
+
+    /// <summary>Per triangle, the cell face it lies on (see <see cref="GridFaces"/>) or -1, with the cell at the origin.</summary>
+    private static int[] TriangleFaces(SurfaceArrays part, Transform3D placement, Vector3 cellSize)
+    {
+        int n = part.Vertices?.Length ?? 0;
+        int count = (part.Indices?.Length ?? n) / 3;
+        var faces = new int[count];
+        int Index(int i) => part.Indices != null ? part.Indices[i] : i;
+        for (int tri = 0; tri < count; tri++)
+            faces[tri] = GridFaces.BoundaryFace(placement * part.Vertices[Index(tri * 3)], placement * part.Vertices[Index(tri * 3 + 1)],
+                placement * part.Vertices[Index(tri * 3 + 2)], Vector3.Zero, cellSize);
+        return faces;
     }
 
     private static bool NeedsTangents(Godot.Collections.Array arrays) =>

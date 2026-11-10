@@ -230,3 +230,32 @@ Automated (GdUnit4) unless noted:
 - Godot Asset Library publication.
 
 These are candidates for later sub-projects; note ideas in the repo's `README.md` backlog rather than building them.
+
+---
+
+### 10. Release 1.1: GridMap surfaces
+
+Decided by the board on 2026-11-10. Tracked under the epic *Scatter 1.1*. Everything is additive: presets and scenes from 1.0 keep working and give the same result.
+
+#### 10.1 GridMap as a surface
+
+- The node picker also accepts a `GridMap`. Its surface is the item mesh of every used cell, placed with the cell's position and orientation, the item's mesh transform, the GridMap's cell scale and its global transform. The `MeshLibrary` is never modified.
+- **Covered faces are skipped.** A triangle that lies on one of its cell's six boundary faces is dropped when the neighbouring cell in that direction is occupied (by any item), so nothing is scattered inside stacked tiles. Triangles inside the cell, such as a ramp's slope, always count.
+- **Item filter:** a list of item names with **Include** or **Exclude**. Empty uses every item.
+- **Cell box:** an origin and size in GridMap cells. A size of 0 uses the whole map. Covered-face checks still look at neighbours outside the box.
+- These options sit in a *GridMap* group of `ScatterSettings`. The dialog shows the group only when the picked surface is a GridMap, if `ToolDialog` can do that; otherwise it is shown and ignored for meshes.
+- Each item mesh is read once and its triangles are reused for every cell that uses it.
+- Verified on Godot 4.7 (card `scatter-1-1-gridmap-facts`): in GridMap space, a cell's mesh sits at `Transform3D(GetCellItemBasis(cell) scaled by CellScale, MapToLocal(cell)) * MeshLibrary.GetItemMeshTransform(item)`, which matches `GridMap.GetMeshes()` for every centring flag, orientation and cell scale tried. The cell itself always spans `cell * CellSize` to `(cell + 1) * CellSize`, whatever the centring flags, so a covered face is a triangle whose three vertices lie on one of those planes.
+
+#### 10.2 Projected masks
+
+- **Mask → Projection:** *UV* (default, as in 1.0) or *Top Down*. Top Down samples the mask at the point's world X and Z, stretched over the surface's area seen from above (the cell box for a GridMap with one), with +X to the right and +Z down in the image.
+- It works for every surface kind, so one painted mask can cover a whole GridMap or several meshes. Normal maps stay per tile UV.
+
+#### 10.3 Demo
+
+- A scene with a small GridMap and its own tile library (blocks and ramps, built by a tool scene like the other demos), scattering grass on the open tops and slopes, with a projected mask for a path. It does not depend on the WFC demo.
+
+#### 10.4 Not in 1.1
+
+Viewport handles for the cell box, and scattering per item with different meshes, go to the README backlog.

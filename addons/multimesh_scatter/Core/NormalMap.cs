@@ -78,7 +78,7 @@ public sealed class NormalMapOptions
         Vector3 mapped;
         if (Space == NormalMapSpace.Object)
         {
-            mapped = surface.NormalBasis * texel;
+            mapped = surface.NormalBasisOf(point.Triangle) * texel;
         }
         else
         {

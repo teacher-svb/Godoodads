@@ -6,14 +6,14 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 
 | Addon | Folder | Status | Brief |
 |---|---|---|---|
-| MultiMesh Scatter | `addons/multimesh_scatter/` | 1.0.1, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
+| MultiMesh Scatter | `addons/multimesh_scatter/` | 1.1.0, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
 | WFC Generator | `addons/wfc_generator/` | 1.3.0, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
 
 ## Install an addon
 
 The addons need Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
-1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `wfc_generator-1.3.0.zip` or `multimesh_scatter-1.0.1.zip`. Each release is named after its addon.
+1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `wfc_generator-1.3.0.zip` or `multimesh_scatter-1.1.0.zip`. Each release is named after its addon.
 2. **Extract it into your project's root folder**, next to `project.godot`. Every zip contains the addon's folder and `editor_tools_common`, the shared helpers, both under `addons/`. When you install a second Godoodads addon, let the newer `editor_tools_common` replace the older one.
 3. **Create a C# solution** if your project has none: *Project → Tools → C# → Create C# solution*.
 4. **Build** the project (the hammer icon, or `dotnet build`).
@@ -36,6 +36,11 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 - LOD, culling and collision generation for instances
 - GDScript or GDExtension ports
 - Publishing on the Godot Asset Store
+
+### MultiMesh Scatter
+
+- Viewport handles for the GridMap cell box
+- Scattering a different mesh per GridMap item in one go
 
 ### WFC Generator
 

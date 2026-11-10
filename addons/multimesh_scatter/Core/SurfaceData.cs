@@ -14,6 +14,12 @@ public sealed class SurfaceArrays
     public Vector2[] Uv2;
     /// <summary>Triangle indices; null for non-indexed surfaces.</summary>
     public int[] Indices;
+
+    /// <summary>
+    /// Optional placement of this surface inside the mesh, applied before the world transform,
+    /// such as a GridMap cell. Null means identity.
+    /// </summary>
+    public Transform3D? Local;
 }
 
 /// <summary>
@@ -33,8 +39,15 @@ public sealed class SurfaceData
     public Vector3[] FaceNormals { get; private init; }
     public float[] Areas { get; private init; }
     public float TotalArea { get; private init; }
-    /// <summary>Transforms mesh-local normals to world space (inverse transpose of the mesh basis).</summary>
+    /// <summary>
+    /// Transforms mesh-local normals to world space (inverse transpose of the mesh basis), for the
+    /// first surface. Surfaces with their own <see cref="SurfaceArrays.Local"/> placement have their
+    /// own; use <see cref="NormalBasisOf"/>.
+    /// </summary>
     public Basis NormalBasis { get; private init; } = Basis.Identity;
+
+    private Basis[] _normalBases;
+    private int[] _basisOfTriangle;
 
     public bool HasNormals { get; private init; }
     public bool HasTangents { get; private init; }
@@ -65,17 +78,28 @@ public sealed class SurfaceData
         var uv2 = new Vector2[vertexCount];
         var indices = new int[indexCount];
 
-        var basis = toWorld.Basis;
-        var normalBasis = basis.Inverse().Transposed();
-        float handedness = basis.Determinant() < 0 ? -1f : 1f;
+        var bases = new List<Basis>();
+        var basisIndex = new Dictionary<Basis, int>();
+        var triangleSign = new float[indexCount / 3];
+        var basisOfTriangle = new int[indexCount / 3];
 
         int vBase = 0, iBase = 0;
         foreach (var s in surfaces)
         {
             int n = s.Vertices?.Length ?? 0;
+            var transform = s.Local is { } local ? toWorld * local : toWorld;
+            var basis = transform.Basis;
+            var normalBasis = basis.Inverse().Transposed();
+            float handedness = basis.Determinant() < 0 ? -1f : 1f;
+            if (!basisIndex.TryGetValue(normalBasis, out int basisId))
+            {
+                basisId = bases.Count;
+                basisIndex[normalBasis] = basisId;
+                bases.Add(normalBasis);
+            }
             for (int v = 0; v < n; v++)
             {
-                positions[vBase + v] = toWorld * s.Vertices[v];
+                positions[vBase + v] = transform * s.Vertices[v];
                 if (s.Normals?.Length == n)
                     normals[vBase + v] = (normalBasis * s.Normals[v]).Normalized();
                 if (s.Tangents?.Length == n * 4)
@@ -93,20 +117,15 @@ public sealed class SurfaceData
                     uv2[vBase + v] = s.Uv2[v];
             }
 
-            if (s.Indices != null)
+            int count = s.Indices != null ? s.Indices.Length - s.Indices.Length % 3 : n - n % 3;
+            for (int i = 0; i < count; i++)
+                indices[iBase + i] = vBase + (s.Indices != null ? s.Indices[i] : i);
+            for (int tri = iBase / 3; tri < (iBase + count) / 3; tri++)
             {
-                int count = s.Indices.Length - s.Indices.Length % 3;
-                for (int i = 0; i < count; i++)
-                    indices[iBase + i] = vBase + s.Indices[i];
-                iBase += count;
+                triangleSign[tri] = handedness;
+                basisOfTriangle[tri] = basisId;
             }
-            else
-            {
-                int count = n - n % 3;
-                for (int i = 0; i < count; i++)
-                    indices[iBase + i] = vBase + i;
-                iBase += count;
-            }
+            iBase += count;
             vBase += n;
         }
 
@@ -124,7 +143,7 @@ public sealed class SurfaceData
             var cross = (c - a).Cross(b - a);
             float length = cross.Length();
             areas[t] = length * 0.5f;
-            faceNormals[t] = length > 0 ? cross / length * handedness : Vector3.Zero;
+            faceNormals[t] = length > 0 ? cross / length * triangleSign[t] : Vector3.Zero;
             total += areas[t];
         }
 
@@ -139,13 +158,19 @@ public sealed class SurfaceData
             FaceNormals = faceNormals,
             Areas = areas,
             TotalArea = (float)total,
-            NormalBasis = normalBasis,
+            NormalBasis = bases.Count > 0 ? bases[0] : toWorld.Basis.Inverse().Transposed(),
+            _normalBases = bases.ToArray(),
+            _basisOfTriangle = basisOfTriangle,
             HasNormals = hasNormals && vertexCount > 0,
             HasTangents = hasTangents && vertexCount > 0,
             HasUv = hasUv && vertexCount > 0,
             HasUv2 = hasUv2 && vertexCount > 0,
         };
     }
+
+    /// <summary>The normal basis of the surface a triangle came from.</summary>
+    public Basis NormalBasisOf(int triangle) =>
+        _basisOfTriangle != null && triangle < _basisOfTriangle.Length ? _normalBases[_basisOfTriangle[triangle]] : NormalBasis;
 
     public (int A, int B, int C) Triangle(int triangle) =>
         (Indices[triangle * 3], Indices[triangle * 3 + 1], Indices[triangle * 3 + 2]);
