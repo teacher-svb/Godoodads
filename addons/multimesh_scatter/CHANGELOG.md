@@ -2,6 +2,17 @@
 
 All notable changes to MultiMesh Scatter are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.1.0] - 2026-11-10
+
+### Added
+- **GridMap surfaces:** pick a `GridMap` as the surface. Every used cell's item mesh is placed as GridMap draws it, and faces hidden between occupied cells are left out, so nothing is scattered inside stacked tiles. A *GridMap* group, shown only for GridMap surfaces, filters cells by item name (include or exclude) and by a box of cells. The status area reports the cells read and the covered triangles left out.
+- **Projected masks:** *Placement Mask → Projection → Top Down* lays a mask over the surface from above, over its area seen from above or the GridMap's cell box, so one mask can cover a whole map. Works for every surface kind.
+- Demo: `demo_gridmap.tscn`, grass on a small GridMap with ramps, a paving strip and a projected path mask.
+
+### Changed
+- The install instructions describe installing from the release zip.
+- Nothing changes for mesh and CSG surfaces: the same settings and seed give the same result as in 1.0.1.
+
 ## [1.0.1] - 2026-11-09
 
 ### Fixed

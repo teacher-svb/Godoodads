@@ -15,6 +15,9 @@ public enum OutputMode
 
 public enum UvSet { Uv1, Uv2 }
 
+/// <summary>Whether the GridMap item list names the items to use or the items to skip.</summary>
+public enum GridMapItemMode { Include, Exclude }
+
 public enum SlopeReferenceMode
 {
     /// <summary>Measure the slope against the orientation's target direction.</summary>
@@ -117,6 +120,19 @@ public partial class ScatterSettings : Resource
         }
     }
     [Export] public MaskChannel MaskChannel { get; set; } = MaskChannel.Luminance;
+    /// <summary>UV samples the mask at each point's UV; Top Down projects it from above over the surface.</summary>
+    [Export]
+    public MaskProjection MaskProjection
+    {
+        get => _maskProjection;
+        set
+        {
+            bool changed = _maskProjection != value;
+            _maskProjection = value;
+            if (changed)
+                NotifyPropertyListChanged();
+        }
+    }
     [Export] public UvSet MaskUvSet { get; set; } = UvSet.Uv1;
     [Export]
     public MaskMode MaskMode
@@ -155,6 +171,38 @@ public partial class ScatterSettings : Resource
     }
     [Export] public Vector3 SlopeCustomDirection { get; set; } = Vector3.Up;
 
+    /// <summary>
+    /// GridMap surfaces only (brief §10.1): the MeshLibrary item names to use, or to skip with
+    /// Exclude. Empty uses every item.
+    /// </summary>
+    [ExportGroup("GridMap", "GridMap")]
+    [Export] public string[] GridMapItems { get; set; } = System.Array.Empty<string>();
+    [Export] public GridMapItemMode GridMapItemMode { get; set; } = GridMapItemMode.Include;
+    /// <summary>Only cells inside this box, in GridMap cells. A size of 0 uses the whole map.</summary>
+    [Export] public Vector3I GridMapBoxOrigin { get; set; }
+    [Export] public Vector3I GridMapBoxSize { get; set; }
+
+    /// <summary>
+    /// Set by the dialog when the picked surface is a GridMap, so the GridMap group is only shown
+    /// then. Not saved.
+    /// </summary>
+    public bool SurfaceIsGridMap
+    {
+        get => _surfaceIsGridMap;
+        set
+        {
+            if (_surfaceIsGridMap == value)
+                return;
+            _surfaceIsGridMap = value;
+            NotifyPropertyListChanged();
+        }
+    }
+
+    private bool _surfaceIsGridMap;
+
+    public GridMapSelection ToGridMapSelection() =>
+        new(GridMapItems, GridMapItemMode == GridMapItemMode.Exclude, GridMapBoxOrigin, GridMapBoxSize);
+
     /// <summary>Surface node, relative to the MultiMeshInstance3D. Stored, not shown in the inspector.</summary>
     [Export] public NodePath SurfacePath { get; set; } = new();
 
@@ -162,6 +210,7 @@ public partial class ScatterSettings : Resource
     private SlopeReferenceMode _slopeReference;
     private Texture2D _maskTexture;
     private MaskMode _maskMode;
+    private MaskProjection _maskProjection;
     private NormalSource _normalSource;
 
     // Named methods rather than lambdas: lambda names change between builds, which breaks reloads.
@@ -191,6 +240,8 @@ public partial class ScatterSettings : Resource
         [PropertyName.NormalMapUvSet] = "UV1:0,UV2:1",
         [PropertyName.NormalSource] = "Face:0,Smooth:1,Normal Map:2",
         [PropertyName.MeshUpAxis] = "+X:0,-X:1,+Y:2,-Y:3,+Z:4,-Z:5",
+        [PropertyName.GridMapItemMode] = "Include:0,Exclude:1",
+        [PropertyName.MaskProjection] = "UV:0,Top Down:1",
     };
 
     public override void _ValidateProperty(Dictionary property)
@@ -201,9 +252,12 @@ public partial class ScatterSettings : Resource
         // Storage-only properties are saved but not shown in the inspector.
         string name = property["name"].AsString();
         if (name == PropertyName.SurfacePath
+            || (!_surfaceIsGridMap && (name == PropertyName.GridMapItems || name == PropertyName.GridMapItemMode
+                || name == PropertyName.GridMapBoxOrigin || name == PropertyName.GridMapBoxSize))
             || (_minDistance <= 0 && (name == PropertyName.CandidateFactor || name == PropertyName.AvoidSiblings))
             || (_slopeReference != SlopeReferenceMode.Custom && name == PropertyName.SlopeCustomDirection)
-            || (_maskTexture == null && (name == PropertyName.MaskChannel || name == PropertyName.MaskUvSet
+            || (_maskProjection == MaskProjection.TopDown && name == PropertyName.MaskUvSet)
+            || (_maskTexture == null && (name == PropertyName.MaskChannel || name == PropertyName.MaskProjection || name == PropertyName.MaskUvSet
                 || name == PropertyName.MaskMode || name == PropertyName.MaskThreshold || name == PropertyName.MaskInvert))
             || (_maskMode == MaskMode.Density && name == PropertyName.MaskThreshold)
             || (_normalSource != NormalSource.NormalMap && (name == PropertyName.NormalMapTexture || name == PropertyName.NormalMapUvSet
