@@ -153,6 +153,88 @@ public class WfcRegenerateTests
 
     [TestCase]
     [RequireGodotRuntime]
+    public void Clearing_with_keep_placed_cells_frees_generated_and_pinned_cells_only()
+    {
+        var binding = Binding();
+        var map = Map(binding);
+        var grid = GridTopology.Create3D(new Vector3I(5, 1, 1));
+        var at = (int x) => new Vector3I(x, 0, 0);
+
+        var record = new GeneratedRecord();
+        record.Set(at(0), 0, 0); map.SetCellItem(at(0), 0, 0);                 // generated, unchanged
+        record.Set(at(1), 0, 0, pinned: true); map.SetCellItem(at(1), 0, 0);   // generated, pinned
+        record.Set(at(2), 0, 0); map.SetCellItem(at(2), 1, 0);                 // generated, then edited
+        map.SetCellItem(at(3), 2, 0);                                          // placed by hand
+
+        var read = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record, clearPins: true);
+        AssertThat(read.Replaced).IsEqual(2);
+        AssertThat(read.ClearedPins).IsEqual(1);
+        AssertThat(read.Pinned).IsEqual(0);
+        AssertThat(read.Edited).IsEqual(1);
+        AssertThat(read.Kept).IsEqual(2);
+        AssertThat(read.Initial[0]).IsEqual(WfcSolver.Free);
+        AssertThat(read.Initial[1]).IsEqual(WfcSolver.Free);
+        AssertThat(read.Initial[2]).IsEqual(binding.Compiled.FindVariant(1, 0));
+        AssertThat(read.Initial[3]).IsEqual(binding.Compiled.FindVariant(2, 0));
+        AssertThat(read.Initial[4]).IsEqual(WfcSolver.Free);
+
+        // Without clearPins the pin holds, as in 1.3.0.
+        var kept = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record);
+        AssertThat(kept.Pinned).IsEqual(1);
+        AssertThat(kept.ClearedPins).IsEqual(0);
+        AssertThat(kept.Initial[1]).IsEqual(binding.Compiled.FindVariant(0, 0));
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void A_cleared_pin_leaves_no_entry_where_the_new_solve_is_empty()
+    {
+        var binding = Binding();
+        var grid = GridTopology.Create3D(new Vector3I(3, 1, 1));
+        var at = (int x) => new Vector3I(x, 0, 0);
+        var previous = new GeneratedRecord();
+        previous.Set(at(0), 0, 0, pinned: true);   // freed and solved empty
+        previous.Set(at(1), 0, 0, pinned: true);   // freed and solved as item 2
+        previous.Set(at(2), 0, 0, pinned: true);   // still pinned and fixed
+
+        int item0 = binding.Compiled.FindVariant(0, 0), item2 = binding.Compiled.FindVariant(2, 0), empty = binding.Compiled.FindVariant(3, 0);
+        var initial = new[] { WfcSolver.Free, WfcSolver.Free, item0 };
+        var record = GridMapCells.RecordAfter(previous, Vector3I.Zero, grid, binding, initial, new[] { empty, item2, item0 });
+
+        AssertThat(record.Contains(at(0))).IsFalse();
+        AssertThat(record.Matches(at(1), 2, 0) && !record.IsPinned(at(1))).IsTrue();
+        AssertThat(record.IsPinned(at(2))).IsTrue();
+    }
+
+    private static PropertyUsageFlags Usage(WfcSettings settings, string name) =>
+        (PropertyUsageFlags)settings.GetPropertyList().First(p => p["name"].AsString() == name)["usage"].AsInt64();
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void The_seed_is_read_only_while_randomise_seed_is_on()
+    {
+        var settings = new WfcSettings { Seed = 7 };
+        AssertThat(Usage(settings, WfcSettings.PropertyName.Seed).HasFlag(PropertyUsageFlags.ReadOnly)).IsFalse();
+        settings.RandomiseSeed = true;
+        var usage = Usage(settings, WfcSettings.PropertyName.Seed);
+        AssertThat(usage.HasFlag(PropertyUsageFlags.ReadOnly) && usage.HasFlag(PropertyUsageFlags.Editor) && usage.HasFlag(PropertyUsageFlags.Storage)).IsTrue();
+
+        settings.PickNewSeed();
+        AssertThat(settings.Seed).IsNotEqual(7L);
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Keep_placed_cells_is_shown_only_while_clear_bounds_first_is_on()
+    {
+        var settings = new WfcSettings { KeepPlacedCells = true };
+        AssertThat(Usage(settings, WfcSettings.PropertyName.KeepPlacedCells)).IsEqual(PropertyUsageFlags.Storage);
+        settings.ClearBoundsFirst = true;
+        AssertThat(Usage(settings, WfcSettings.PropertyName.KeepPlacedCells).HasFlag(PropertyUsageFlags.Editor)).IsTrue();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
     public void Undo_restores_the_previous_record()
     {
         // The same do and undo pair as the plugin's action, on a plain UndoRedo.

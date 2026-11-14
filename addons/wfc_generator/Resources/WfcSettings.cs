@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Godot;
+using Godot.Collections;
 using Godoodads.WfcGenerator.Core;
 
 namespace Godoodads.WfcGenerator;
@@ -15,12 +16,46 @@ public partial class WfcSettings : Resource
     public const string GeneratedKey = "godoodads_wfc_generated";
 
     [Export] public WfcTileSet TileSet { get; set; }
-    [Export] public long Seed { get; set; }
-    [ExportToolButton("Randomise Seed", Icon = "RandomNumberGenerator")]
-    public Callable RandomiseSeedButton => Callable.From(RandomiseSeed);
 
-    /// <summary>Removes everything in the bounds first. Otherwise occupied cells stay fixed.</summary>
-    [Export] public bool ClearBoundsFirst { get; set; }
+    private bool _randomiseSeed;
+    private bool _clearBoundsFirst;
+
+    /// <summary>Generate picks a new seed first. Off keeps the seed below, so Generate repeats its result.</summary>
+    [Export]
+    public bool RandomiseSeed
+    {
+        get => _randomiseSeed;
+        set
+        {
+            bool changed = _randomiseSeed != value;
+            _randomiseSeed = value;
+            if (changed)
+                NotifyPropertyListChanged();
+        }
+    }
+
+    /// <summary>The seed of the next Generate, or of the last one while Randomise Seed is on.</summary>
+    [Export] public long Seed { get; set; }
+
+    /// <summary>Removes the cells in the bounds first. Otherwise only the previous generation's cells are replaced.</summary>
+    [Export]
+    public bool ClearBoundsFirst
+    {
+        get => _clearBoundsFirst;
+        set
+        {
+            bool changed = _clearBoundsFirst != value;
+            _clearBoundsFirst = value;
+            if (changed)
+                NotifyPropertyListChanged();
+        }
+    }
+
+    /// <summary>
+    /// Clear keeps the cells you placed, and generated cells you edited since. Everything else
+    /// generated goes, pinned cells too. Off clears everything.
+    /// </summary>
+    [Export] public bool KeepPlacedCells { get; set; }
 
     [ExportGroup("Bounds")]
     [Export] public Vector3I BoundsOrigin { get; set; }
@@ -119,9 +154,24 @@ public partial class WfcSettings : Resource
         return boundary;
     }
 
-    public void RandomiseSeed()
+    /// <summary>Sets a new random seed, different from the current one.</summary>
+    public void PickNewSeed()
     {
-        Seed = GD.Randi();
+        long previous = Seed;
+        do
+            Seed = GD.Randi();
+        while (Seed == previous);
         NotifyPropertyListChanged();
+    }
+
+    public override void _ValidateProperty(Dictionary property)
+    {
+        string name = property["name"].AsString();
+        var usage = (PropertyUsageFlags)property["usage"].AsInt64();
+        if (name == PropertyName.Seed && RandomiseSeed)
+            property["usage"] = (long)(usage | PropertyUsageFlags.ReadOnly);
+        // Storage-only properties are saved but not shown in the inspector.
+        else if (name == PropertyName.KeepPlacedCells && !ClearBoundsFirst)
+            property["usage"] = (long)PropertyUsageFlags.Storage;
     }
 }

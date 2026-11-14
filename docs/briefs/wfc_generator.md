@@ -321,6 +321,13 @@ Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.3*. One releas
 
 The 2D adapter moves to 1.4 (§14). Region weight masks and multi-cell tiles stay in *WFC 2.0*. Renaming sockets across a tile set, matching-face thumbnails and suggesting sockets from terrain sets go to the README backlog.
 
+#### 13.6 Patch 1.3.1
+
+Requested on 2026-11-14, tracked under the epic *WFC 1.3.1*, before 1.4 work starts. Both options default to off, so settings stored by 1.3.0 behave as before.
+
+- **Randomise Seed** is a checkbox instead of a button. On: the Seed row is read-only and Generate picks a new seed first; the stored settings and status line show it. Off: the seed is editable and Generate keeps using it.
+- **Keep Placed Cells**, shown only while Clear Bounds First is on (amends §11.2, "Clear Bounds First still removes everything"): clear frees every generated cell, pinned ones too, and keeps hand-placed cells and generated cells edited since.
+
 ---
 
 ### 14. Release 1.4
