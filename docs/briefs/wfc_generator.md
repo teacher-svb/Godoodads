@@ -328,6 +328,13 @@ Requested on 2026-11-14, tracked under the epic *WFC 1.3.1*, before 1.4 work sta
 - **Randomise Seed** is a checkbox instead of a button. On: the Seed row is read-only and Generate picks a new seed first; the stored settings and status line show it. Off: the seed is editable and Generate keeps using it.
 - **Keep Placed Cells**, shown only while Clear Bounds First is on (amends §11.2, "Clear Bounds First still removes everything"): clear frees every generated cell, pinned ones too, and keeps hand-placed cells and generated cells edited since.
 
+#### 13.7 Patch 1.3.2
+
+Requested on 2026-11-14, tracked under the epic *WFC 1.3.2*.
+
+- **Failed seed:** with Randomise Seed on, a Generate that does not succeed (no solution, out of attempts, path errors, solver error, stopped or cancelled) puts Seed back to the seed before it, since the GridMap was not changed. Seeds that failed are not picked again while the dialog stays open.
+- **Clear Bounds** button: clears the bounds by the rules of Clear Bounds First and Keep Placed Cells, without solving, as one undo step with the regenerate record (entries in the bounds go, pins too) and the tagged markers on cleared cells. Needs no tile set. Keep Placed Cells is therefore always shown.
+
 ---
 
 ### 14. Release 1.4
