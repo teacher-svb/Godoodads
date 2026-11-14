@@ -5,8 +5,9 @@ using Godoodads.MultiMeshScatter.Core;
 namespace Godoodads.MultiMeshScatter.Adapters;
 
 /// <summary>
-/// Which cells of a GridMap surface are used (brief §10.1): items by name, included or excluded
-/// (none listed means all), and a box of cells (a size of 0 means the whole map).
+/// Which cells of a GridMap surface are used (brief §10.1): items by name or wildcard pattern
+/// (see <see cref="NameFilter"/>), included or excluded (none listed means all), and a box of
+/// cells (a size of 0 means the whole map).
 /// </summary>
 public sealed record GridMapSelection(IReadOnlyList<string> Items = null, bool Exclude = false, Vector3I BoxOrigin = default, Vector3I BoxSize = default)
 {
@@ -17,8 +18,11 @@ public sealed record GridMapSelection(IReadOnlyList<string> Items = null, bool E
             && cell.X < BoxOrigin.X + BoxSize.X && cell.Y < BoxOrigin.Y + BoxSize.Y && cell.Z < BoxOrigin.Z + BoxSize.Z);
 }
 
-/// <summary>What a GridMap surface was built from, for the report.</summary>
-public readonly record struct GridMapSurfaceStats(int Cells, int CoveredTriangles);
+/// <summary>
+/// What a GridMap surface was built from, for the report. <see cref="UnmatchedItems"/> lists the
+/// item filter entries that match no item of the MeshLibrary.
+/// </summary>
+public readonly record struct GridMapSurfaceStats(int Cells, int CoveredTriangles, IReadOnlyList<string> UnmatchedItems = null);
 
 /// <summary>Reads the triangles of a MeshInstance3D, root CSG shape or GridMap into <see cref="SurfaceData"/>.</summary>
 public static class SurfaceSource
@@ -101,7 +105,17 @@ public static class SurfaceSource
             return null;
         }
 
-        var names = new HashSet<string>(selection.Items ?? System.Array.Empty<string>());
+        var filter = new NameFilter(selection.Items, selection.Exclude);
+        List<string> unmatched = null;
+        if (!filter.IsEmpty)
+        {
+            var itemNames = new List<string>();
+            foreach (int id in library.GetItemList())
+                itemNames.Add(library.GetItemName(id));
+            unmatched = filter.Unmatched(itemNames);
+        }
+        // Matched once per item, not per cell.
+        var accepted = new Dictionary<int, bool>();
         var itemSurfaces = new Dictionary<int, List<SurfaceArrays>>();
         var faceCache = new Dictionary<(int Item, int Orientation), int[][]>();
         var cellSize = map.CellSize;
@@ -113,8 +127,13 @@ public static class SurfaceSource
             if (!selection.Contains(cell))
                 continue;
             int item = map.GetCellItem(cell);
-            if (names.Count > 0 && names.Contains(library.GetItemName(item)) == selection.Exclude)
-                continue;
+            if (!filter.IsEmpty)
+            {
+                if (!accepted.TryGetValue(item, out bool use))
+                    accepted[item] = use = filter.Accepts(library.GetItemName(item));
+                if (!use)
+                    continue;
+            }
             if (!itemSurfaces.TryGetValue(item, out var parts))
             {
                 var mesh = library.GetItemMesh(item);
@@ -167,7 +186,7 @@ public static class SurfaceSource
             }
         }
 
-        stats = new GridMapSurfaceStats(cells, covered);
+        stats = new GridMapSurfaceStats(cells, covered, unmatched);
         if (cells == 0)
         {
             error = $"No cells of '{map.Name}' match the GridMap filter and box.";

@@ -1,15 +1,15 @@
 ---
 id: "scatter-1-1-review-2026-11-10"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "Scatter 1.1"
 dueDate: null
 created: "2026-11-10T16:00:00.000Z"
-modified: "2026-11-10T18:20:00.000Z"
-completedAt: null
+modified: "2026-11-14T16:50:14.069Z"
+completedAt: "2026-11-14T16:50:14.069Z"
 labels: ["review"]
-order: "gZ"
+order: "Zq"
 ---
 # Scatter 1.1: Release review
 

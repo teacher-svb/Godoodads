@@ -40,7 +40,7 @@ A `GridMap` works as a surface too: every used cell's item mesh counts, placed e
 
 With a GridMap picked, the dialog shows a **GridMap** group:
 
-- **Items** and **Item Mode**: the item names to use (**Include**) or to skip (**Exclude**). Empty uses every item. For example, exclude `Paving` to keep grass off the paths.
+- **Items** and **Item Mode**: the item names to use (**Include**) or to skip (**Exclude**). Empty uses every item. For example, exclude `Paving` to keep grass off the paths. An entry may be a wildcard pattern, matched as Godot's `String.match` does: `*` matches any run of characters (also none) and `?` exactly one character (but not a `.`). Names are case-sensitive. An item counts as listed when it matches any entry, so for a library with many variants, exclude `path_*` instead of every path tile, or include `border_*` and `floor_?`. An entry that matches no item in the `MeshLibrary` is reported, for example `GridMap item 'bordr_*' matches no item.`
 - **Box Origin** and **Box Size**: only the cells in this box, in GridMap cells. A size of 0 uses the whole map. Neighbours outside the box still hide faces.
 
 The status area adds a line such as `Read 165 GridMap cells; left out 1,288 triangles covered by neighbouring cells.` The slope filter works as usual, so a maximum of about 50° keeps instances on tops and ramps.
@@ -78,7 +78,7 @@ By default a mask is sampled at each point's UV, so on a GridMap it repeats on e
 | Surface | Sampler | **Area Weighted**: even density per square metre (measured in world space, so scaled surfaces stay even). **Uniform Per Triangle**: denser where triangles are small. |
 | Surface → Slope Filter | Min / Max Degrees | Place only where the angle between the face normal and the reference lies in this range. 0–180 means no filtering. |
 | | Reference, Custom Direction | Measure against the target direction, or against a custom vector. |
-| GridMap | Items, Item Mode | GridMap surfaces only: the item names to include or exclude. Empty uses all. |
+| GridMap | Items, Item Mode | GridMap surfaces only: the item names to include or exclude, with `*` (any characters) and `?` (one character) as wildcards, for example exclude `path_*`. Empty uses all. |
 | | Box Origin, Box Size | GridMap surfaces only: the cells to use. A size of 0 uses the whole map. |
 
 ## Presets

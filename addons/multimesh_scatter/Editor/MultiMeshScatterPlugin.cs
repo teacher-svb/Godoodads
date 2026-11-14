@@ -134,6 +134,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         if (surface == null)
         {
             Notify.Report(_dialog, error, ToolDialog.Severity.Error);
+            ReportUnmatchedItems(gridStats);
             return;
         }
         var filters = BuildFilters(surface, out error);
@@ -173,6 +174,7 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         ReportResult(result, existing, clock.ElapsedMilliseconds);
         if (gridStats is { } cells)
             _dialog.AddStatus($"Read {cells.Cells:N0} GridMap cells; left out {cells.CoveredTriangles:N0} triangles covered by neighbouring cells.");
+        ReportUnmatchedItems(gridStats);
         if (_settings.NormalSource != NormalSource.Face && !surface.HasNormals)
             _dialog.AddStatus("The surface has no vertex normals; face normals were used instead.", ToolDialog.Severity.Warning);
         if (generatedTangents)
@@ -183,6 +185,15 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
     {
         _settings.SurfaceIsGridMap = node is GridMap;
         _dialog.SetActionEnabled(node != null);
+    }
+
+    /// <summary>One warning per GridMap item filter entry that matches no MeshLibrary item, so typos show.</summary>
+    private void ReportUnmatchedItems(GridMapSurfaceStats? gridStats)
+    {
+        if (gridStats?.UnmatchedItems is not { } unmatched)
+            return;
+        foreach (var entry in unmatched)
+            _dialog.AddStatus($"GridMap item '{entry}' matches no item.", ToolDialog.Severity.Warning);
     }
 
     /// <summary>The surface's triangles; for a GridMap with the dialog's item filter and box, and its counts.</summary>
