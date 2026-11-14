@@ -18,7 +18,6 @@ public partial class WfcSettings : Resource
     [Export] public WfcTileSet TileSet { get; set; }
 
     private bool _randomiseSeed;
-    private bool _clearBoundsFirst;
 
     /// <summary>Generate picks a new seed first. Off keeps the seed below, so Generate repeats its result.</summary>
     [Export]
@@ -38,24 +37,21 @@ public partial class WfcSettings : Resource
     [Export] public long Seed { get; set; }
 
     /// <summary>Removes the cells in the bounds first. Otherwise only the previous generation's cells are replaced.</summary>
-    [Export]
-    public bool ClearBoundsFirst
-    {
-        get => _clearBoundsFirst;
-        set
-        {
-            bool changed = _clearBoundsFirst != value;
-            _clearBoundsFirst = value;
-            if (changed)
-                NotifyPropertyListChanged();
-        }
-    }
+    [Export] public bool ClearBoundsFirst { get; set; }
 
     /// <summary>
-    /// Clear keeps the cells you placed, and generated cells you edited since. Everything else
-    /// generated goes, pinned cells too. Off clears everything.
+    /// Clear Bounds First and the Clear Bounds button keep the cells you placed, and generated cells
+    /// you edited since. Everything else generated goes, pinned cells too. Off clears everything.
     /// </summary>
     [Export] public bool KeepPlacedCells { get; set; }
+
+    /// <summary>Raised by the Clear Bounds button. The WFC plugin clears the bounds by the rules above.</summary>
+    [Signal] public delegate void ClearRequestedEventHandler();
+
+    [ExportToolButton("Clear Bounds", Icon = "Clear")]
+    public Callable ClearBoundsButton => Callable.From(RequestClear);
+
+    private void RequestClear() => EmitSignal(SignalName.ClearRequested);
 
     [ExportGroup("Bounds")]
     [Export] public Vector3I BoundsOrigin { get; set; }
@@ -154,13 +150,15 @@ public partial class WfcSettings : Resource
         return boundary;
     }
 
-    /// <summary>Sets a new random seed, different from the current one.</summary>
-    public void PickNewSeed()
+    /// <summary>Sets a new random seed, different from the current one and from any in <paramref name="avoid"/>.</summary>
+    public void PickNewSeed(ICollection<long> avoid = null)
     {
         long previous = Seed;
+        long seed;
         do
-            Seed = GD.Randi();
-        while (Seed == previous);
+            seed = GD.Randi();
+        while (seed == previous || (avoid != null && avoid.Contains(seed)));
+        Seed = seed;
         NotifyPropertyListChanged();
     }
 
@@ -170,8 +168,5 @@ public partial class WfcSettings : Resource
         var usage = (PropertyUsageFlags)property["usage"].AsInt64();
         if (name == PropertyName.Seed && RandomiseSeed)
             property["usage"] = (long)(usage | PropertyUsageFlags.ReadOnly);
-        // Storage-only properties are saved but not shown in the inspector.
-        else if (name == PropertyName.KeepPlacedCells && !ClearBoundsFirst)
-            property["usage"] = (long)PropertyUsageFlags.Storage;
     }
 }

@@ -2,6 +2,17 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.2] - 2026-11-14
+
+### Added
+- **Clear Bounds** button: clears the bounds right away by the rules of Clear Bounds First and Keep Placed Cells, with the markers on cleared cells, as one undo step. Needs no tile set.
+
+### Changed
+- Keep Placed Cells is always shown, because it also applies to Clear Bounds.
+
+### Fixed
+- With Randomise Seed on, a Generate that fails or is stopped puts Seed back to the seed before it, which still matches the GridMap. A seed that failed is not picked again while the dialog stays open.
+
 ## [1.3.1] - 2026-11-14
 
 ### Changed

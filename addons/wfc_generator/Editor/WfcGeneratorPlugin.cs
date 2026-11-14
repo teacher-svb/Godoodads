@@ -27,10 +27,11 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     /// <summary>
     /// One running solve. Never survives an assembly reload, which cancels it first. While the solve
     /// is shown, Preview holds the original item and orientation of every cell written so far.
+    /// PreviousSeed is the seed before Randomise Seed picked this run's, or null when it was not on.
     /// </summary>
     private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin,
         long Seed, int CellsPerFrame, Stopwatch Clock, List<string> Warnings, Dictionary<int, (int Item, int Orientation)> Preview,
-        GeneratedRecord Record);
+        GeneratedRecord Record, long? PreviousSeed);
 
     private SpatialMenuHook _menu;
     private DialogInspectorFilterPlugin _dialogFilter;
@@ -46,6 +47,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
 
     private ActiveRun _run;
     private double _sinceProgress;
+
+    /// <summary>Randomised seeds that failed since the dialog was opened. Randomise Seed does not pick them again.</summary>
+    private readonly HashSet<long> _failedSeeds = new();
 
     public override void _EnterTree()
     {
@@ -145,6 +149,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             SetRunning(false);
             RestorePreview(finished);
             Finish(finished);
+            ReportFailedSeed(finished);
             return;
         }
 
@@ -171,6 +176,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
 
         RemoveOverlay();
         _failedCells.Clear();
+        _failedSeeds.Clear();
         _target = _selected;
         if (WfcSettings.StoredOn(_target) is { } stored)
             _settings = (WfcSettings)stored.Duplicate();
@@ -178,6 +184,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var onPin = new Callable(this, MethodName.OnPinRequested);
         if (!_settings.IsConnected(WfcSettings.SignalName.PinRequested, onPin))
             _settings.Connect(WfcSettings.SignalName.PinRequested, onPin);
+        var onClear = new Callable(this, MethodName.OnClearRequested);
+        if (!_settings.IsConnected(WfcSettings.SignalName.ClearRequested, onClear))
+            _settings.Connect(WfcSettings.SignalName.ClearRequested, onClear);
         _dialog.Edit(_settings);
         _dialog.SetStatus($"Target: {_target.Name}");
         if (_target.MeshLibrary == null)
@@ -263,8 +272,12 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             return;
         }
 
+        long? previousSeed = null;
         if (_settings.RandomiseSeed)
-            _settings.PickNewSeed();
+        {
+            previousSeed = _settings.Seed;
+            _settings.PickNewSeed(_failedSeeds);
+        }
 
         var origin = _settings.BoundsOrigin;
         // Cells the last generation wrote are free again unless they were edited since (brief §11.2).
@@ -278,7 +291,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         var paths = _settings.HasPaths ? new PathRequest(_settings.PathSocket, _settings.PathWander, origin) : null;
         var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0, paths);
         _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, cellsPerFrame, Stopwatch.StartNew(),
-            binding.Warnings(), new Dictionary<int, (int, int)>(), record);
+            binding.Warnings(), new Dictionary<int, (int, int)>(), record, previousSeed);
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         job.Start();
@@ -529,13 +542,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             undoRedo.AddDoReference(container);
             undoRedo.AddUndoMethod(_target, Node.MethodName.RemoveChild, container);
         }
-        foreach (var old in replaced)
-        {
-            undoRedo.AddDoMethod(container, Node.MethodName.RemoveChild, old);
-            undoRedo.AddUndoMethod(container, Node.MethodName.AddChild, old, true);
-            undoRedo.AddUndoMethod(old, Node.MethodName.SetOwner, root);
-            undoRedo.AddUndoReference(old);
-        }
+        AddMarkerRemovals(undoRedo, container, root, replaced);
         int placed = 0, skipped = 0;
         foreach (var placement in placements)
         {
@@ -552,6 +559,80 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             placed++;
         }
         return (placed, replaced.Count, skipped);
+    }
+
+    /// <summary>Removes markers from their container in the open undo action, and puts them back on undo.</summary>
+    private static void AddMarkerRemovals(EditorUndoRedoManager undoRedo, Node3D container, Node root, List<Node3D> markers)
+    {
+        foreach (var old in markers)
+        {
+            undoRedo.AddDoMethod(container, Node.MethodName.RemoveChild, old);
+            undoRedo.AddUndoMethod(container, Node.MethodName.AddChild, old, true);
+            undoRedo.AddUndoMethod(old, Node.MethodName.SetOwner, root);
+            undoRedo.AddUndoReference(old);
+        }
+    }
+
+    /// <summary>
+    /// Clears the bounds by the rules of Clear Bounds First, as one undo step with the regenerate
+    /// record and the markers on cleared cells. Needs no tile set.
+    /// </summary>
+    public void OnClearRequested()
+    {
+        if (!TargetIsAlive)
+            return;
+        if (_run != null)
+        {
+            _dialog.AddStatus("Stop the running generation before clearing.", ToolDialog.Severity.Warning);
+            return;
+        }
+        _dialog.ClearStatus();
+        _failedCells.Clear();
+        if (BoundsProblem() is { } problem)
+        {
+            Notify.Report(_dialog, problem, ToolDialog.Severity.Error);
+            return;
+        }
+        GridTopology grid;
+        try
+        {
+            grid = GridTopology.Create3D(_settings.BoundsSize);
+        }
+        catch (System.ArgumentOutOfRangeException)
+        {
+            Notify.Report(_dialog, "The bounds contain too many cells.", ToolDialog.Severity.Error);
+            return;
+        }
+
+        var origin = _settings.BoundsOrigin;
+        var previous = GridMapCells.ReadRecord(_target);
+        var cleared = GridMapCells.Clear(_target, origin, grid, previous, _settings.KeepPlacedCells);
+        var markers = GridMapMarkers.Replaced(_target, origin, grid, cleared.Initial);
+        var record = GridMapCells.RecordAfterClear(previous, origin, grid.Size);
+        if (cleared.Cleared == 0 && markers.Count == 0 && record.Count == previous.Count)
+        {
+            _dialog.SetStatus(cleared.Kept > 0
+                ? $"Nothing to clear: the {cleared.Kept:N0} cells in the bounds were placed by you (Keep Placed Cells is on)."
+                : "Nothing to clear: the bounds are empty.");
+            return;
+        }
+
+        var undoRedo = GetUndoRedo();
+        undoRedo.CreateAction("Clear WFC Bounds", UndoRedo.MergeMode.Disable, _target);
+        undoRedo.AddDoMethod(this, MethodName.ApplyCells, _target, cleared.Changes.Do);
+        undoRedo.AddUndoMethod(this, MethodName.ApplyCells, _target, cleared.Changes.Undo);
+        undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, record.Encode());
+        undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, GridMapCells.StoredRecord(_target));
+        if (markers.Count > 0)
+            AddMarkerRemovals(undoRedo, GridMapMarkers.Container(_target), EditorInterface.Singleton.GetEditedSceneRoot() ?? _target, markers);
+        undoRedo.CommitAction();
+
+        _dialog.SetStatus($"Cleared {cleared.Cleared:N0} cells in the bounds"
+            + (cleared.ClearedPins > 0 ? $", including {cleared.ClearedPins:N0} pinned cells." : "."), ToolDialog.Severity.Success);
+        if (cleared.Kept > 0)
+            _dialog.AddStatus($"Kept {cleared.Kept:N0} cells you placed or edited (Keep Placed Cells is on).");
+        if (markers.Count > 0)
+            _dialog.AddStatus($"Removed {markers.Count:N0} markers from {GridMapMarkers.ContainerName}.");
     }
 
     /// <summary>Do and undo target of a generation.</summary>
@@ -602,7 +683,10 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             GridMapCells.WriteRecord(map, record);
     }
 
-    /// <summary>Cancels a running solve, waits for its thread and removes its preview. Returns true if one was running.</summary>
+    /// <summary>
+    /// Cancels a running solve, waits for its thread and removes its preview. A randomised seed goes
+    /// back to the one before, as the GridMap was not changed. Returns true if one was running.
+    /// </summary>
     private bool StopRun()
     {
         if (_run == null)
@@ -611,8 +695,40 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         if (!_run.Job.Wait(5000))
             GD.PushError("WFC Generator: the solver thread did not stop in time.");
         RestorePreview(_run);
+        RestoreSeed(_run);
         _run = null;
         return true;
+    }
+
+    /// <summary>
+    /// Puts Seed back to the seed before a randomised Generate that did not change the GridMap.
+    /// Returns that seed, or null when Randomise Seed was off for the run.
+    /// </summary>
+    private long? RestoreSeed(ActiveRun run)
+    {
+        // Seed is read-only during a randomised run; a different value means the user changed it since.
+        if (run.PreviousSeed is not long previous || _settings.Seed != run.Seed)
+            return null;
+        _settings.Seed = previous;
+        _settings.NotifyPropertyListChanged();
+        return previous;
+    }
+
+    /// <summary>After a finished run that did not succeed: restores the seed and keeps the failed one from being picked again.</summary>
+    private void ReportFailedSeed(ActiveRun run)
+    {
+        if (run.Job.Error == null && run.Job.Plan is not { IsValid: false } && run.Job.Result?.Status == SolveStatus.Solved)
+            return;
+        if (run.Job.Error == null && run.Job.Result?.Status == SolveStatus.Cancelled)
+        {
+            RestoreSeed(run);   // stopped, not failed: the seed may still be a good one
+            return;
+        }
+        if (RestoreSeed(run) is not long previous)
+            return;
+        _failedSeeds.Add(run.Seed);
+        _dialog.AddStatus($"Seed {run.Seed} failed, so Seed is back at {previous}, the seed before this Generate. "
+            + "The next Generate tries a new seed.", ToolDialog.Severity.Info);
     }
 
     private void SetRunning(bool running)

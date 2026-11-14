@@ -55,7 +55,7 @@ Kept 10,000 existing cells.
 
 ### Cells you place yourself
 
-Cells already in the bounds stay where they are, and the solve fills in around them. Use this to paint a ground layer, a road or a landmark first. Turn on **Clear Bounds First** to replace everything instead. With **Keep Placed Cells** on as well, Clear removes everything that was generated, pinned cells too, and keeps the cells you placed.
+Cells already in the bounds stay where they are, and the solve fills in around them. Use this to paint a ground layer, a road or a landmark first. Turn on **Clear Bounds First** to replace everything instead. With **Keep Placed Cells** on as well, Clear removes everything that was generated, pinned cells too, and keeps the cells you placed. **Clear Bounds** does the same clearing right away, without generating: everything in the bounds, or with Keep Placed Cells only the generated cells, together with their markers. It is one undo step and needs no tile set.
 
 A cell whose item has no tile, or whose rotation is not one the tile allows, is left alone and does not constrain its neighbours. The status area reports how many there were.
 
@@ -83,10 +83,11 @@ Give some tiles **path faces**: faces whose socket has one name, such as `path` 
 | Option | What it does |
 |---|---|
 | Tile Set | The `WfcTileSet` to generate with. Its `MeshLibrary` must be the GridMap's. |
-| Randomise Seed | On: every Generate picks a new seed, shown (read-only) under Seed and in the status area. Off: Generate keeps using Seed. |
+| Randomise Seed | On: every Generate picks a new seed, shown (read-only) under Seed and in the status area. If that Generate fails or is stopped, Seed goes back to the seed before it, and a failed seed is not picked again while the dialog stays open. Off: Generate keeps using Seed. |
 | Seed | The same seed, settings and placed cells give the same result. Type a seed here, with Randomise Seed off, to repeat a result. |
 | Clear Bounds First | Removes everything in the bounds before solving, including cells you placed. Otherwise placed cells are kept. |
-| Keep Placed Cells | Shown with Clear Bounds First. Clear removes only generated cells, pinned ones too, and keeps the cells you placed and generated cells you edited since. |
+| Keep Placed Cells | For Clear Bounds First and Clear Bounds: clear only generated cells, pinned ones too, and keep the cells you placed and generated cells you edited since. |
+| Clear Bounds | Clears the bounds now by the two rows above, with undo. |
 | Bounds → Origin, Size | The box of cells to fill, in GridMap cell coordinates. You can also drag its handles in the viewport. |
 | Pin Box → Origin, Size, buttons | A second box for pinning generated cells (see above). A size of 0 hides it. |
 | Boundary → Pos X … Neg Z | Optional socket per face of the bounds, as if a fixed neighbour with that socket sat outside it. For example `rock` on Neg Y gives a solid floor without painting a ground layer. Empty leaves the face unconstrained. |

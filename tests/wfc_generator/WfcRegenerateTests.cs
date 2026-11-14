@@ -225,12 +225,116 @@ public class WfcRegenerateTests
 
     [TestCase]
     [RequireGodotRuntime]
-    public void Keep_placed_cells_is_shown_only_while_clear_bounds_first_is_on()
+    public void A_new_seed_avoids_the_seeds_that_failed()
     {
-        var settings = new WfcSettings { KeepPlacedCells = true };
-        AssertThat(Usage(settings, WfcSettings.PropertyName.KeepPlacedCells)).IsEqual(PropertyUsageFlags.Storage);
-        settings.ClearBoundsFirst = true;
+        // Randi has 2^32 values; avoiding all but two of a narrow guess is not testable, so check
+        // that the avoided set and the current seed are never returned over many picks.
+        var settings = new WfcSettings { Seed = 5 };
+        var failed = new System.Collections.Generic.HashSet<long>();
+        for (int i = 0; i < 200; i++)
+        {
+            long current = settings.Seed;
+            settings.PickNewSeed(failed);
+            AssertThat(settings.Seed).IsNotEqual(current);
+            AssertThat(failed.Contains(settings.Seed)).IsFalse();
+            failed.Add(settings.Seed);
+        }
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Keep_placed_cells_is_shown_also_while_clear_bounds_first_is_off()
+    {
+        // It also applies to the Clear Bounds button.
+        var settings = new WfcSettings { ClearBoundsFirst = false };
         AssertThat(Usage(settings, WfcSettings.PropertyName.KeepPlacedCells).HasFlag(PropertyUsageFlags.Editor)).IsTrue();
+    }
+
+    private static (GridMap Map, GridTopology Grid, GeneratedRecord Record) ClearScene()
+    {
+        var map = AutoFree(new GridMap());
+        var grid = GridTopology.Create3D(new Vector3I(5, 1, 1));
+        var at = (int x) => new Vector3I(x, 0, 0);
+        var record = new GeneratedRecord();
+        record.Set(at(0), 0, 0); map.SetCellItem(at(0), 0, 0);                 // generated, unchanged
+        record.Set(at(1), 0, 0, pinned: true); map.SetCellItem(at(1), 0, 0);   // generated, pinned
+        record.Set(at(2), 0, 0); map.SetCellItem(at(2), 1, 22);                // generated, then edited
+        map.SetCellItem(at(3), 2, 10);                                         // placed by hand
+        record.Set(new Vector3I(9, 0, 0), 0, 0);                               // outside the bounds
+        return (map, grid, record);
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Clear_bounds_removes_every_cell_and_undo_puts_them_back()
+    {
+        var (map, grid, record) = ClearScene();
+        var cleared = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: false);
+        AssertThat(cleared.Cleared).IsEqual(4);
+        AssertThat(cleared.Kept).IsEqual(0);
+        AssertThat(cleared.ClearedPins).IsEqual(1);
+        AssertThat(cleared.Initial.All(c => c == WfcSolver.Free)).IsTrue();
+
+        GridMapCells.Apply(map, cleared.Changes.Do);
+        AssertThat(map.GetUsedCells().Count).IsEqual(0);
+        GridMapCells.Apply(map, cleared.Changes.Undo);
+        AssertThat(map.GetCellItem(new Vector3I(2, 0, 0))).IsEqual(1);
+        AssertThat(map.GetCellItemOrientation(new Vector3I(2, 0, 0))).IsEqual(22);
+        AssertThat(map.GetCellItemOrientation(new Vector3I(3, 0, 0))).IsEqual(10);
+        AssertThat(map.GetUsedCells().Count).IsEqual(4);
+
+        var after = GridMapCells.RecordAfterClear(record, Vector3I.Zero, grid.Size);
+        AssertThat(after.Count).IsEqual(1);
+        AssertThat(after.Contains(new Vector3I(9, 0, 0))).IsTrue();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Clear_bounds_with_keep_placed_cells_keeps_placed_and_edited_cells()
+    {
+        var (map, grid, record) = ClearScene();
+        var cleared = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: true);
+        AssertThat(cleared.Cleared).IsEqual(2);
+        AssertThat(cleared.ClearedPins).IsEqual(1);
+        AssertThat(cleared.Kept).IsEqual(2);
+        AssertThat(cleared.Initial[0]).IsEqual(WfcSolver.Free);
+        AssertThat(cleared.Initial[2]).IsEqual(WfcSolver.Excluded);
+        AssertThat(cleared.Initial[3]).IsEqual(WfcSolver.Excluded);
+
+        GridMapCells.Apply(map, cleared.Changes.Do);
+        AssertThat(map.GetCellItem(new Vector3I(0, 0, 0))).IsEqual((int)GridMap.InvalidCellItem);
+        AssertThat(map.GetCellItem(new Vector3I(1, 0, 0))).IsEqual((int)GridMap.InvalidCellItem);
+        AssertThat(map.GetCellItem(new Vector3I(2, 0, 0))).IsEqual(1);
+        AssertThat(map.GetCellItem(new Vector3I(3, 0, 0))).IsEqual(2);
+
+        // Without a record, every cell counts as placed by you.
+        var unrecorded = GridMapCells.Clear(map, Vector3I.Zero, grid, new GeneratedRecord(), keepPlaced: true);
+        AssertThat(unrecorded.Cleared).IsEqual(0);
+        AssertThat(unrecorded.Kept).IsEqual(2);
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Clear_bounds_removes_the_markers_on_cleared_cells_only()
+    {
+        var (map, grid, record) = ClearScene();
+        var container = new Node3D { Name = GridMapMarkers.ContainerName };
+        map.AddChild(container);
+        Node3D Marker(int x)
+        {
+            var marker = new Node3D { Position = map.MapToLocal(new Vector3I(x, 0, 0)) };
+            marker.SetMeta(GridMapMarkers.TagKey, true);
+            container.AddChild(marker);
+            return marker;
+        }
+        var onGenerated = Marker(0);
+        Marker(2);   // on the edited cell, which stays
+
+        var cleared = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: true);
+        var markers = GridMapMarkers.Replaced(map, Vector3I.Zero, grid, cleared.Initial);
+        AssertThat(markers.Count).IsEqual(1);
+        AssertThat(markers[0] == onGenerated).IsTrue();
+        AssertThat(GridMapMarkers.Replaced(map, Vector3I.Zero, grid, GridMapCells.Clear(map, Vector3I.Zero, grid, record, false).Initial).Count).IsEqual(2);
     }
 
     [TestCase]

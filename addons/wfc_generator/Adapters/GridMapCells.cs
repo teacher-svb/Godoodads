@@ -19,6 +19,13 @@ public sealed record CellChanges(int[] Do, int[] Undo)
     public const int Stride = 5;
 }
 
+/// <summary>
+/// What the Clear Bounds button removes. Initial marks the cells that stay as Excluded and every
+/// other cell as Free, in the same form as a solve's starting state (for markers). ClearedPins
+/// counts pinned cells among the Cleared ones.
+/// </summary>
+public sealed record ClearedCells(CellChanges Changes, int[] Initial, int Cleared, int Kept, int ClearedPins);
+
 /// <summary>Reads and writes GridMap cells for a solve inside bounds starting at an origin.</summary>
 public static class GridMapCells
 {
@@ -101,6 +108,52 @@ public static class GridMapCells
             if (item != WfcTile.EmptyItem)
                 record.Set(position, item, GridMapOrientation.FromQuarterTurns(variant.QuarterTurns));
         }
+        return record;
+    }
+
+    /// <summary>
+    /// The cells the Clear Bounds button removes, by the rules of Clear Bounds First: every occupied
+    /// cell, or with <paramref name="keepPlaced"/> only the cells that still hold what a generation
+    /// wrote (pinned too), so hand-placed and edited cells stay. Needs no tile set.
+    /// </summary>
+    public static ClearedCells Clear(GridMap map, Vector3I origin, GridTopology grid, GeneratedRecord record, bool keepPlaced)
+    {
+        var initial = new int[grid.CellCount];
+        Array.Fill(initial, WfcSolver.Free);
+        var apply = new List<int>();
+        var revert = new List<int>();
+        int cleared = 0, kept = 0, clearedPins = 0;
+        for (int cell = 0; cell < grid.CellCount; cell++)
+        {
+            var position = origin + grid.Coordinates(cell);
+            int item = map.GetCellItem(position);
+            if (item == GridMap.InvalidCellItem)
+                continue;
+            int orientation = map.GetCellItemOrientation(position);
+            bool generated = record != null && record.Matches(position, item, orientation);
+            if (keepPlaced && !generated)
+            {
+                initial[cell] = WfcSolver.Excluded;
+                kept++;
+                continue;
+            }
+            if (generated && record.IsPinned(position))
+                clearedPins++;
+            Append(apply, position, (int)GridMap.InvalidCellItem, 0);
+            Append(revert, position, item, Math.Max(orientation, 0));
+            cleared++;
+        }
+        return new ClearedCells(new CellChanges(apply.ToArray(), revert.ToArray()), initial, cleared, kept, clearedPins);
+    }
+
+    /// <summary>The record after a Clear: no entries inside the bounds, pins included, and the rest unchanged.</summary>
+    public static GeneratedRecord RecordAfterClear(GeneratedRecord previous, Vector3I origin, Vector3I size)
+    {
+        var record = new GeneratedRecord();
+        if (previous != null)
+            foreach (var (position, written) in previous.Cells)
+                record.Set(position, written.Item, written.Orientation, written.Pinned);
+        record.RemoveInside(origin, size);
         return record;
     }
 
