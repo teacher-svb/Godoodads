@@ -114,6 +114,98 @@ public class GridMapSurfaceTests
         AssertThat(error).Contains("No cells");
     }
 
+    private static readonly string[] VariantNames = { "border_full", "border_edge_N", "border_outer_NE", "path_end_1", "path_end_10", "floor" };
+
+    /// <summary>One block cell per variant, far apart so no face is covered; item i is VariantNames[i].</summary>
+    private static GridMap VariantMap()
+    {
+        var library = new MeshLibrary();
+        for (int i = 0; i < VariantNames.Length; i++)
+        {
+            library.CreateItem(i);
+            library.SetItemName(i, VariantNames[i]);
+            library.SetItemMesh(i, new BoxMesh { Size = CellSize });
+        }
+        var map = AutoFree(new GridMap { MeshLibrary = library, CellSize = CellSize });
+        for (int i = 0; i < VariantNames.Length; i++)
+        {
+            map.SetCellItem(new Vector3I(i * 3, 0, 0), i);
+            map.SetCellItem(new Vector3I(i * 3, 0, 3), i);
+        }
+        return map;
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Exact_item_names_still_match_and_report_nothing()
+    {
+        var map = VariantMap();
+        Read(map, new GridMapSelection(new[] { "border_full", "floor" }), out var stats);
+        AssertThat(stats.Cells).IsEqual(4);
+        AssertThat(stats.UnmatchedItems.Count).IsEqual(0);
+        Read(map, null, out var all);
+        AssertThat(all.Cells).IsEqual(12);
+        AssertThat(all.UnmatchedItems).IsNull();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void A_star_pattern_selects_the_same_cells_as_listing_every_name()
+    {
+        var map = VariantMap();
+        var byPattern = Read(map, new GridMapSelection(new[] { "border_*" }), out var stats);
+        var byName = Read(map, new GridMapSelection(new[] { "border_full", "border_edge_N", "border_outer_NE" }), out _);
+        AssertThat(stats.Cells).IsEqual(6);
+        AssertThat(byPattern.Positions).IsEqual(byName.Positions);
+
+        Read(map, new GridMapSelection(new[] { "border_*" }, Exclude: true), out var excluded);
+        AssertThat(excluded.Cells).IsEqual(6);
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void A_question_mark_matches_exactly_one_character()
+    {
+        Read(VariantMap(), new GridMapSelection(new[] { "path_end_?" }), out var stats);
+        AssertThat(stats.Cells).IsEqual(2);   // path_end_1, not path_end_10
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Overlapping_patterns_use_each_cell_once()
+    {
+        var map = VariantMap();
+        Read(map, new GridMapSelection(new[] { "border_*", "*_NE", "border_outer_NE", "*_N?" }), out var included);
+        AssertThat(included.Cells).IsEqual(6);
+        AssertThat(included.UnmatchedItems.Count).IsEqual(0);
+        Read(map, new GridMapSelection(new[] { "border_*", "*_NE", "path_*" }, Exclude: true), out var excluded);
+        AssertThat(excluded.Cells).IsEqual(2);   // floor
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Entries_that_match_no_item_are_reported()
+    {
+        var map = VariantMap();
+        var none = SurfaceSource.FromGridMap(map, new GridMapSelection(new[] { "bordr_*" }), false, out string error, out _, out var stats);
+        AssertThat(none).IsNull();
+        AssertThat(error).Contains("No cells");
+        AssertThat(stats.UnmatchedItems).ContainsExactly("bordr_*");
+
+        // Exclude with nothing listed that exists uses every cell, and still reports the typo.
+        Read(map, new GridMapSelection(new[] { "bordr_*", "floor" }, Exclude: true), out var excluded);
+        AssertThat(excluded.Cells).IsEqual(10);
+        AssertThat(excluded.UnmatchedItems).ContainsExactly("bordr_*");
+
+        // Matched against the MeshLibrary, not the used cells: an existing item without cells is not a typo.
+        var sparse = VariantMap();
+        sparse.SetCellItem(new Vector3I(15, 0, 0), (int)GridMap.InvalidCellItem);
+        sparse.SetCellItem(new Vector3I(15, 0, 3), (int)GridMap.InvalidCellItem);
+        Read(sparse, new GridMapSelection(new[] { "floor", "border_full" }), out var unused);
+        AssertThat(unused.Cells).IsEqual(2);
+        AssertThat(unused.UnmatchedItems.Count).IsEqual(0);
+    }
+
     [TestCase]
     [RequireGodotRuntime]
     public void Each_cell_has_its_own_normal_basis_and_the_library_is_unchanged()

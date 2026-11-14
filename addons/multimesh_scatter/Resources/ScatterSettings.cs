@@ -173,7 +173,8 @@ public partial class ScatterSettings : Resource
 
     /// <summary>
     /// GridMap surfaces only (brief §10.1): the MeshLibrary item names to use, or to skip with
-    /// Exclude. Empty uses every item.
+    /// Exclude. Wildcards are allowed: * matches any characters, ? one character (for example
+    /// border_* or path_end_?). Case-sensitive. Empty uses every item.
     /// </summary>
     [ExportGroup("GridMap", "GridMap")]
     [Export] public string[] GridMapItems { get; set; } = System.Array.Empty<string>();
