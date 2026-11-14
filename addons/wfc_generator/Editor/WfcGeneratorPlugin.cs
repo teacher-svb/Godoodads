@@ -263,10 +263,16 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
             return;
         }
 
+        if (_settings.RandomiseSeed)
+            _settings.PickNewSeed();
+
         var origin = _settings.BoundsOrigin;
         // Cells the last generation wrote are free again unless they were edited since (brief §11.2).
+        // Clear Bounds First frees everything, or with Keep Placed Cells also the pinned cells (1.3.1).
         var record = GridMapCells.ReadRecord(_target);
-        var cells = _settings.ClearBoundsFirst ? GridMapCells.AllFree(grid) : GridMapCells.ReadFixed(_target, origin, grid, binding, record);
+        var cells = !_settings.ClearBoundsFirst ? GridMapCells.ReadFixed(_target, origin, grid, binding, record)
+            : _settings.KeepPlacedCells ? GridMapCells.ReadFixed(_target, origin, grid, binding, record, clearPins: true)
+            : GridMapCells.AllFree(grid);
         var options = new SolveOptions { Seed = _settings.Seed, MaxBacktracks = _settings.MaxBacktracks, MaxRestarts = _settings.MaxRestarts, Boundary = boundary };
         int cellsPerFrame = Mathf.Max(_settings.CellsPerFrame, 0);
         var paths = _settings.HasPaths ? new PathRequest(_settings.PathSocket, _settings.PathWander, origin) : null;
@@ -405,7 +411,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
     }
 
     private static string ImpossibleMessage(SolveResult result) => result.FixedConflicts.Count > 0 || result.Failure?.HasFixedCells == true
-        ? "No solution exists with the cells already in the bounds. Clear the bounds or change those cells. The GridMap was not changed."
+        ? "No solution exists with the cells already in the bounds. Change those cells, or turn on Clear Bounds First without Keep Placed Cells. The GridMap was not changed."
         : "This tile set has no solution for these bounds and boundary sockets. The GridMap was not changed.";
 
     private void ReportPathHint(ActiveRun run)
@@ -475,7 +481,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
                     + (run.Job.RouteAttempts > 1 ? $", after trying {run.Job.RouteAttempts - 1} route(s) the tiles around could not fit." : "."));
         }
         if (run.Cells.Replaced > 0)
-            _dialog.AddStatus($"Replaced {run.Cells.Replaced:N0} cells from the previous generation.");
+            _dialog.AddStatus($"Replaced {run.Cells.Replaced:N0} cells from the previous generation"
+                + (run.Cells.ClearedPins > 0 ? $", including {run.Cells.ClearedPins:N0} pinned cells." : "."));
         if (markers.Placed > 0 || markers.Removed > 0)
             _dialog.AddStatus($"Placed {markers.Placed:N0} markers in {GridMapMarkers.ContainerName}"
                 + (markers.Removed > 0 ? $", replacing {markers.Removed:N0} from the previous generation." : "."));

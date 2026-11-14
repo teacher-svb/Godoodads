@@ -2,6 +2,17 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-11-14
+
+### Changed
+- **Randomise Seed is a checkbox** instead of a button. On, every Generate picks a new seed, shown read-only under Seed. Off, Generate keeps using the seed, which you can type. Off by default, so stored settings behave as in 1.3.0.
+
+### Added
+- **Keep Placed Cells**, shown with Clear Bounds First: clear removes every generated cell, pinned ones too, and keeps the cells you placed and generated cells you edited since. Off by default, which clears everything as before.
+
+### Fixed
+- A pinned cell freed by Clear Bounds First no longer leaves a stale pin in the regenerate record where the new solve put an empty tile.
+
 ## [1.3.0] - 2026-11-10
 
 ### Added

@@ -8,9 +8,10 @@ namespace Godoodads.WfcGenerator.Adapters;
 /// <summary>
 /// The solver's starting state, read from the cells already in a GridMap. Replaced counts cells a
 /// previous generation wrote, which are free again; Edited counts those changed since and Pinned
-/// those pinned, which are both kept (and included in Kept).
+/// those pinned, which are both kept (and included in Kept). ClearedPins counts pinned cells that
+/// were freed anyway (included in Replaced).
 /// </summary>
-public sealed record FixedCells(int[] Initial, int Kept, int Ignored, int Replaced = 0, int Edited = 0, int Pinned = 0);
+public sealed record FixedCells(int[] Initial, int Kept, int Ignored, int Replaced = 0, int Edited = 0, int Pinned = 0, int ClearedPins = 0);
 
 /// <summary>Cell changes as flat (x, y, z, item, orientation) records, so undo stores plain ints.</summary>
 public sealed record CellChanges(int[] Do, int[] Undo)
@@ -33,11 +34,14 @@ public static class GridMapCells
     /// Occupied cells become fixed, except cells that still hold what the previous generation wrote
     /// (<paramref name="previous"/>), which are free again. Cells whose item or orientation has no
     /// variant are excluded, which leaves them in place and places no constraint on their neighbours.
+    /// With <paramref name="clearPins"/>, pinned cells are free too (Clear Bounds First with Keep
+    /// Placed Cells), so only hand-placed and edited cells stay.
     /// </summary>
-    public static FixedCells ReadFixed(GridMap map, Vector3I origin, GridTopology grid, TileSetBinding binding, GeneratedRecord previous = null)
+    public static FixedCells ReadFixed(GridMap map, Vector3I origin, GridTopology grid, TileSetBinding binding, GeneratedRecord previous = null,
+        bool clearPins = false)
     {
         var result = AllFree(grid);
-        int kept = 0, ignored = 0, replaced = 0, edited = 0, pinned = 0;
+        int kept = 0, ignored = 0, replaced = 0, edited = 0, pinned = 0, clearedPins = 0;
         for (int cell = 0; cell < grid.CellCount; cell++)
         {
             var position = origin + grid.Coordinates(cell);
@@ -47,9 +51,12 @@ public static class GridMapCells
             if (previous != null)
             {
                 bool matches = previous.Matches(position, item, map.GetCellItemOrientation(position));
-                if (matches && !previous.IsPinned(position))
+                bool isPinned = matches && previous.IsPinned(position);
+                if (matches && (!isPinned || clearPins))
                 {
                     replaced++;
+                    if (isPinned)
+                        clearedPins++;
                     continue;
                 }
                 if (matches)
@@ -67,12 +74,13 @@ public static class GridMapCells
             else
                 ignored++;
         }
-        return result with { Kept = kept, Ignored = ignored, Replaced = replaced, Edited = edited, Pinned = pinned };
+        return result with { Kept = kept, Ignored = ignored, Replaced = replaced, Edited = edited, Pinned = pinned, ClearedPins = clearedPins };
     }
 
     /// <summary>
-    /// The record after this generation: the previous one outside the bounds, plus the non-empty
-    /// cells written to free cells inside them.
+    /// The record after this generation: the previous one outside the bounds and on pinned cells that
+    /// stayed fixed, plus the non-empty cells written to free cells inside them. A free cell loses
+    /// its old entry even when the new solve leaves it empty, so a cleared pin leaves nothing behind.
     /// </summary>
     public static GeneratedRecord RecordAfter(GeneratedRecord previous, Vector3I origin, GridTopology grid, TileSetBinding binding, int[] initial, int[] solved)
     {
@@ -86,10 +94,12 @@ public static class GridMapCells
         {
             if (initial[cell] != WfcSolver.Free)
                 continue;
+            var position = origin + grid.Coordinates(cell);
+            record.Remove(position);
             var variant = binding.Compiled.Variants[solved[cell]];
             int item = binding.Items[variant.TileIndex];
             if (item != WfcTile.EmptyItem)
-                record.Set(origin + grid.Coordinates(cell), item, GridMapOrientation.FromQuarterTurns(variant.QuarterTurns));
+                record.Set(position, item, GridMapOrientation.FromQuarterTurns(variant.QuarterTurns));
         }
         return record;
     }
