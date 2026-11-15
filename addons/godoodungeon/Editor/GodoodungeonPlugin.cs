@@ -35,6 +35,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private static readonly Color RoomColour = new(0.3f, 0.8f, 1f);
     private static readonly Color DoorColour = new(1f, 0.85f, 0.2f);
     private static readonly Color CorridorColour = new(0.45f, 1f, 0.45f);
+    private static readonly Color FailureColour = new(1f, 0.15f, 0.15f);
 
     /// <summary>
     /// One running generation. Never survives an assembly reload, which cancels it first.
@@ -56,6 +57,12 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private string _overlayState;
     private string _previewKey;
     private PreviewResult _preview;
+
+    /// <summary>Cells where the last Generate failed, drawn in red until the next Generate or dialog open.</summary>
+    private Godot.Collections.Array<Vector3I> _failedCells = new();
+
+    /// <summary>True while the status shows a result the preview should add to rather than replace.</summary>
+    private bool _keepStatus;
 
     /// <summary>Randomised seeds that failed since the dialog was opened. Randomise Seed does not pick them again.</summary>
     private readonly HashSet<long> _failedSeeds = new();
@@ -182,6 +189,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             return;
 
         _failedSeeds.Clear();
+        _failedCells.Clear();
+        _keepStatus = false;
         _previewKey = null;
         DisconnectSettings();
         _target = _selected;
@@ -223,6 +232,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         }
 
         _dialog.ClearStatus();
+        _failedCells.Clear();
+        _keepStatus = true;
         if (!TargetIsAlive)
         {
             Notify.Report(_dialog, "The target GridMap is no longer in the scene.", ToolDialog.Severity.Error);
@@ -255,6 +266,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
     private void Finish(ActiveRun run)
     {
+        _keepStatus = true;
         var job = run.Job;
         if (job.Error != null)
         {
@@ -280,13 +292,23 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
                 return;
             case DungeonStatus.InternalError:
                 ReportErrors("The dungeon was generated, but failed its connectivity check.", result.Errors);
+                foreach (int room in result.UnreachableRooms)
+                    _failedCells.Add(result.Layout.GridCell(result.Layout.Rooms[room].Position));
+                if (_failedCells.Count > 0)
+                    _dialog.AddStatus("Red boxes in the viewport mark the unreachable rooms.");
                 RestoreSeed(run);
                 return;
             default:
                 Notify.Report(_dialog, $"No layout could be generated in {result.Attempts.Count} attempt(s). The GridMap was not changed.",
                     ToolDialog.Severity.Error);
                 foreach (var failure in result.Attempts.Take(MaxReportedErrors))
+                {
                     _dialog.AddStatus($"Layout {failure.Attempt + 1}: {failure.Message}", ToolDialog.Severity.Error);
+                    if (failure.Cell is { } cell)
+                        _failedCells.Add(cell);
+                }
+                if (_failedCells.Count > 0)
+                    _dialog.AddStatus("Red boxes in the viewport mark where each layout failed.");
                 ReportFailedSeed(run);
                 return;
         }
@@ -409,6 +431,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.CommitAction();
 
         int kept = record.Count - cleared;
+        _keepStatus = true;
+        _failedCells.Clear();
         _dialog.SetStatus($"Cleared {cleared:N0} cells of the dungeon.", ToolDialog.Severity.Success);
         if (kept > 0)
             _dialog.AddStatus($"Kept {kept:N0} dungeon cells you edited since.");
@@ -497,7 +521,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         var (min, max) = BoundsGizmoPlugin.Extents(_target, _settings.BoundsOrigin, _settings.BoundsSize);
         UpdatePreview();
-        string state = $"{min}|{max}|{(_settings.PreviewLayout ? _previewKey : "")}";
+        string state = $"{min}|{max}|{(_settings.PreviewLayout ? _previewKey : "")}|{string.Join(";", _failedCells)}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -529,6 +553,13 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         AddBox(mesh, min, max, BoundsColour);
         if (_settings.PreviewLayout && _preview?.Layout is { } layout)
             DrawPreview(mesh, layout, _preview.Corridors);
+        var half = _target.CellSize * 0.5f;
+        foreach (var cell in _failedCells)
+        {
+            // Slightly larger than the cell, so the box stays visible around a placed module.
+            var centre = _target.MapToLocal(cell);
+            AddBox(mesh, centre - half * 1.08f, centre + half * 1.08f, FailureColour);
+        }
         mesh.SurfaceEnd();
     }
 
@@ -564,11 +595,21 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         _preview = DungeonPreview.Plan(request);
         if (_run != null)
             return;
+        // Right after a result (or a seed put back after a failure), add the preview below it.
+        bool add = _keepStatus;
+        _keepStatus = false;
+        void Line(string text, ToolDialog.Severity severity = ToolDialog.Severity.Info)
+        {
+            if (add)
+                _dialog.AddStatus(text, severity);
+            else
+                _dialog.SetStatus(text, severity);
+        }
         if (_preview.IsValid)
-            _dialog.SetStatus($"Preview: {_preview.Layout.Rooms.Count} rooms, {_preview.Layout.Doors.Count} doors, {_preview.Corridors.RouteCount} corridors"
+            Line($"Preview: {_preview.Layout.Rooms.Count} rooms, {_preview.Layout.Doors.Count} doors, {_preview.Corridors.RouteCount} corridors"
                 + (_preview.LayoutAttempt > 0 ? $" (layout {_preview.LayoutAttempt + 1})" : "") + $". Seed {_settings.Seed}.");
         else
-            _dialog.SetStatus("Preview: " + string.Join(" ", _preview.Errors.Concat(_preview.Failures.Select(f => $"Layout {f.Attempt + 1}: {f.Message}"))),
+            Line("Preview: " + string.Join(" ", _preview.Errors.Concat(_preview.Failures.Select(f => $"Layout {f.Attempt + 1}: {f.Message}"))),
                 ToolDialog.Severity.Warning);
         foreach (string warning in _preview.Layout?.Warnings ?? new List<string>())
             _dialog.AddStatus(warning, ToolDialog.Severity.Warning);
