@@ -1,13 +1,13 @@
 ---
 id: "dgn-m5-performance-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:28:33.000Z"
-completedAt: null
+modified: "2026-11-15T19:28:57.000Z"
+completedAt: "2026-11-15T19:28:57.000Z"
 labels: ["v1.0.0", "m5", "performance"]
 order: "f2"
 ---
@@ -51,3 +51,6 @@ On your machine, open `demo/godoodungeon/dungeon_free.tscn`, set Bounds Size to 
   - The earlier "1.2 s" for every size was the first Generate after a rebuild. .NET compiles the dungeon code on first use after an assembly reload. Later runs do not pay it.
   - The remaining cost is the GUI editor swapping cells and marker nodes, and redrawing.
   - The target (64×64 under 10 s) is met.
+
+## Board decision (2026-11-15)
+Accepted. 64×64 / 20 rooms generates in 0.0–0.1 s and writes in 0.0–0.4 s on the board's machine. The target is under 10 s.

@@ -1,13 +1,13 @@
 ---
 id: "dgn-m5-acceptance-pass-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:20:16.000Z"
-completedAt: null
+modified: "2026-11-15T19:28:57.000Z"
+completedAt: "2026-11-15T19:28:57.000Z"
 labels: ["v1.0.0", "m5", "acceptance"]
 order: "f1"
 ---
@@ -35,4 +35,7 @@ Branch `godoodungeon-m1`. Core tests 366 passed, engine tests 103 passed, build 
 | **Undo** (manual) | Board: generate, undo, redo on `dgn-m3-dialog` / `dgn-m3-clear-dungeon`; engine: `…Undo_restores_every_cell_and_redo_reapplies`; probe on `dgn-m3-dialog` (every cell restored) | pass |
 | **Cancel and reload** (manual) | Runs finish too fast to interrupt by hand; the board accepted the automated coverage (`dgn-m3-run-cancel-reload`): probe Stop through the real dialog, `DungeonJobTests.Cancelling_stops_within_one_solve`, reload/scene-close code shared with WFC Generator | accepted |
 | **Reliability** (≥ 19 of 20 at the target size, demo tile sets) | Engine: `DungeonDemoTests.The_demo_scene_generates_at_least_19_of_20_seeds`: dungeon_free 20 of 20, dungeon_obstacles 20 of 20 | pass |
-| **Performance** (64×64, 20 rooms, < 10 s) | `dgn-m5-performance`: about 20 ms including the GridMap write (headless) | pass, board timing on its machine pending |
+| **Performance** (64×64, 20 rooms, < 10 s) | `dgn-m5-performance`: about 20 ms including the GridMap write (headless) | pass (board: 0.0–0.1 s generate, 0.0–0.4 s write) |
+
+## Board decision (2026-11-15)
+Accepted: every §8 criterion is covered.
