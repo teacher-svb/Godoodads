@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-layout-preview-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:48:37.000Z"
-completedAt: null
+modified: "2026-11-15T18:52:31.000Z"
+completedAt: "2026-11-15T18:52:31.000Z"
 labels: ["v1.0.0", "m3", "editor"]
 order: "d3"
 ---
@@ -48,3 +48,6 @@ Checks:
 2. Change Seed or Room Count: the drawing follows at once.
 3. Press Generate. The dungeon fills exactly what the preview showed.
 4. Save the scene and reopen it. No preview lines are saved.
+
+## Board check passed (2026-11-15)
+The preview appears inside the bounds, follows Seed and Room Count at once, and Generate fills exactly what it showed. After saving and reopening the scene, no preview lines or bounds box are left. The overlay colours become sRGB with the bounds-box fix.

@@ -29,7 +29,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private const double ProgressInterval = 0.1;
     private const int MaxReportedErrors = 12;
     private const string WfcGeneratorConfig = "res://addons/wfc_generator/plugin.cfg";
-    private static readonly Color BoundsColour = new(0.7f, 0.45f, 1f);
+    // Vertex colours are marked sRGB on the overlay material, so these show as written (the board saw
+    // the first violet as yellow: linear colours are brightened, and the demo scene tonemaps).
+    private static readonly Color BoundsColour = new(0.55f, 0.2f, 0.95f);
     private static readonly Color RoomColour = new(0.3f, 0.8f, 1f);
     private static readonly Color DoorColour = new(1f, 0.85f, 0.2f);
     private static readonly Color CorridorColour = new(0.45f, 1f, 0.45f);
@@ -510,6 +512,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
                     ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
                     NoDepthTest = true,
                     VertexColorUseAsAlbedo = true,
+                    VertexColorIsSrgb = true,
+                    DisableFog = true,
                 },
             };
             _target.AddChild(_overlay);

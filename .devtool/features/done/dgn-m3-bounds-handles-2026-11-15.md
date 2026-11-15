@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-bounds-handles-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:41:16.000Z"
-completedAt: null
+modified: "2026-11-15T18:52:31.000Z"
+completedAt: "2026-11-15T18:52:31.000Z"
 labels: ["v1.0.0", "m3", "editor"]
 order: "d2"
 ---
@@ -32,3 +32,7 @@ Branch `godoodungeon-m1`.
 1. Open the dialog on a GridMap. The violet bounds box and its six handles show.
 2. Drag a handle. The box snaps to cells, and Bounds Origin and Size in the dialog follow.
 3. Ctrl+Z puts the box back in one step. Escape during a drag cancels it.
+
+## Board check (2026-11-15)
+- Passed: handles show and drag with snapping, the dialog follows, Ctrl+Z undoes in one step, and Escape cancels.
+- The box looked **yellow**, not violet. The likely cause: the overlay material treated vertex colours as linear (brightened on screen), and the demo scene tonemaps with Filmic. Fixed: the overlay material uses `VertexColorIsSrgb` and `DisableFog`, and the bounds colour is a deeper violet (0.55, 0.2, 0.95). The colour gets another look at the M3 review.
