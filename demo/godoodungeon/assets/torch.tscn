@@ -12,14 +12,14 @@ height = 0.18
 radial_segments = 8
 rings = 4
 
-[node name="Torch" type="Node3D" unique_id=1787319326]
+[node name="Torch" type="Node3D" unique_id=1530838372]
 
-[node name="Light" type="OmniLight3D" parent="." unique_id=547849819]
+[node name="Light" type="OmniLight3D" parent="." unique_id=1905753466]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.45, 0)
 light_color = Color(1, 0.7, 0.4, 1)
 light_energy = 1.6
 
-[node name="Flame" type="MeshInstance3D" parent="." unique_id=2029267549]
+[node name="Flame" type="MeshInstance3D" parent="." unique_id=460506184]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.42, 0.45, 0)
 material_override = SubResource("StandardMaterial3D_djksu")
 mesh = SubResource("SphereMesh_cxr74")

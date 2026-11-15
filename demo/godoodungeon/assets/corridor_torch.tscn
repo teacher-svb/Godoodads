@@ -12,14 +12,14 @@ height = 0.18
 radial_segments = 8
 rings = 4
 
-[node name="CorridorTorch" type="Node3D" unique_id=621047333]
+[node name="CorridorTorch" type="Node3D" unique_id=354842496]
 
-[node name="Light" type="OmniLight3D" parent="." unique_id=1996101966]
+[node name="Light" type="OmniLight3D" parent="." unique_id=1928835992]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -0.45)
 light_color = Color(1, 0.7, 0.4, 1)
 light_energy = 1.6
 
-[node name="Flame" type="MeshInstance3D" parent="." unique_id=1035279520]
+[node name="Flame" type="MeshInstance3D" parent="." unique_id=631267208]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.45, -0.45)
 material_override = SubResource("StandardMaterial3D_inxlp")
 mesh = SubResource("SphereMesh_oovu2")

@@ -25,6 +25,15 @@ public partial class BuildDungeonDemo : Node
     public const string CorridorTorchPath = AssetDirectory + "/corridor_torch.tscn";
     public const string SpawnPath = AssetDirectory + "/spawn_point.tscn";
 
+    public const string SceneDirectory = "res://demo/godoodungeon";
+
+    /// <summary>The brief's target size (§3): 64 × 64 cells and 20 rooms.</summary>
+    public static readonly Vector3I DemoBounds = new(64, 1, 64);
+
+    /// <summary>Hand-placed obstacles of dungeon_obstacles.tscn: statues, and a pool of 6 × 4 cells.</summary>
+    public static readonly Vector3I[] Statues = { new(12, 0, 12), new(50, 0, 14), new(31, 0, 31), new(14, 0, 50), new(49, 0, 49) };
+    public static readonly Rect2I Pool = new(28, 44, 6, 4);
+
     public const string EdgeSocket = "outside";
     public const string PathSocket = "path";
 
@@ -131,9 +140,50 @@ public partial class BuildDungeonDemo : Node
             GD.PushError($"Dungeon demo: {error}");
         foreach (string warning in check.Warnings.Concat(check.Room?.Warnings() ?? new()).Concat(check.Corridor?.Warnings() ?? new()))
             GD.PushWarning($"Dungeon demo: {warning}");
-        GD.Print($"Dungeon demo: built {library.GetItemList().Length} items, {room.Tiles.Count} room tiles, {corridor.Tiles.Count} corridor tiles; "
-            + $"{check.Errors.Count} errors.");
+        SaveDemoScene("dungeon_free", library, settings, 1, null);
+        SaveDemoScene("dungeon_obstacles", library, settings, 2, map =>
+        {
+            foreach (var cell in Statues)
+                map.SetCellItem(cell, items["Statue"]);
+            for (int x = Pool.Position.X; x < Pool.End.X; x++)
+                for (int z = Pool.Position.Y; z < Pool.End.Y; z++)
+                    map.SetCellItem(new Vector3I(x, 0, z), items["Pool"]);
+        });
+        GD.Print($"Dungeon demo: built {library.GetItemList().Length} items, {room.Tiles.Count} room tiles, {corridor.Tiles.Count} corridor tiles "
+            + $"and 2 scenes; {check.Errors.Count} errors.");
         GetTree().Quit();
+    }
+
+    /// <summary>A demo scene: an empty GridMap with the dungeon settings stored on it, a sun and a sky. Press Generate in the editor.</summary>
+    private static void SaveDemoScene(string name, MeshLibrary library, DungeonSettings template, long seed, Action<GridMap> place)
+    {
+        var root = new Node3D { Name = name.ToPascalCase() };
+        var map = new GridMap { Name = "GridMap", MeshLibrary = library };
+        Own(root, map);
+        var settings = (DungeonSettings)template.Duplicate();
+        settings.BoundsSize = DemoBounds;
+        settings.RoomCount = 20;
+        settings.Seed = seed;
+        DungeonSettings.StoreOn(map, settings);
+        place?.Invoke(map);
+
+        Own(root, new DirectionalLight3D { Name = "Sun", ShadowEnabled = true, RotationDegrees = new Vector3(-60, -30, 0), LightEnergy = 0.6f });
+        Own(root, new WorldEnvironment
+        {
+            Name = "WorldEnvironment",
+            Environment = new Godot.Environment
+            {
+                BackgroundMode = Godot.Environment.BGMode.Sky,
+                Sky = new Sky { SkyMaterial = new ProceduralSkyMaterial() },
+                AmbientLightSource = Godot.Environment.AmbientSource.Sky,
+                AmbientLightEnergy = 0.5f,
+                TonemapMode = Godot.Environment.ToneMapper.Filmic,
+            },
+        });
+        var packed = new PackedScene();
+        Check(packed.Pack(root), name);
+        Check(ResourceSaver.Save(packed, $"{SceneDirectory}/{name}.tscn"), name);
+        root.Free();
     }
 
     private static WfcTileSet TileSet(MeshLibrary library, Module[] modules, Dictionary<string, int> items, Dictionary<string, PackedScene> markers)
