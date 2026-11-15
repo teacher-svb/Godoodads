@@ -167,6 +167,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
             _dialog.AddStatus("The GridMap has no MeshLibrary. Assign the one your tile sets use.", ToolDialog.Severity.Warning);
         if (_wfcWarning.Length > 0)
             _dialog.AddStatus(_wfcWarning, ToolDialog.Severity.Warning);
+        // The dialog node outlives assembly reloads; the M0 skeleton left Generate disabled on it.
+        _dialog.SetActionEnabled(true);
+        SetRunning(false);
         _dialog.PopupForEditing();
     }
 

@@ -6,7 +6,7 @@ assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:18:30.000Z"
+modified: "2026-11-15T18:37:12.000Z"
 completedAt: null
 labels: ["v1.0.0", "m3", "editor", "ui"]
 order: "d1"
@@ -38,3 +38,7 @@ Probe (headless editor, scratch copy). It opened `prototype_m2_dungeon.tscn`, se
 ## Manual check (board)
 1. Build, focus Godot, select a GridMap, and open **GridMap → Generate Dungeon (GDDS)**. Every setting is editable. Door Tile lists the room tiles once a room tile set is chosen. Seed greys out with Randomise Seed on.
 2. Rebuild with the dialog open, then focus Godot (assembly reload). The dialog still works, and Generate still works.
+
+## Board check (2026-11-15)
+- Passed: every setting is editable, Door Tile lists the room tiles, Seed is read-only with Randomise Seed on, and the dialog opens after an assembly reload.
+- **Bug: Generate was greyed out.** The M0 skeleton disabled the Generate button on its dialog. The dialog node survives assembly reloads, and the new `OpenDialog` never enabled it again (the headless probe started a fresh editor, so it did not see this). Fixed: `OpenDialog` enables the action and resets its text. Generate needs checking again.

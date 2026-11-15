@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-edge-router-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T18:22:42.000Z"
-modified: "2026-11-15T18:33:50.000Z"
-completedAt: null
+modified: "2026-11-15T18:37:12.000Z"
+completedAt: "2026-11-15T18:37:12.000Z"
 labels: ["v1.0.0", "m3", "core"]
 order: "c0"
 ---
@@ -105,3 +105,6 @@ Also: new tile rule tests for bends and the cross; a job test where a hand-place
 
 ## Manual check (board)
 Open `demo/godoodungeon/prototype/prototype_m2_dungeon.tscn`. Corridors run from door to door and no longer wrap around rooms.
+
+## Board check passed (2026-11-15)
+The corridors in the rebuilt `prototype_m2_dungeon.tscn` run from door to door and no longer wrap around rooms.
