@@ -1,13 +1,13 @@
 ---
 id: "dgn-m2-review-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T16:52:12.000Z"
-completedAt: null
+modified: "2026-11-15T18:13:50.000Z"
+completedAt: "2026-11-15T18:13:50.000Z"
 labels: ["v1.0.0", "m2", "review"]
 order: "c7"
 ---
@@ -88,3 +88,9 @@ Layout (`#` wall, `.` floor, `D` door, `X` hand-placed; corridors are not drawn 
 - **Door lane rule** (`dgn-m2-corridor-inputs`): doors may not share a lane or entry cell, or guided paths deadlocks. Routing now fails in at most 2 of 100 layouts, and the layout attempts cover it.
 - **T pieces** (`dgn-m2-gridmap-write`): the corridor tile set needs T pieces in all four ways, or only two doors can be joined. This is a §4.2 rule now.
 - The defaults place 10 of 12 rooms here (48×48 is tight with gap 3). The warning reports it.
+
+## Board review (2026-11-15): approved
+- `prototype_m2_dungeon.tscn`: the rooms are closed and every door is joined by corridors. Corridors keep one cell off room walls except at doors.
+- The two crate blocks are the hand-placed obstacles placed before generating. They are untouched, and rooms and corridors go around them. At first they looked like rooms without walls. The board keeps them as crates now that this is explained.
+- Confirmed the M2 brief rules: doors never share a lane or entry cell (§4.3, §6.2), and the corridor tile set needs T pieces in all four ways (§4.2).
+- M2 approved. M3 (editor) can start.
