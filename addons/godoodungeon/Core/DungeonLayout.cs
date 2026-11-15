@@ -48,4 +48,10 @@ public sealed class DungeonLayout
     public List<string> Errors { get; } = new();
 
     public bool IsValid => Errors.Count == 0;
+
+    /// <summary>The GridMap cell of the layout grid's (0, 0): the bounds origin. Layout Y is GridMap Z.</summary>
+    public Vector3I Origin { get; init; }
+
+    /// <summary>The GridMap cell of a layout cell, on the bottom layer of the bounds, for messages.</summary>
+    public Vector3I GridCell(Vector2I cell) => new(Origin.X + cell.X, Origin.Y, Origin.Z + cell.Y);
 }

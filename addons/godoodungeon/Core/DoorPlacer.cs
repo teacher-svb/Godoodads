@@ -31,7 +31,8 @@ public static class DoorPlacer
         }
         for (int room = 0; room < layout.Rooms.Count; room++)
             if (!layout.Doors.Any(d => d.Room == room))
-                layout.Errors.Add($"Room {room + 1} at {layout.Rooms[room].Position} has no wall where a corridor can leave it.");
+                layout.Errors.Add($"Room {room + 1} at {layout.GridCell(layout.Rooms[room].Position)} has no wall where a corridor can leave it: "
+                    + "every side faces the bounds edge, a hand-placed cell or another room too closely.");
     }
 
     /// <summary>Cells outside a door that must be free: the lane through the Wall Clearance, then one more.</summary>
