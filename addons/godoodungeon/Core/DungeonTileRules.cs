@@ -76,13 +76,20 @@ public static class DungeonTileRules
         return (errors, warnings);
     }
 
-    /// <summary>The door tile's variant whose edge face points out through <paramref name="outward"/> (a horizontal direction), or -1.</summary>
+    /// <summary>
+    /// The door tile's variant whose only edge face points out through <paramref name="outward"/> (a
+    /// horizontal direction), or -1. A tile with more than one edge face is never a door.
+    /// </summary>
     public static int DoorVariant(CompiledTileSet room, int doorTile, string edgeSocket, int outward)
     {
+        string edge = edgeSocket.Trim();
         for (int turns = 0; turns < 4; turns++)
         {
             int variant = room.FindVariant(doorTile, turns);
-            if (variant >= 0 && IsEdgeOut(room.Variants[variant].Sockets[outward], edgeSocket.Trim()))
+            if (variant < 0)
+                continue;
+            var sockets = room.Variants[variant].Sockets;
+            if (IsEdgeOut(sockets[outward], edge) && HorizontalDirections.Count(d => IsEdgeOut(sockets[d], edge)) == 1)
                 return variant;
         }
         return -1;
