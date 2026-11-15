@@ -17,6 +17,35 @@ public partial class DungeonSettings : Resource
     /// <summary>Metadata key under which a GridMap stores the settings of its last dungeon.</summary>
     public const string MetaKey = "godoodads_dungeon_settings";
 
+    // ---- Seed and actions (ungrouped, at the top) ----------------------------------------
+
+    private bool _randomiseSeed;
+
+    /// <summary>Generate picks a new seed first. Off keeps the seed, so Generate repeats its result.</summary>
+    [Export]
+    public bool RandomiseSeed
+    {
+        get => _randomiseSeed;
+        set
+        {
+            bool changed = _randomiseSeed != value;
+            _randomiseSeed = value;
+            if (changed)
+                NotifyPropertyListChanged();
+        }
+    }
+
+    [Export] public long Seed { get; set; }
+
+    /// <summary>Raised by the Clear Dungeon button. The godoodungeon plugin removes the last dungeon's cells.</summary>
+    [Signal] public delegate void ClearRequestedEventHandler();
+
+    /// <summary>Removes the cells the last dungeon wrote, as one undo step. Cells you placed or edited stay.</summary>
+    [ExportToolButton("Clear Dungeon", Icon = "Clear")]
+    public Callable ClearDungeonButton => Callable.From(RequestClear);
+
+    private void RequestClear() => EmitSignal(SignalName.ClearRequested);
+
     // ---- Tile sets -------------------------------------------------------------------------
 
     private WfcTileSet _roomTileSet;
@@ -87,27 +116,6 @@ public partial class DungeonSettings : Resource
 
     /// <summary>Corridor layers from the bottom of the bounds. 1 keeps corridors on the floor layer.</summary>
     [Export(PropertyHint.Range, "1,16,1,or_greater")] public int CorridorHeight { get; set; } = 1;
-
-    // ---- Seed ----------------------------------------------------------------------------
-
-    private bool _randomiseSeed;
-
-    /// <summary>Generate picks a new seed first. Off keeps the seed, so Generate repeats its result.</summary>
-    [ExportGroup("Seed")]
-    [Export]
-    public bool RandomiseSeed
-    {
-        get => _randomiseSeed;
-        set
-        {
-            bool changed = _randomiseSeed != value;
-            _randomiseSeed = value;
-            if (changed)
-                NotifyPropertyListChanged();
-        }
-    }
-
-    [Export] public long Seed { get; set; }
 
     // ---- Limits --------------------------------------------------------------------------
 
