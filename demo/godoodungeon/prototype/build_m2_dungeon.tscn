@@ -1,0 +1,6 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://demo/godoodungeon/prototype/BuildM2Dungeon.cs" id="1"]
+
+[node name="BuildM2Dungeon" type="Node"]
+script = ExtResource("1")

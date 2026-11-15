@@ -1,12 +1,12 @@
 ---
 id: "dgn-m2-review-2026-11-15"
-status: "todo"
+status: "review"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T12:39:43.000Z"
+modified: "2026-11-15T16:52:12.000Z"
 completedAt: null
 labels: ["v1.0.0", "m2", "review"]
 order: "c7"
@@ -18,3 +18,73 @@ Demo for the board. The board moves this card to *Done* when approved. Do not st
 ## Review checklist for the board
 1. Run the prototype tile sets through a test scene that calls the pipeline (no dialog yet) and look at the result.
 2. Read the test results.
+
+## Material for the board (2026-11-15)
+
+All M2 work cards are done: settings resource, room inputs, corridor inputs, run order, connectivity check, GridMap write. Core tests 354 passed, engine tests 98 passed.
+
+**Review scene:** `demo/godoodungeon/prototype/prototype_m2_dungeon.tscn`, built by `build_m2_dungeon.tscn` (`BuildM2Dungeon.cs`). It runs the whole pipeline without the dialog (settings → check → hand-placed cells → `DungeonJob` → write → record) on the M0 prototype tile sets. Settings: 48×48, 12 rooms, seed 2026, defaults otherwise. Two blocks of crates were placed by hand first (`X` below).
+
+Run log:
+```
+M2 dungeon: Solved in 70 ms, layout attempt 1, 10 rooms, 16 doors, 15 routes over 153 cells, 0 backtracks, 0 restarts.
+M2 dungeon: wrote 622 cells; 30 hand-placed cells kept.
+```
+
+Layout (`#` wall, `.` floor, `D` door, `X` hand-placed; corridors are not drawn here, they are in the scene):
+```
+                                                
+  #####                                         
+  #...#   #####                           ##### 
+  #...#   #...#        #########          #...# 
+  #...D   #...#        D.......#          #...# 
+  #...#   D...#        #.......D          #...# 
+  #...#   #...D        #.......#          #...# 
+  #...#   #####        #.......#          #...# 
+  #...#                #.......#          #...# 
+  #####                #########          #D### 
+                                                
+                                                
+                                                
+                                                
+                                                
+       #####D###                                
+       #.......#                                
+       #.......#                                
+       #.......#                                
+       #.......#                                
+       #.......#    XXXXXX        ######D#      
+       #.......#    XXXXXX        #......#      
+       #D#######    XXXXXX        #......#      
+                                  #......#      
+                                  #D######      
+                                                
+ ####D#                                         
+ #....#                                         
+ #....#                                         
+ #....#                                         
+ #....#                                         
+ ######                                         
+                  #########                     
+                  #.......#     #####D##        
+                  #.......#     D......#        
+                  #.......D     #......#        
+      XX          #.......#     #......#        
+      XX          #########     #......#        
+      XX                        ######D#        
+      XX                                        
+      XX                                        
+      XX                                        
+                                        #D###   
+                                        #...#   
+                                        #...#   
+                                        #...#   
+                                        #####   
+                                                
+
+```
+
+### Findings during M2
+- **Door lane rule** (`dgn-m2-corridor-inputs`): doors may not share a lane or entry cell, or guided paths deadlocks. Routing now fails in at most 2 of 100 layouts, and the layout attempts cover it.
+- **T pieces** (`dgn-m2-gridmap-write`): the corridor tile set needs T pieces in all four ways, or only two doors can be joined. This is a §4.2 rule now.
+- The defaults place 10 of 12 rooms here (48×48 is tight with gap 3). The warning reports it.
