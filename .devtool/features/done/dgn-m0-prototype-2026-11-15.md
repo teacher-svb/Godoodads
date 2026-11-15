@@ -1,13 +1,13 @@
 ---
 id: "dgn-m0-prototype-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T13:22:17.000Z"
-completedAt: null
+modified: "2026-11-15T13:26:13.000Z"
+completedAt: "2026-11-15T13:26:13.000Z"
 labels: ["v1.0.0", "m0", "spike", "demo"]
 order: "a3"
 ---
@@ -72,3 +72,5 @@ Result, seed 1–3 for the rooms and 7 for the corridors (+X right, +Z down; `#`
 - Rooms: closed, with corners only at the corners and doors where the corridors meet them. Passed.
 - Regenerating the corridors with another seed in the WFC dialog changes only the corridors, and the rooms stay. Passed.
 - Double walls: the board asked whether a WFC rule can keep room walls and corridors away from each other (empty tile next to them). Answer and decision below.
+- Decision (2026-11-15): **Wall Clearance** in the layout (default 1). The ring around each room is fixed to the corridor tile set's empty tile, with a lane of straight pieces outside each door. A socket rule ("Margin" empty tile next to walls) was considered: guided paths lays routes before the solve and only checks path faces, so it would route next to walls and fail. Brief §4.3, §4.4, §6.1 and §10.5, and cards dgn-m1-layout-model, dgn-m1-layout-validation and dgn-m2-corridor-inputs updated.
+- Corridors side by side: v1 accepts them; idea card `dgn-idea-route-spacing`.
