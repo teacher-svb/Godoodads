@@ -15,6 +15,9 @@ public sealed class TileSetBinding
     /// <summary>The marker scene per tile, or null (brief §12.4).</summary>
     public PackedScene[] Markers { get; private set; }
     public List<string> Errors { get; } = new();
+
+    /// <summary>The tile set's External Sockets, parsed for horizontal and vertical faces.</summary>
+    public List<Socket> External { get; } = new();
     public bool IsValid => Errors.Count == 0;
 
     /// <summary>Readable name per tile: the tile's own name, its item's name, or its position.</summary>
@@ -52,6 +55,18 @@ public sealed class TileSetBinding
         binding.TileNames = names.ToArray();
         binding.Markers = markers.ToArray();
         binding.Compiled = CompiledTileSet.Compile(definitions, directions);
+        foreach (string label in tileSet.ExternalSockets ?? new Godot.Collections.Array<string>())
+        {
+            string trimmed = label?.Trim() ?? "";
+            bool horizontal = Socket.TryParse(trimmed, false, out var side, out string error);
+            bool vertical = Socket.TryParse(trimmed, true, out var top, out _);
+            if (horizontal)
+                binding.External.Add(side);
+            if (vertical)
+                binding.External.Add(top);
+            if (!horizontal && !vertical)
+                binding.Errors.Add($"External socket '{trimmed}': {error}");
+        }
         foreach (var issue in binding.Compiled.Errors)
             binding.Errors.Add(issue.TileIndex < 0 ? issue.Message
                 : issue.Direction < 0 ? $"Tile {issue.TileIndex}: {issue.Message}"
@@ -65,7 +80,7 @@ public sealed class TileSetBinding
         var warnings = new List<string>();
         if (!IsValid)
             return warnings;
-        var report = TileSetChecker.Check(Compiled);
+        var report = TileSetChecker.Check(Compiled, External);
         foreach (var face in report.UnmatchedFaces)
             warnings.Add($"{TileNames[face.TileIndex]} ({Directions.Name(face.Direction)}): socket '{face.Socket}' has no partner.");
         foreach (int tile in report.EdgeOnlyTiles)

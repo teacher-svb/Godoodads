@@ -1,0 +1,153 @@
+[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_q3o0c"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_8lquf"]
+[ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/spawn_point.tscn" id="3_em5x8"]
+[ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/torch.tscn" id="4_l0ky4"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="5_rv7ek"]
+
+[sub_resource type="Resource" id="Resource_pequa"]
+resource_name = "Floor"
+script = ExtResource("2_8lquf")
+Item = 0
+Weight = 12.0
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_mpsnq"]
+resource_name = "Floor Cracked"
+script = ExtResource("2_8lquf")
+Item = 1
+Rotation = 2
+Weight = 3.0
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_ui3yj"]
+resource_name = "Floor Spawn"
+script = ExtResource("2_8lquf")
+Item = 2
+Weight = 0.25
+Marker = ExtResource("3_em5x8")
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_6uwxg"]
+resource_name = "Crate"
+script = ExtResource("2_8lquf")
+Item = 3
+Rotation = 2
+Weight = 0.8
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_mft45"]
+resource_name = "Barrel"
+script = ExtResource("2_8lquf")
+Item = 4
+Weight = 0.8
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_x7kc2"]
+resource_name = "Pillar"
+script = ExtResource("2_8lquf")
+Item = 5
+Weight = 0.3
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_jtfdr"]
+resource_name = "Wall"
+script = ExtResource("2_8lquf")
+Item = 6
+Rotation = 2
+Weight = 4.0
+SocketPosX = "outside+"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "edge"
+SocketNegZ = "edge"
+
+[sub_resource type="Resource" id="Resource_k3l74"]
+resource_name = "Wall Torch"
+script = ExtResource("2_8lquf")
+Item = 7
+Rotation = 2
+Weight = 0.6
+Marker = ExtResource("4_l0ky4")
+SocketPosX = "outside+"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "edge"
+SocketNegZ = "edge"
+
+[sub_resource type="Resource" id="Resource_1ir7k"]
+resource_name = "Wall Banner"
+script = ExtResource("2_8lquf")
+Item = 8
+Rotation = 2
+Weight = 0.6
+SocketPosX = "outside+"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "edge"
+SocketNegZ = "edge"
+
+[sub_resource type="Resource" id="Resource_jswbx"]
+resource_name = "Corner"
+script = ExtResource("2_8lquf")
+Item = 9
+Rotation = 2
+SocketPosX = "outside+"
+SocketNegX = "edge"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "outside+"
+SocketNegZ = "edge"
+
+[sub_resource type="Resource" id="Resource_mje4w"]
+resource_name = "Door"
+script = ExtResource("2_8lquf")
+Item = 10
+Rotation = 2
+Weight = 0.0
+SocketPosX = "outside+"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "edge"
+SocketNegZ = "edge"
+
+[resource]
+script = ExtResource("5_rv7ek")
+Library = ExtResource("1_q3o0c")
+Tiles = Array[ExtResource("2_8lquf")]([SubResource("Resource_pequa"), SubResource("Resource_mpsnq"), SubResource("Resource_ui3yj"), SubResource("Resource_6uwxg"), SubResource("Resource_mft45"), SubResource("Resource_x7kc2"), SubResource("Resource_jtfdr"), SubResource("Resource_k3l74"), SubResource("Resource_1ir7k"), SubResource("Resource_jswbx"), SubResource("Resource_mje4w")])
+ExternalSockets = Array[String](["outside-"])

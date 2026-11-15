@@ -152,6 +152,8 @@ Labels use letters, digits and underscores. Every face needs a label.
 | Socket has no partner | No tile in any rotation can face this socket. The tile can only appear where that face is at the edge of the bounds. |
 | Only fits at the edges of the grid | The tile depends on tiles that cannot be placed themselves. |
 
+A socket that only something outside the tiles supplies, such as a boundary socket, can be listed in the tile set's **External Sockets**. The check and the preview then count it as a partner. Generation ignores the list.
+
 ### Measuring tile shares
 
 Weights look like they set the mix of tiles directly: a tile with 10% of the total weight should cover about 10% of the map. In practice the result can be far off, for two reasons:

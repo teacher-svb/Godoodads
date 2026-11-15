@@ -1,0 +1,84 @@
+[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_mm4su"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_lwth3"]
+[ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/corridor_torch.tscn" id="3_71p5h"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="4_f20t1"]
+
+[sub_resource type="Resource" id="Resource_ba8q5"]
+resource_name = "Corridor"
+script = ExtResource("2_lwth3")
+Item = 11
+Rotation = 2
+Weight = 3.0
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "x"
+SocketNegZ = "x"
+
+[sub_resource type="Resource" id="Resource_i5u0y"]
+resource_name = "Corridor Torch"
+script = ExtResource("2_lwth3")
+Item = 12
+Rotation = 2
+Weight = 0.4
+Marker = ExtResource("3_71p5h")
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "x"
+SocketNegZ = "x"
+
+[sub_resource type="Resource" id="Resource_dyo5l"]
+resource_name = "Corridor Bend"
+script = ExtResource("2_lwth3")
+Item = 13
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "x"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "path"
+SocketNegZ = "x"
+
+[sub_resource type="Resource" id="Resource_qjw5t"]
+resource_name = "Corridor T"
+script = ExtResource("2_lwth3")
+Item = 14
+Rotation = 2
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "path"
+SocketNegZ = "x"
+
+[sub_resource type="Resource" id="Resource_vd03q"]
+resource_name = "Corridor Cross"
+script = ExtResource("2_lwth3")
+Item = 15
+SocketPosX = "path"
+SocketNegX = "path"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "path"
+SocketNegZ = "path"
+
+[sub_resource type="Resource" id="Resource_53j3r"]
+resource_name = "Empty"
+script = ExtResource("2_lwth3")
+Weight = 20.0
+SocketPosX = "x"
+SocketNegX = "x"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "x"
+SocketNegZ = "x"
+
+[resource]
+script = ExtResource("4_f20t1")
+Library = ExtResource("1_mm4su")
+Tiles = Array[ExtResource("2_lwth3")]([SubResource("Resource_ba8q5"), SubResource("Resource_i5u0y"), SubResource("Resource_dyo5l"), SubResource("Resource_qjw5t"), SubResource("Resource_vd03q"), SubResource("Resource_53j3r")])

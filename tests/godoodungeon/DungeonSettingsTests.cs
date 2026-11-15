@@ -87,6 +87,25 @@ public class DungeonSettingsTests
 
     [TestCase]
     [RequireGodotRuntime]
+    public void External_sockets_silence_the_one_sided_edge_and_are_checked()
+    {
+        var settings = DungeonEngineTiles.Valid();
+        var check = DungeonTileSets.Check(settings);
+        AssertThat(check.Warnings.Count).IsEqual(0);
+        AssertThat(check.Room.Warnings().Count).IsEqual(0);
+
+        settings.RoomTileSet.ExternalSockets.Clear();
+        check = DungeonTileSets.Check(settings);
+        AssertThat(check.IsValid).IsTrue();
+        AssertThat(check.Warnings.Single()).StartsWith("Add 'outside-' to the room tile set's External Sockets");
+        AssertThat(check.Room.Warnings().Count(w => w.Contains("'outside+' has no partner"))).IsEqual(4); // Wall, Corner (2), Door
+
+        settings.RoomTileSet.ExternalSockets.Add("out side");
+        AssertThat(DungeonTileSets.Check(settings).Errors.Single()).StartsWith("Room tile set: External socket 'out side'");
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
     public void The_door_tile_is_a_drop_down_of_the_room_tiles()
     {
         var settings = DungeonEngineTiles.Valid();

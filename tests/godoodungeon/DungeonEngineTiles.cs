@@ -32,6 +32,7 @@ public static class DungeonEngineTiles
     {
         library ??= Library();
         var room = new WfcTileSet { Library = library };
+        room.ExternalSockets.Add("outside-");
         room.Tiles.Add(Tile("Floor", 0, new[] { "in", "in", "v", "v", "in", "in" }));
         room.Tiles.Add(Tile("Wall", 1, new[] { "outside+", "in", "v", "v", "edge", "edge" }, TileRotation.FourWay));
         var corner = Tile("Corner", 2, new[] { "outside+", "edge", "v", "v", "outside+", "edge" }, TileRotation.FourWay);

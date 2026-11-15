@@ -584,7 +584,7 @@ public partial class TileSetPreview : VBoxContainer, ISerializationListener
     private void ShowFaceLabels(WfcTile tile, int turns)
     {
         int variant = _binding.IsValid ? _binding.Compiled.FindVariant(SelectedCompiledTile, turns) : -1;
-        var unmatched = variant >= 0 ? SocketEditing.UnmatchedFaces(_binding.Compiled, variant) : new bool[Directions.Count];
+        var unmatched = variant >= 0 ? SocketEditing.UnmatchedFaces(_binding.Compiled, variant, _binding.External) : new bool[Directions.Count];
         foreach (int direction in Directions.All3D)
         {
             string socket = ShownSocket(tile, turns, direction);

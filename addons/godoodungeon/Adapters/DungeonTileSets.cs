@@ -49,6 +49,10 @@ public sealed class DungeonTileSets
             settings.RoomEdgeSocket, result.Corridor.Compiled, settings.PathSocket);
         result.Errors.AddRange(errors);
         result.Warnings.AddRange(warnings);
+        string edge = settings.RoomEdgeSocket?.Trim() ?? "";
+        if (edge.Length > 0 && !(settings.RoomTileSet.ExternalSockets ?? new()).Any(s => s?.Trim() == edge + "-"))
+            result.Warnings.Add($"Add '{edge}-' to the room tile set's External Sockets: the room bounds supply it, "
+                + $"and without it the tile set preview marks every '{edge}+' face red.");
         return result;
     }
 
