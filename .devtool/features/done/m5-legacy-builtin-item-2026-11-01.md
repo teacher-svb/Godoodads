@@ -3,7 +3,7 @@ id: "m5-legacy-builtin-item-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "MultiMesh Scatter"
+epic: "godooscatter"
 dueDate: null
 created: "2026-11-01T02:04:49.000Z"
 modified: "2026-11-15T12:32:30.000Z"

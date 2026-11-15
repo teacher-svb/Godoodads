@@ -1,6 +1,6 @@
 name: Release addon
 
-# Tag format: <addon>-v<version>, for example multimesh_scatter-v1.0.0.
+# Tag format: <addon>-v<version>, for example godooscatter-v1.3.0.
 on:
   push:
     tags:

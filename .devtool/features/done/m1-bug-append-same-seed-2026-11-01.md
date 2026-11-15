@@ -3,7 +3,7 @@ id: "m1-bug-append-same-seed-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "MultiMesh Scatter"
+epic: "godooscatter"
 dueDate: null
 created: "2026-11-01T14:00:00.000Z"
 modified: "2026-11-15T12:32:30.000Z"

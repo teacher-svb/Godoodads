@@ -1,5 +1,5 @@
 using Godot;
-using Godoodads.MultiMeshScatter.Core;
+using Godoodads.Scatter.Core;
 using Xunit;
 
 namespace Godoodads.Tests;

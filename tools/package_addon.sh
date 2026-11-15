@@ -41,7 +41,15 @@ fi
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 
-git archive HEAD "addons/$addon" "addons/$common" LICENSE | tar -x -C "$stage"
+# Renamed addons keep legacy classes under their old folder, so files that name the old script
+# paths keep loading (CONVENTIONS.md, legacy subclasses). They ship with the addon.
+legacy=()
+case "$addon" in
+    godoowave) legacy=("addons/wfc_generator") ;;
+    godooscatter) legacy=("addons/multimesh_scatter") ;;
+esac
+
+git archive HEAD "addons/$addon" "addons/$common" "${legacy[@]}" LICENSE | tar -x -C "$stage"
 
 # The shared WFC solver (and its global resource classes) only ships with addons that use it.
 if ! grep -rqs "Godoodads\.Common\.Wfc" "$stage/addons/$addon"; then

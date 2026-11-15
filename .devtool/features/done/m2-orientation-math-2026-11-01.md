@@ -3,7 +3,7 @@ id: "m2-orientation-math-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "MultiMesh Scatter"
+epic: "godooscatter"
 dueDate: null
 created: "2026-11-01T00:55:04.000Z"
 modified: "2026-11-15T12:32:30.000Z"

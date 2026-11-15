@@ -3,7 +3,7 @@ id: "m3-demo-masks-2026-11-01"
 status: "done"
 priority: "low"
 assignee: "claude"
-epic: "MultiMesh Scatter"
+epic: "godooscatter"
 dueDate: null
 created: "2026-11-01T01:07:27.000Z"
 modified: "2026-11-15T12:32:30.000Z"

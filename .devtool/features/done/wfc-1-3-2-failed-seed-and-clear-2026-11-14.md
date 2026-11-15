@@ -3,7 +3,7 @@ id: "wfc-1-3-2-failed-seed-and-clear-2026-11-14"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-14T20:15:00.000Z"
 modified: "2026-11-15T12:32:30.000Z"

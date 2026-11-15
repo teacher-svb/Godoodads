@@ -17,7 +17,7 @@ public interface IBoundsBoxes
 }
 
 /// <summary>
-/// Draws face handles for the boxes of a dialog (for WFC Generator the bounds, then the pin box) on
+/// Draws face handles for the boxes of a dialog (for godoowave the bounds, then the pin box) on
 /// the GridMap the dialog edits. Handle id = box × 6 + direction (see <see cref="Directions"/>).
 /// Dragging is done by the owning plugin in _Forward3DGuiInput, because the GridMap editor takes
 /// mouse input before gizmo handles see it. The outlines are drawn by the plugin's overlay. Each

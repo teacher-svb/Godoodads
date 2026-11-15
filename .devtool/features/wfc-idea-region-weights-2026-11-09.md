@@ -3,10 +3,10 @@ id: "wfc-idea-region-weights-2026-11-09"
 status: "backlog"
 priority: "medium"
 assignee: null
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-15T12:32:30.000Z"
+modified: "2026-11-15T20:11:45.000Z"
 completedAt: null
 labels: ["v2.0.0", "idea", "core"]
 order: "b0"

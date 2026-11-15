@@ -3,7 +3,7 @@
 ## Sub-project 3: godoodungeon (Dungeon Generator)
 
 **Decisions by:** the board (Syndias)
-**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. M1 (layout core), M2 (solve pipeline), M3 (editor), M4 (demo tile set) and M5 (release) approved on 2026-11-15: version 1.0.0, tagged `godoodungeon-v1.0.0` after merging. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
+**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. WFC Generator has since been renamed godoowave (1.4.0, `addons/godoowave/`, namespace `Godoodads.Wave`; WFC brief §15); this brief keeps the old names and paths where it records M0. M1 (layout core), M2 (solve pipeline), M3 (editor), M4 (demo tile set) and M5 (release) approved on 2026-11-15: version 1.0.0, tagged `godoodungeon-v1.0.0` after merging. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
 **Reference material:** the research summary in §11. The demo tile set is created for this project.
 
 ---

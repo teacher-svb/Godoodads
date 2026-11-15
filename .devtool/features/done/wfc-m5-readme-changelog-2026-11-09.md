@@ -3,7 +3,7 @@ id: "wfc-m5-readme-changelog-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
 modified: "2026-11-15T12:32:30.000Z"

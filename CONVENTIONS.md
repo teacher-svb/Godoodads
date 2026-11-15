@@ -32,13 +32,13 @@ addons/<addon>/
   Editor/      EditorPlugin, dialogs, menu integration. Everything inside #if TOOLS.
 addons/editor_tools_common/
   Editor/      Shared editor UI: ToolDialog, SpatialMenuHook, NodePickerRow, Notify, UndoHelpers.
-  Wfc/         The WFC solver shared by WFC Generator and godoodungeon, with the same Core/,
+  Wfc/         The WFC solver shared by godoowave and godoodungeon, with the same Core/,
                Resources/, Adapters/ and Editor/ split as an addon. Wfc/Editor holds the tile set
                preview and its inspector plugin, and the bounds gizmo.
                This folder is a code library, not a plugin, and has no plugin.cfg.
 ```
 
-Moving a script that saved resources reference breaks files that name it by path only, which is every file `ResourceSaver.Save` writes outside the editor. Keep an empty `[Tool]` subclass at the old path, in a `.Legacy` namespace with a new `.uid` and without `[GlobalClass]` (see `addons/wfc_generator/Resources/`).
+Moving a script that saved resources reference breaks files that name it by path only, which is every file `ResourceSaver.Save` writes outside the editor. Keep an empty `[Tool]` subclass at the old path, in a `.Legacy` namespace with a new `.uid` and without `[GlobalClass]` (see `addons/wfc_generator/Resources/`). When an addon folder is renamed, the old folder keeps only these classes and ships in the addon's zip; add it to the legacy list in `tools/package_addon.sh`.
 
 Namespaces: `Godoodads.Common` for shared code, `Godoodads.Common.Wfc` (with `.Core`, `.Adapters` and `.Editor`) for the shared WFC solver, `Godoodads.<Addon>` for resources, `Godoodads.<Addon>.Core` for pure logic, `Godoodads.<Addon>.Adapters` for engine glue, and `Godoodads.<Addon>.Editor` for editor code.
 
@@ -46,7 +46,7 @@ Namespaces: `Godoodads.Common` for shared code, `Godoodads.Common.Wfc` (with `.C
 
 The UX follows Godot's built-in *MultiMesh > Populate Surface*:
 
-1. **Menu entry in the 3D viewport toolbar.** `SpatialMenuHook` adds items to the matching built-in menu button, found by its editor icon. If that button is missing, it adds a separate button and the plugin shows or hides it from `_MakeVisible`. Addons with the same icon share that separate button (WFC Generator and godoodungeon both use the GridMap menu): it shows while any of them asks, and the last one to leave removes it. An inspector plugin that two addons need, like `TileSetInspectorPlugin`, registers through a shared list so that only one instance handles an object.
+1. **Menu entry in the 3D viewport toolbar.** `SpatialMenuHook` adds items to the matching built-in menu button, found by its editor icon. If that button is missing, it adds a separate button and the plugin shows or hides it from `_MakeVisible`. Addons with the same icon share that separate button (godoowave and godoodungeon both use the GridMap menu): it shows while any of them asks, and the last one to leave removes it. An inspector plugin that two addons need, like `TileSetInspectorPlugin`, registers through a shared list so that only one instance handles an object.
 2. **Popup dialog** (`ToolDialog`). It holds node pickers in its header, an embedded `EditorInspector` for the settings and a status area. It stays open after the action and after errors.
 3. **Settings are a `Resource`** with `[Export]` properties. `[ExportGroup]` defines the collapsible sections, `PropertyHint.Range` the slider and spinbox, and `_ValidateProperty` hides options that do not apply. Do not hand-build controls for things the inspector already renders.
 4. **Node selection** uses `NodePickerRow`, which wraps `EditorInterface.PopupNodeSelector` with type filtering. Small related actions are `[ExportToolButton]`s grouped into one row with `ToolButtonRowInspectorPlugin` (registered by the plugin).
@@ -75,13 +75,13 @@ The UX follows Godot's built-in *MultiMesh > Populate Surface*:
 ## Work tracking
 
 - Work is planned and tracked as kanban cards in `.devtool/features/`, using the VS Code extension *Kanban Markdown* (`lachyfs.kanban-markdown`).
-- One card is one small, self-contained ticket. The `epic` field is the project: `"MultiMesh Scatter"`, `"WFC Generator"`, `"godoodungeon"`, or `"Godoodads"` for repo-wide work such as release workflows and the root README.
+- One card is one small, self-contained ticket. The `epic` field is the project: `"godooscatter"`, `"godoowave"`, `"godoodungeon"`, or `"Godoodads"` for repo-wide work such as release workflows and the root README.
 - `labels` hold everything else, in this order:
   - **Version** the card ships in, always three parts: `"v1.0.0"`, `"v1.3.1"`. Backlog ideas without a release use `"v2.0.0"`.
   - **Milestone** for work towards a 1.0.0: `"m0"` to `"m5"`.
   - **Layer** the card touches, matching the addon folders: `core`, `resources`, `adapters`, `editor`. Add `ui` for dialog, inspector and preview work.
   - **Type:** `demo`, `docs`, `test`, `acceptance`, `performance`, `bug`, `spike`, `review`, `release`, `planning`, `refactor`, `infra`, `ci`, `common` (shared code in `editor_tools_common`), `distribution`, `idea`.
-- Filter by epic plus a version or milestone label to see one release, for example *WFC Generator* + `v1.4.0`, or *godoodungeon* + `m2`.
+- Filter by epic plus a version or milestone label to see one release, for example *godoowave* + `v1.5.0`, or *godoodungeon* + `m2`.
 - Columns are `backlog`, `todo`, `in-progress`, `review` and `done`. Cards with status `done` live in `.devtool/features/done/`.
 - Update `status` and `modified` when work starts and ends. Set `completedAt` when a card is done. Add results and findings to the card body.
 - Cards that need a manual check in the editor go to `review`. The board moves milestone review cards to `done`.
