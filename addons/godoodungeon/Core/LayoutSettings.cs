@@ -28,7 +28,7 @@ public sealed record LayoutSettings
     /// <summary>Free cells between a room and the edge of the bounds.</summary>
     public int Margin { get; init; } = 1;
 
-    /// <summary>The share, 0 to 1, of the room graph's non-tree edges that are added back as loops.</summary>
+    /// <summary>Loops per tree edge, 0 to 1: round(share × (rooms − 1)) of the shortest left-out edges are added to the room graph.</summary>
     public double ExtraConnections { get; init; } = 0.15;
 
     public int MaxDoorsPerRoom { get; init; } = 4;

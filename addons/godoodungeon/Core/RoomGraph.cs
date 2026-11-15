@@ -7,9 +7,10 @@ namespace Godoodads.Dungeon.Core;
 
 /// <summary>
 /// Connects the rooms (brief godoodungeon §4.3): a minimum spanning tree over the room centres,
-/// built with Prim's algorithm on the complete graph, plus <see cref="LayoutSettings.ExtraConnections"/>
-/// of the remaining edges, shortest first, which give loops. Equal distances are ordered by a
-/// seeded tiebreak, so the result is fixed for a seed.
+/// built with Prim's algorithm on the complete graph, plus loops: round(<see cref="LayoutSettings.ExtraConnections"/>
+/// × tree edges) of the remaining edges, shortest first (decided at the M1 review: a share of all
+/// left-out pairs grows with the square of the room count). Equal distances are ordered by a seeded
+/// tiebreak, so the result is fixed for a seed.
 /// </summary>
 public static class RoomGraph
 {
@@ -60,14 +61,14 @@ public static class RoomGraph
                     bestFrom[room] = next;
         }
 
-        // Extra connections: the shortest share of the edges the tree left out.
+        // Extra connections: loops per tree edge, the shortest edges the tree left out.
         var remaining = new List<(int A, int B)>();
         for (int a = 0; a < count; a++)
             for (int b = a + 1; b < count; b++)
                 if (!isTreeEdge[a, b])
                     remaining.Add((a, b));
         remaining.Sort((x, y) => Lighter(x.A, x.B, y.A, y.B) ? -1 : Lighter(y.A, y.B, x.A, x.B) ? 1 : 0);
-        int extra = (int)Math.Round(Math.Clamp(extraConnections, 0, 1) * remaining.Count, MidpointRounding.AwayFromZero);
+        int extra = Math.Min(remaining.Count, (int)Math.Round(Math.Clamp(extraConnections, 0, 1) * (count - 1), MidpointRounding.AwayFromZero));
         layout.Edges.AddRange(remaining.Take(extra).Select(edge => new RoomEdge(edge.A, edge.B, false)));
     }
 }

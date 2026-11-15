@@ -7,8 +7,9 @@ namespace Godoodads.Dungeon.Core;
 /// <summary>
 /// Places rooms one at a time at seeded random positions and sizes inside the bounds (brief
 /// godoodungeon §4.3). A candidate is rejected when its footprint grown by the gap overlaps another
-/// room or an occupied cell. When a room finds no place in its attempts, placement stops there and
-/// the layout reports the shortfall.
+/// room or an occupied cell. A room that finds no place in its attempts is skipped and the next
+/// rooms still try, since their random sizes may be smaller (decided at the M1 review); the layout
+/// reports the shortfall.
 /// </summary>
 public static class RoomPlacer
 {
@@ -29,14 +30,13 @@ public static class RoomPlacer
                 if (candidate is { } rect && Fits(rect, settings, placed, occupied))
                     found = rect;
             }
-            if (found == null)
-                break;
-            placed.Add(found.Value);
+            if (found != null)
+                placed.Add(found.Value);
         }
 
         layout.Rooms.AddRange(placed);
         if (placed.Count < settings.RoomCount)
-            layout.Warnings.Add($"Placed {placed.Count} of {settings.RoomCount} rooms: no free place was found for the next one. "
+            layout.Warnings.Add($"Placed {placed.Count} of {settings.RoomCount} rooms: {settings.RoomCount - placed.Count} found no free place. "
                 + "Enlarge the bounds, or lower the room count, the room sizes or the gap.");
     }
 

@@ -74,25 +74,33 @@ public class DungeonRoomGraphTests
     }
 
     [Fact]
-    public void No_extra_connections_gives_a_tree_and_all_gives_every_pair()
+    public void No_extra_connections_gives_a_tree_and_one_adds_a_loop_per_tree_edge()
     {
         var tree = Layout(5, new LayoutSettings { ExtraConnections = 0 });
         int rooms = tree.Rooms.Count;
+        Assert.True(rooms >= 4);
         Assert.Equal(rooms - 1, tree.Edges.Count);
 
         var full = Layout(5, new LayoutSettings { ExtraConnections = 1 });
-        Assert.Equal(rooms * (rooms - 1) / 2, full.Edges.Count);
+        Assert.Equal(2 * (rooms - 1), full.Edges.Count);
         Assert.Equal(rooms - 1, full.Edges.Count(e => e.IsTreeEdge));
+
+        // Three rooms have only one left-out pair, so 1 adds just that one.
+        var three = new DungeonLayout();
+        three.Rooms.AddRange(new[] { new RoomRect(new Vector2I(0, 0), new Vector2I(5, 5)), new RoomRect(new Vector2I(10, 0), new Vector2I(5, 5)),
+            new RoomRect(new Vector2I(0, 10), new Vector2I(5, 5)) });
+        RoomGraph.Build(three, 1, 1);
+        Assert.Equal(3, three.Edges.Count);
     }
 
     [Fact]
-    public void Extra_connections_are_the_shortest_left_out_edges_and_round_to_the_share()
+    public void Loops_are_the_shortest_left_out_edges_and_count_per_tree_edge()
     {
         var layout = Layout(11, new LayoutSettings { ExtraConnections = 0.25 });
         int rooms = layout.Rooms.Count;
-        int remaining = rooms * (rooms - 1) / 2 - (rooms - 1);
         var extras = layout.Edges.Where(e => !e.IsTreeEdge).ToList();
-        Assert.Equal((int)Math.Round(0.25 * remaining, MidpointRounding.AwayFromZero), extras.Count);
+        Assert.Equal((int)Math.Round(0.25 * (rooms - 1), MidpointRounding.AwayFromZero), extras.Count);
+        Assert.NotEmpty(extras);
 
         var used = layout.Edges.Select(e => (e.A, e.B)).ToHashSet();
         double longestExtra = extras.Max(e => Length(layout, e));

@@ -127,6 +127,23 @@ public class DungeonDoorTests
     }
 
     [Fact]
+    public void A_door_that_already_faces_the_neighbour_is_reused()
+    {
+        // B lies to the right of A, C mostly above it. A's door towards B (+X) also faces C, so A keeps one door.
+        var settings = new LayoutSettings { Bounds = new Vector2I(48, 40) };
+        var layout = new DungeonLayout();
+        layout.Rooms.Add(new RoomRect(new Vector2I(10, 20), new Vector2I(6, 6)));
+        layout.Rooms.Add(new RoomRect(new Vector2I(30, 20), new Vector2I(5, 5)));
+        layout.Rooms.Add(new RoomRect(new Vector2I(18, 2), new Vector2I(5, 5)));
+        RoomGraph.Build(layout, 0, 1);
+        Assert.Equal(new[] { (0, 1), (0, 2) }, layout.Edges.Select(e => (e.A, e.B)));
+        DoorPlacer.Place(layout, settings);
+
+        Assert.True(layout.IsValid);
+        Assert.Equal(DoorSide.PosX, Assert.Single(layout.Doors, d => d.Room == 0).Side);
+    }
+
+    [Fact]
     public void A_room_with_no_way_out_is_an_error()
     {
         var settings = new LayoutSettings { Bounds = new Vector2I(20, 9), Margin = 0 };
