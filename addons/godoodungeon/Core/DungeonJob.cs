@@ -45,6 +45,12 @@ public enum DungeonStatus
     Failed,
 
     Cancelled,
+
+    /// <summary>
+    /// Solved, but the connectivity check found rooms that cannot be reached: a bug, never a user
+    /// error. <see cref="DungeonResult.Errors"/> names the rooms; nothing should be written.
+    /// </summary>
+    InternalError,
 }
 
 /// <summary>One finished WFC solve of the dungeon: its input and the variant per cell.</summary>
@@ -75,6 +81,9 @@ public sealed record DungeonResult
     public int Restarts { get; init; }
     public int RouteCount { get; init; }
     public int RouteCells { get; init; }
+
+    /// <summary>The rooms the connectivity check could not reach, with <see cref="DungeonStatus.InternalError"/>.</summary>
+    public IReadOnlyList<int> UnreachableRooms { get; init; } = Array.Empty<int>();
 }
 
 /// <summary>
@@ -220,9 +229,15 @@ public sealed class DungeonJob
                 continue;
             }
             solves.Add(new DungeonSolve(corridorInput, corridors.Result.Cells, true));
+
+            Volatile.Write(ref _stage, $"Layout {attempt + 1}: checking connections");
+            var unreachable = DungeonConnectivity.UnreachableRooms(layout, corridorInput, corridors.Result.Cells, request.CorridorTiles, request.PathSocket);
             return new DungeonResult
             {
-                Status = DungeonStatus.Solved, Layout = layout, Solves = solves, Attempts = failures, LayoutAttempt = attempt,
+                Status = unreachable.Count == 0 ? DungeonStatus.Solved : DungeonStatus.InternalError,
+                Errors = unreachable.Count == 0 ? Array.Empty<string>() : new[] { DungeonConnectivity.Describe(layout, unreachable) },
+                UnreachableRooms = unreachable,
+                Layout = layout, Solves = solves, Attempts = failures, LayoutAttempt = attempt,
                 Backtracks = backtracks, Restarts = restarts,
                 RouteCount = corridors.Plan?.RouteCount ?? 0, RouteCells = corridors.Plan?.RouteCellCount ?? 0,
             };
