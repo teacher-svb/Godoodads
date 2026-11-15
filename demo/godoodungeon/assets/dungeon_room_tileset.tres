@@ -1,10 +1,10 @@
-[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+[gd_resource type="Resource" script_class="WfcTileSet" format=3 uid="uid://cm3amf22i3m5f"]
 
-[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_q3o0c"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_8lquf"]
+[ext_resource type="MeshLibrary" uid="uid://csidycatkqc5l" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_q3o0c"]
+[ext_resource type="Script" uid="uid://rb5vled2paii" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_8lquf"]
 [ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/spawn_point.tscn" id="3_em5x8"]
 [ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/torch.tscn" id="4_l0ky4"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="5_rv7ek"]
+[ext_resource type="Script" uid="uid://bp15dtwmw2ped" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="5_rv7ek"]
 
 [sub_resource type="Resource" id="Resource_pequa"]
 resource_name = "Floor"

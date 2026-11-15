@@ -1,9 +1,9 @@
-[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+[gd_resource type="Resource" script_class="WfcTileSet" format=3 uid="uid://d014no7dljaxg"]
 
-[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_mm4su"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_lwth3"]
+[ext_resource type="MeshLibrary" uid="uid://csidycatkqc5l" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_mm4su"]
+[ext_resource type="Script" uid="uid://rb5vled2paii" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_lwth3"]
 [ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/corridor_torch.tscn" id="3_71p5h"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="4_f20t1"]
+[ext_resource type="Script" uid="uid://bp15dtwmw2ped" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="4_f20t1"]
 
 [sub_resource type="Resource" id="Resource_ba8q5"]
 resource_name = "Corridor"
