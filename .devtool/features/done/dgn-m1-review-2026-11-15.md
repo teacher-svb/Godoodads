@@ -1,13 +1,13 @@
 ---
 id: "dgn-m1-review-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T16:05:56.000Z"
-completedAt: null
+modified: "2026-11-15T16:07:47.000Z"
+completedAt: "2026-11-15T16:07:47.000Z"
 labels: ["v1.0.0", "m1", "review"]
 order: "b6"
 ---
@@ -785,3 +785,5 @@ defaults, seed 1: 12 rooms, 11 tree edges + 2 loops, 22 doors.
 
 
 ```
+
+M1 approved by the board on 2026-11-15. M2 (solve pipeline) can start. Work continues on `godoodungeon-m1`.
