@@ -36,3 +36,4 @@ Branch `godoodungeon-m1`.
 ## Board check (2026-11-15)
 - Passed: handles show and drag with snapping, the dialog follows, Ctrl+Z undoes in one step, and Escape cancels.
 - The box looked **yellow**, not violet. The likely cause: the overlay material treated vertex colours as linear (brightened on screen), and the demo scene tonemaps with Filmic. Fixed: the overlay material uses `VertexColorIsSrgb` and `DisableFog`, and the bounds colour is a deeper violet (0.55, 0.2, 0.95). The colour gets another look at the M3 review.
+- Colour recheck after the sRGB fix: the bounds box is violet, and the preview shows cyan rooms, yellow doors and green corridors.

@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-failure-reporting-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:55:24.000Z"
-completedAt: null
+modified: "2026-11-15T18:57:42.000Z"
+completedAt: "2026-11-15T18:57:42.000Z"
 labels: ["v1.0.0", "m3", "editor", "ui"]
 order: "d5"
 ---
@@ -64,3 +64,6 @@ PROBE 4 success:
 
 ## Manual check (board)
 Place a line of crates across the bounds of `prototype_m2_dungeon.tscn` so the rooms cannot all be joined, then Generate. The status lists 4 failed layouts and red boxes mark the doors. Remove the crates and Generate: the boxes go.
+
+## Board check passed (2026-11-15)
+With a line of crates across the bounds, the status lists the 4 failed layouts by door and red boxes mark them. After removing the crates, Generate succeeds and the boxes go.

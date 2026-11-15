@@ -3,7 +3,7 @@
 ## Sub-project 3: godoodungeon (Dungeon Generator)
 
 **Decisions by:** the board (Syndias)
-**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. M1 (layout core) and M2 (solve pipeline) approved on 2026-11-15. M3 (editor) is next. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
+**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. M1 (layout core), M2 (solve pipeline) and M3 (editor) approved on 2026-11-15. M4 (demo tile set) is next. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
 **Reference material:** the research summary in §11. The demo tile set is created for this project.
 
 ---
