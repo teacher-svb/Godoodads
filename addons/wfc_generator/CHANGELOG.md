@@ -2,6 +2,11 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **External Sockets** on a tile set: sockets that something outside the tiles supplies, such as a boundary socket or the `outside-` of a godoodungeon room's bounds. The tile set check and the preview count them as partners, so faces that only ever meet them are no longer reported or drawn in red. Generation ignores them; an empty list changes nothing.
+
 ## [1.3.3] - 2026-11-15
 
 ### Changed

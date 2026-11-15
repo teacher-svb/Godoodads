@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_u86fj"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/assets/dungeon_corridor_tileset.tres" id="2_s1psc"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/assets/dungeon_room_tileset.tres" id="3_j42hn"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Resources/DungeonSettings.cs" id="4_mxso2"]
+
+[sub_resource type="Resource" id="Resource_quxvw"]
+script = ExtResource("4_mxso2")
+Seed = 1
+RoomTileSet = ExtResource("3_j42hn")
+CorridorTileSet = ExtResource("2_s1psc")
+DoorTile = 10
+BoundsSize = Vector3i(64, 1, 64)
+RoomCount = 20
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_omx7a"]
+
+[sub_resource type="Sky" id="Sky_jlpyi"]
+sky_material = SubResource("ProceduralSkyMaterial_omx7a")
+
+[sub_resource type="Environment" id="Environment_48s72"]
+background_mode = 2
+sky = SubResource("Sky_jlpyi")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+tonemap_mode = 2
+
+[node name="DungeonFree" type="Node3D" unique_id=1576366595]
+
+[node name="GridMap" type="GridMap" parent="." unique_id=1892558127]
+mesh_library = ExtResource("1_u86fj")
+metadata/godoodads_dungeon_settings = SubResource("Resource_quxvw")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=739339438]
+transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, 0, 0, 0)
+light_energy = 0.6
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=699759556]
+environment = SubResource("Environment_48s72")

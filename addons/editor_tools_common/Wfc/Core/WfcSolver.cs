@@ -716,12 +716,32 @@ public sealed class WfcSolver
     }
 }
 
-/// <summary>SplitMix64. Each restart gets its own stream derived from the seed.</summary>
-internal sealed class WfcRandom
+/// <summary>
+/// SplitMix64. Each restart gets its own stream derived from the seed. Shared with godoodungeon,
+/// which derives a seed per layout attempt, room and corridor pass with <see cref="Derive"/>.
+/// </summary>
+public sealed class WfcRandom
 {
     private ulong _state;
 
     public WfcRandom(long seed, int attempt) => _state = unchecked((ulong)seed + (ulong)attempt * 0xA0761D6478BD642FUL);
+
+    /// <summary>
+    /// A seed for an independent stream of <paramref name="seed"/>: the SplitMix64 finaliser over
+    /// the seed and the stream number, so nearby seeds and streams give unrelated results.
+    /// </summary>
+    public static long Derive(long seed, long stream)
+    {
+        ulong z = unchecked((ulong)seed ^ Finalise((ulong)stream + 0x9E3779B97F4A7C15UL));
+        return unchecked((long)Finalise(z));
+    }
+
+    private static ulong Finalise(ulong z)
+    {
+        z = unchecked((z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL);
+        z = unchecked((z ^ (z >> 27)) * 0x94D049BB133111EBUL);
+        return z ^ (z >> 31);
+    }
 
     public int Next(int bound) => (int)Math.BigMul(Mix(), (ulong)bound, out _);
 

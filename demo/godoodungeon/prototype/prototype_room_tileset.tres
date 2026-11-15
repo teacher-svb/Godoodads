@@ -69,3 +69,4 @@ SocketNegZ = "edge"
 script = ExtResource("3_3jlod")
 Library = ExtResource("1_6cq7r")
 Tiles = Array[ExtResource("2_bv7a6")]([SubResource("Resource_700w8"), SubResource("Resource_kgjth"), SubResource("Resource_intu4"), SubResource("Resource_bqnv2"), SubResource("Resource_30g2k")])
+ExternalSockets = Array[String](["outside-"])

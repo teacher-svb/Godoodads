@@ -52,13 +52,16 @@ public static class SocketEditing
         return labels.Where(l => l.Contains(filter, StringComparison.OrdinalIgnoreCase)).ToList();
     }
 
-    /// <summary>True for each direction in which no variant can face <paramref name="variant"/>.</summary>
-    public static bool[] UnmatchedFaces(CompiledTileSet set, int variant)
+    /// <summary>
+    /// True for each direction in which no variant, and no external socket (see
+    /// <see cref="TileSetChecker.Check"/>), can face <paramref name="variant"/>.
+    /// </summary>
+    public static bool[] UnmatchedFaces(CompiledTileSet set, int variant, IReadOnlyCollection<Socket> external = null)
     {
         var unmatched = new bool[Directions.Count];
         foreach (int direction in set.ActiveDirections)
         {
-            bool any = false;
+            bool any = TileSetChecker.MeetsExternal(set.Variants[variant].Sockets[direction], external);
             for (int other = 0; other < set.Variants.Count && !any; other++)
                 any = set.Allows(variant, direction, other);
             unmatched[direction] = !any;

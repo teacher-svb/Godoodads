@@ -89,6 +89,7 @@ public partial class BuildDungeonPrototype : Node
         Check(ResourceSaver.Save(library, LibraryPath), LibraryPath);
 
         var roomSet = BuildTileSet(library, RoomModules, roomItems);
+        roomSet.ExternalSockets.Add(EdgeBoundary);   // the room bounds supply it
         roomSet.TakeOverPath(RoomTileSetPath);
         Check(ResourceSaver.Save(roomSet, RoomTileSetPath), RoomTileSetPath);
         var corridorSet = BuildTileSet(library, CorridorModules, corridorItems);

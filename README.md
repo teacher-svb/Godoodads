@@ -8,13 +8,13 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 |---|---|---|---|
 | MultiMesh Scatter | `addons/multimesh_scatter/` | 1.2.0, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
 | WFC Generator | `addons/wfc_generator/` | 1.3.3, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
-| godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | planned (milestones `m0`–`m5`) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
+| godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | 1.0.0, see its [README](addons/godoodungeon/README.md) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
 
 ## Install an addon
 
 The addons need Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
-1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `wfc_generator-1.3.3.zip` or `multimesh_scatter-1.2.0.zip`. Each release is named after its addon.
+1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `godoodungeon-1.0.0.zip`, `wfc_generator-1.3.3.zip` or `multimesh_scatter-1.2.0.zip`. Each release is named after its addon.
 2. **Extract it into your project's root folder**, next to `project.godot`. Every zip contains the addon's folder and `editor_tools_common`, the shared helpers, both under `addons/`. When you install a second Godoodads addon, let the newer `editor_tools_common` replace the older one.
 3. **Create a C# solution** if your project has none: *Project → Tools → C# → Create C# solution*.
 4. **Build** the project (the hammer icon, or `dotnet build`).
@@ -55,3 +55,11 @@ Guided paths, socket editing and measured tile shares are planned for 1.3 (label
 - Terrain-first paths: generate the terrain, then find a route over it with A* using a cost per tile, and fit path tiles in afterwards (1.3 lays the route out first instead)
 - Renaming a socket across a whole tile set, and thumbnails of matching faces in the preview
 - Suggesting 2D sockets from Godot terrain sets
+
+### godoodungeon
+
+Multiple floors, room stamps (hand-built rooms placed by the layout) and room roles with progression are idea cards labelled `v2.0.0`; the board decides after feedback on 1.0.0 (brief §9). Not planned yet:
+
+- Runtime (in-game) generation
+- Non-rectangular rooms, and other layouts (BSP, caves)
+- A 2D `TileMapLayer` version, once WFC Generator has one

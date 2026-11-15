@@ -34,6 +34,23 @@ public class WfcTileSetCheckerTests
     }
 
     [Fact]
+    public void ExternalSocketsCountAsPartners()
+    {
+        var tile = Tile3D("lonely+", "a", "a", "a", "a", "a", TileRotation.FourWay);
+        var set = CompiledTileSet.Compile(new[] { Uniform3D("a"), tile }, Directions.All3D);
+        Socket.TryParse("lonely-", false, out var outside, out _);
+        Socket.TryParse("lonely+", false, out var same, out _);
+
+        Assert.True(TileSetChecker.Check(set, new[] { outside }).IsClean);
+        Assert.Single(TileSetChecker.Check(set, new[] { same }).UnmatchedFaces); // '+' only meets '-'
+        Assert.Single(TileSetChecker.Check(set, null).UnmatchedFaces);
+
+        int variant = set.FindVariant(1, 0);
+        Assert.True(SocketEditing.UnmatchedFaces(set, variant)[Directions.PosX]);
+        Assert.False(SocketEditing.UnmatchedFaces(set, variant, new[] { outside })[Directions.PosX]);
+    }
+
+    [Fact]
     public void RotationSpecificSocketMatchedByAnotherRotationIsFine()
     {
         var top = Tile3D("a", "a", "a", "s@2", "a", "a");

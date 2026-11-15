@@ -1,0 +1,44 @@
+[gd_scene format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="1_0l7g4"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/assets/dungeon_corridor_tileset.tres" id="2_44m14"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/assets/dungeon_room_tileset.tres" id="3_54ied"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Resources/DungeonSettings.cs" id="4_qfsj5"]
+
+[sub_resource type="Resource" id="Resource_xfoxn"]
+script = ExtResource("4_qfsj5")
+Seed = 2
+RoomTileSet = ExtResource("3_54ied")
+CorridorTileSet = ExtResource("2_44m14")
+DoorTile = 10
+BoundsSize = Vector3i(64, 1, 64)
+RoomCount = 20
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_f5xe2"]
+
+[sub_resource type="Sky" id="Sky_uy4ln"]
+sky_material = SubResource("ProceduralSkyMaterial_f5xe2")
+
+[sub_resource type="Environment" id="Environment_1yynl"]
+background_mode = 2
+sky = SubResource("Sky_uy4ln")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+tonemap_mode = 2
+
+[node name="DungeonObstacles" type="Node3D" unique_id=1139012460]
+
+[node name="GridMap" type="GridMap" parent="." unique_id=1690718297]
+mesh_library = ExtResource("1_0l7g4")
+data = {
+"cells": PackedInt32Array(12, 12, 16, 50, 14, 16, 31, 31, 16, 14, 50, 16, 49, 49, 16, 28, 44, 17, 28, 45, 17, 28, 46, 17, 28, 47, 17, 29, 44, 17, 29, 45, 17, 29, 46, 17, 29, 47, 17, 30, 44, 17, 30, 45, 17, 30, 46, 17, 30, 47, 17, 31, 44, 17, 31, 45, 17, 31, 46, 17, 31, 47, 17, 32, 44, 17, 32, 45, 17, 32, 46, 17, 32, 47, 17, 33, 44, 17, 33, 45, 17, 33, 46, 17, 33, 47, 17)
+}
+metadata/godoodads_dungeon_settings = SubResource("Resource_xfoxn")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1080027908]
+transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, 0, 0, 0)
+light_energy = 0.6
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=361889875]
+environment = SubResource("Environment_1yynl")
