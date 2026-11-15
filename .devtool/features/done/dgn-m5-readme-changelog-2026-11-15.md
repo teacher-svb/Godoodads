@@ -1,13 +1,13 @@
 ---
 id: "dgn-m5-readme-changelog-2026-11-15"
-status: "in-progress"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:32:27.000Z"
-completedAt: null
+modified: "2026-11-15T19:36:50.000Z"
+completedAt: "2026-11-15T19:36:50.000Z"
 labels: ["v1.0.0", "m5", "docs", "release"]
 order: "f3"
 ---
@@ -32,3 +32,5 @@ Branch `godoodungeon-m1`, commit `d4f7881`.
 - Root README: godoodungeon 1.0.0 in the table, in the install example, and a godoodungeon backlog section. CLAUDE.md: the sub-project 3 overview (router, External Sockets).
 - Packaging (scratch clone of the branch): `tools/package_addon.sh godoodungeon 1.0.0` builds the zip (addon with README, CHANGELOG and docs, plus `editor_tools_common` with `Wfc/`) and the notes from the CHANGELOG. `tools/smoke_test_addon.sh`: **"godoodungeon loaded cleanly"** in a clean C# project without WFC Generator.
 - Open: the two screenshots.
+- Screenshots from the board (2026-11-15): `docs/dungeon.png` (1231 × 920, a generated demo dungeon with torches) and `docs/dialog.png` (513 × 1207, the dialog with every setting shown, at 360 px wide in the README). The board sent the settings view instead of the preview in the viewport, so the caption describes that.
+- Done: the zip builds and passes the smoke test (above).

@@ -2,7 +2,7 @@
 
 Generate dungeons on a `GridMap`, straight from the Godot editor. godoodungeon lays out rooms and their doors, fills every room with modules using wave function collapse, and joins the rooms with corridors that run from door to door. You choose a box of cells, two tile sets and a few numbers, then press **Generate**. Cells you placed by hand stay where they are, and the dungeon works around them.
 
-![A generated dungeon around hand-placed statues and a pool](docs/dungeon.png)
+![A dungeon generated with the demo tile sets: rooms with torches, crates and spawn points, joined by corridors](docs/dungeon.png)
 
 **Requirements:** Godot 4.7 or later, the **.NET** edition (the download labelled ".NET" or "mono"), and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
@@ -53,7 +53,7 @@ Close Godot, delete `addons/godoodungeon/`, then extract the new zip as above, a
 5. Tick **Preview Layout** to see the rooms (cyan), doors (yellow) and corridors (green) that Generate will make, and tune the numbers or the seed until you like the layout.
 6. Press **Generate**.
 
-![The dialog with Preview Layout on](docs/dialog.png)
+<img src="docs/dialog.png" alt="The Generate Dungeon dialog with every setting shown" width="360">
 
 Generate runs in the background and takes a fraction of a second for a 64 × 64 dungeon. Press **Stop** to cancel; the GridMap is then left exactly as it was. Each generation is one undo step (Ctrl+Z). The settings are saved on the GridMap, so reopening the dialog restores them, and the scene file can reproduce the dungeon. The status area shows the result:
 
