@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-dialog-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:37:12.000Z"
-completedAt: null
+modified: "2026-11-15T18:39:15.000Z"
+completedAt: "2026-11-15T18:39:15.000Z"
 labels: ["v1.0.0", "m3", "editor", "ui"]
 order: "d1"
 ---
@@ -42,3 +42,4 @@ Probe (headless editor, scratch copy). It opened `prototype_m2_dungeon.tscn`, se
 ## Board check (2026-11-15)
 - Passed: every setting is editable, Door Tile lists the room tiles, Seed is read-only with Randomise Seed on, and the dialog opens after an assembly reload.
 - **Bug: Generate was greyed out.** The M0 skeleton disabled the Generate button on its dialog. The dialog node survives assembly reloads, and the new `OpenDialog` never enabled it again (the headless probe started a fresh editor, so it did not see this). Fixed: `OpenDialog` enables the action and resets its text. Generate needs checking again.
+- Rechecked after the fix: Generate is enabled after a reload and generates a new dungeon with the result in the status area. Passed.

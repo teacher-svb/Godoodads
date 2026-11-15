@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-clear-dungeon-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:18:30.000Z"
-completedAt: null
+modified: "2026-11-15T18:39:15.000Z"
+completedAt: "2026-11-15T18:39:15.000Z"
 labels: ["v1.0.0", "m3", "editor"]
 order: "d6"
 ---
@@ -28,3 +28,6 @@ Branch `godoodungeon-m1`.
 
 ## Manual check (board)
 Generate, then press Clear Dungeon. The dungeon goes and the crates stay. Then undo (the dungeon is back) and redo (it goes again).
+
+## Board check passed (2026-11-15)
+After a Generate, Clear Dungeon removes the dungeon and the hand-placed crates stay. Ctrl+Z brings the dungeon back, and Ctrl+Shift+Z clears it again.

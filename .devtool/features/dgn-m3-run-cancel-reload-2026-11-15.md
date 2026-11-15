@@ -6,7 +6,7 @@ assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:18:30.000Z"
+modified: "2026-11-15T18:39:15.000Z"
 completedAt: null
 labels: ["v1.0.0", "m3", "editor"]
 order: "d4"
@@ -39,3 +39,6 @@ Probe (headless editor, scratch copy). It opened `prototype_m2_dungeon.tscn`, se
 1. Cancel mid-run: set the bounds to about 200 × 1 × 200 with 120 rooms, Generate, then Stop. The GridMap is unchanged.
 2. Rebuild during a run (start the big run, rebuild, focus Godot). The status says the run was cancelled, and the editor does not hang.
 3. Close the scene during a big run: no cells are left behind and the editor does not hang.
+
+## Board check (2026-11-15)
+The board could not interrupt a run by hand: even 400 × 1 × 400 with 400 rooms finishes before Stop, a rebuild or closing the scene can happen. Generate itself works (checked on `dgn-m3-dialog`).
