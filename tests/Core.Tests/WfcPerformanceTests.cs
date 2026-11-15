@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Godot;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 using Xunit;
 using Xunit.Abstractions;
 using static Godoodads.Tests.WfcTestTiles;

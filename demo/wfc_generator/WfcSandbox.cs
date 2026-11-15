@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
-using Godoodads.WfcGenerator;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Core;
 
 namespace Godoodads.WfcGenerator.Demo;
 

@@ -3,12 +3,12 @@ id: "wfc-idea-tile-weights-2026-11-09"
 status: "done"
 priority: "high"
 assignee: null
-epic: "WFC 1.1"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-09T23:03:56.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T23:03:56.000Z"
-labels: ["idea", "core"]
+labels: ["v1.1.0", "idea", "core"]
 order: "b0"
 ---
 # WFC 1.1: Per-tile weights

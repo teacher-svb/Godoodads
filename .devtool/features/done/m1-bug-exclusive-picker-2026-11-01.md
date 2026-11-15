@@ -3,12 +3,12 @@ id: "m1-bug-exclusive-picker-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M1 Parity port"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T13:00:00.000Z"
-modified: "2026-11-01T00:40:02.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:40:02.000Z"
-labels: ["bug", "editor", "common"]
+labels: ["v1.0.0", "m1", "bug", "editor", "common"]
 order: "a1"
 ---
 # Bug: node picker logs "parent window already has another exclusive child"

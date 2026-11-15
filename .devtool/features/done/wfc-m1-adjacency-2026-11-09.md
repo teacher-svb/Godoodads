@@ -3,12 +3,12 @@ id: "wfc-m1-adjacency-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M1 Core solver"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:42:27.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T16:42:27.000Z"
-labels: ["core"]
+labels: ["v1.0.0", "m1", "core"]
 order: "a3"
 ---
 # WFC M1: Adjacency table

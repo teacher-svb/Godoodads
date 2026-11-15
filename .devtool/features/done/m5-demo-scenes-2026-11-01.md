@@ -3,12 +3,12 @@ id: "m5-demo-scenes-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M5 Polish"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:36:45.000Z"
-modified: "2026-11-01T01:40:50.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:40:50.000Z"
-labels: ["demo"]
+labels: ["v1.0.0", "m5", "demo"]
 order: "a3"
 ---
 # M5: Demo scene per mode

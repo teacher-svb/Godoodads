@@ -3,12 +3,12 @@ id: "wfc-1-3-docs-release-2026-11-10"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC 1.3"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T13:00:00.000Z"
-modified: "2026-11-10T14:18:13.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T14:18:13.000Z"
-labels: ["docs"]
+labels: ["v1.3.0", "docs", "release"]
 order: "eB"
 ---
 # WFC 1.3: 1.3 docs and release prep

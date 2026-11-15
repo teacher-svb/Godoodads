@@ -3,12 +3,12 @@ id: "wfc-m0-verify-thread-reload-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M0 Foundations"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:31:59.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T16:31:59.000Z"
-labels: ["spike"]
+labels: ["v1.0.0", "m0", "spike"]
 order: "a3"
 ---
 # WFC M0: Verify background thread and reload

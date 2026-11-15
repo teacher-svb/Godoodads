@@ -3,12 +3,12 @@ id: "m3-settings-ui-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M3 Mask texture"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:07:27.000Z"
-modified: "2026-11-01T01:21:12.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:21:12.000Z"
-labels: ["ui", "editor"]
+labels: ["v1.0.0", "m3", "ui", "editor"]
 order: "a2"
 ---
 # M3: Placement mask settings and warnings

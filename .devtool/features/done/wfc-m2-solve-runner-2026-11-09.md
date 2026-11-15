@@ -3,12 +3,12 @@ id: "wfc-m2-solve-runner-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M2 GridMap pipeline"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T18:56:28.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T18:56:28.000Z"
-labels: ["editor"]
+labels: ["v1.0.0", "m2", "editor"]
 order: "aE"
 ---
 # WFC M2: Background solve runner

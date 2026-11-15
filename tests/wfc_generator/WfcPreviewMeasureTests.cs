@@ -3,9 +3,9 @@ namespace Godoodads.Tests.WfcGenerator;
 using System.Reflection;
 using System.Threading;
 using Godot;
-using Godoodads.WfcGenerator;
-using Godoodads.WfcGenerator.Core;
-using Godoodads.WfcGenerator.Editor;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Core;
+using Godoodads.Common.Wfc.Editor;
 using GdUnit4;
 using static GdUnit4.Assertions;
 

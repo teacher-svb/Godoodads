@@ -3,12 +3,12 @@ id: "scatter-1-1-docs-release-2026-11-10"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "Scatter 1.1"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-10T16:00:00.000Z"
-modified: "2026-11-10T18:10:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T18:10:00.000Z"
-labels: ["docs"]
+labels: ["v1.1.0", "docs", "release"]
 order: "g5"
 ---
 # Scatter 1.1: 1.1 docs and release prep

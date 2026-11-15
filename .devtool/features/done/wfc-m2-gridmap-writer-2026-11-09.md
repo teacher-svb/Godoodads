@@ -3,12 +3,12 @@ id: "wfc-m2-gridmap-writer-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M2 GridMap pipeline"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T18:39:21.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T18:39:21.000Z"
-labels: ["engine"]
+labels: ["v1.0.0", "m2", "adapters"]
 order: "aD"
 ---
 # WFC M2: GridMap writer and undo

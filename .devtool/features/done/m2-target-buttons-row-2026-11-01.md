@@ -3,12 +3,12 @@ id: "m2-target-buttons-row-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M2 Orientation"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:04:50.000Z"
-modified: "2026-11-01T01:07:08.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:07:08.000Z"
-labels: ["ui", "common"]
+labels: ["v1.0.0", "m2", "ui", "common"]
 order: "a7"
 ---
 # Target direction quick buttons in one row

@@ -3,12 +3,12 @@ id: "m0-demo-scene-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M0 Foundations"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T00:01:53.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:01:53.000Z"
-labels: ["demo"]
+labels: ["v1.0.0", "m0", "demo"]
 order: "a7"
 ---
 # M0: Demo scene and test assets

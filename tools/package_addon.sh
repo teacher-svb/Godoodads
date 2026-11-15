@@ -42,6 +42,11 @@ stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 
 git archive HEAD "addons/$addon" "addons/$common" LICENSE | tar -x -C "$stage"
+
+# The shared WFC solver (and its global resource classes) only ships with addons that use it.
+if ! grep -rqs "Godoodads\.Common\.Wfc" "$stage/addons/$addon"; then
+    rm -rf "$stage/addons/$common/Wfc"
+fi
 cp "$stage/LICENSE" "$stage/addons/$addon/LICENSE"
 cp "$stage/LICENSE" "$stage/addons/$common/LICENSE"
 

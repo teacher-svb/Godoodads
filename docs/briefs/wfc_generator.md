@@ -48,6 +48,8 @@ demo/wfc_generator/
 tests/wfc_generator/
 ```
 
+Since 1.3.3, `Core/`, `Resources/` and `Adapters/` live in `addons/editor_tools_common/Wfc/`, shared with godoodungeon (dungeon brief §4.1). `addons/wfc_generator/Resources/` keeps empty legacy subclasses, so files that name the old script paths still load.
+
 ---
 
 ### 4. Functional requirements
@@ -150,7 +152,7 @@ Read tile set and fixed cells
 
 ### 7. Milestones
 
-Each milestone ends with a board review. Card epics use the prefix `WFC`, for example `WFC M1 Core solver`, to keep them apart from the Scatter milestones.
+Each milestone ends with a board review. Cards use the epic `WFC Generator` with the labels `v1.0.0` and the milestone, for example `m1`.
 
 | # | Milestone | Content |
 |---|---|---|
@@ -218,7 +220,7 @@ Checked on Godot 4.7. Details are on the M0 cards.
 
 ### 11. Release 1.1
 
-Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.1*.
+Decided by the board on 2026-11-10. Tracked under the label `v1.1.0`.
 
 #### 11.1 Per-tile weights
 
@@ -242,7 +244,7 @@ Boundary sockets stay in the backlog. The Copies field is dropped, because weigh
 
 ### 12. Release 1.2
 
-Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.2*. One release with all items below, follow-ups first. Everything is additive: tile sets and scenes from 1.1 keep working and give the same result when the new options are unused.
+Decided by the board on 2026-11-10. Tracked under the label `v1.2.0`. One release with all items below, follow-ups first. Everything is additive: tile sets and scenes from 1.1 keep working and give the same result when the new options are unused.
 
 #### 12.1 Boundary sockets
 
@@ -285,7 +287,7 @@ Region weight masks, measured tile shares, multi-cell tiles, guided paths, the 2
 
 ### 13. Release 1.3
 
-Decided by the board on 2026-11-10. Tracked under the epic *WFC 1.3*. One release, in this order: socket editing and measured shares, then guided paths. The 2D adapter, first planned here, became its own release on 2026-11-10 (§14). Everything is additive: 1.2 tile sets and scenes keep working and give the same result when the new options are unused.
+Decided by the board on 2026-11-10. Tracked under the label `v1.3.0`. One release, in this order: socket editing and measured shares, then guided paths. The 2D adapter, first planned here, became its own release on 2026-11-10 (§14). Everything is additive: 1.2 tile sets and scenes keep working and give the same result when the new options are unused.
 
 #### 13.1 Socket editing in the preview
 
@@ -323,14 +325,14 @@ The 2D adapter moves to 1.4 (§14). Region weight masks and multi-cell tiles sta
 
 #### 13.6 Patch 1.3.1
 
-Requested on 2026-11-14, tracked under the epic *WFC 1.3.1*, before 1.4 work starts. Both options default to off, so settings stored by 1.3.0 behave as before.
+Requested on 2026-11-14, tracked under the label `v1.3.1`, before 1.4 work starts. Both options default to off, so settings stored by 1.3.0 behave as before.
 
 - **Randomise Seed** is a checkbox instead of a button. On: the Seed row is read-only and Generate picks a new seed first; the stored settings and status line show it. Off: the seed is editable and Generate keeps using it.
 - **Keep Placed Cells**, shown only while Clear Bounds First is on (amends §11.2, "Clear Bounds First still removes everything"): clear frees every generated cell, pinned ones too, and keeps hand-placed cells and generated cells edited since.
 
 #### 13.7 Patch 1.3.2
 
-Requested on 2026-11-14, tracked under the epic *WFC 1.3.2*.
+Requested on 2026-11-14, tracked under the label `v1.3.2`.
 
 - **Failed seed:** with Randomise Seed on, a Generate that does not succeed (no solution, out of attempts, path errors, solver error, stopped or cancelled) puts Seed back to the seed before it, since the GridMap was not changed. Seeds that failed are not picked again while the dialog stays open.
 - **Clear Bounds** button: clears the bounds by the rules of Clear Bounds First and Keep Placed Cells, without solving, as one undo step with the regenerate record (entries in the bounds go, pins too) and the tagged markers on cleared cells. Needs no tile set. Keep Placed Cells is therefore always shown.
@@ -339,7 +341,7 @@ Requested on 2026-11-14, tracked under the epic *WFC 1.3.2*.
 
 ### 14. Release 1.4
 
-Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. Tracked under the epic *WFC 1.4*. Everything is additive: 1.3 tile sets and scenes keep working unchanged.
+Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. Tracked under the label `v1.4.0`. Everything is additive: 1.3 tile sets and scenes keep working unchanged.
 
 #### 14.1 2D TileMapLayer adapter
 

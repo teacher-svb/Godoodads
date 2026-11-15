@@ -3,12 +3,12 @@ id: "dist-release-workflow-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "Distribution"
+epic: "Godoodads"
 dueDate: null
 created: "2026-11-09T11:35:00.000Z"
-modified: "2026-11-09T11:44:37.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T11:44:37.000Z"
-labels: ["release", "ci"]
+labels: ["release", "ci", "distribution"]
 order: "a0"
 ---
 # Distribution: per-addon release workflow

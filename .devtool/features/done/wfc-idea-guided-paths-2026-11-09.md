@@ -3,12 +3,12 @@ id: "wfc-idea-guided-paths-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: null
-epic: "WFC 1.3"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-10T13:00:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T13:00:00.000Z"
-labels: ["idea", "core"]
+labels: ["v1.3.0", "idea", "core"]
 order: "b3"
 ---
 # WFC 2.0: Guided connected paths

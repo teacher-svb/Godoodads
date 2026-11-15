@@ -3,12 +3,12 @@ id: "wfc-1-2-settings-meta-2026-11-10"
 status: "done"
 priority: "low"
 assignee: "claude"
-epic: "WFC 1.2"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T09:29:58.000Z"
-modified: "2026-11-10T09:31:27.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:31:27.000Z"
-labels: ["editor", "bug"]
+labels: ["v1.2.0", "editor", "bug"]
 order: "d0"
 ---
 # WFC 1.2: No empty settings entry after undo

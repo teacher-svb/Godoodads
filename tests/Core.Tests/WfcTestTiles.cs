@@ -1,4 +1,4 @@
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 using Xunit;
 
 namespace Godoodads.Tests;

@@ -3,12 +3,12 @@ id: "wfc-idea-boundary-sockets-2026-11-09"
 status: "done"
 priority: "low"
 assignee: null
-epic: "WFC 1.2"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-10T09:29:58.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:29:58.000Z"
-labels: ["idea", "core"]
+labels: ["v1.2.0", "idea", "core"]
 order: "b3"
 ---
 # WFC 1.1: Boundary sockets

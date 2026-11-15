@@ -3,12 +3,12 @@ id: "m1-dialog-wireup-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M1 Parity port"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T00:43:13.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:43:13.000Z"
-labels: ["editor", "ui"]
+labels: ["v1.0.0", "m1", "editor", "ui"]
 order: "aJ"
 ---
 # M1: Wire dialog to pipeline, status and errors

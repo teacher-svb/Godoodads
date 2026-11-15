@@ -3,12 +3,12 @@ id: "m2-orientation-math-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M2 Orientation"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T00:55:04.000Z"
-modified: "2026-11-01T00:57:39.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:57:39.000Z"
-labels: ["core"]
+labels: ["v1.0.0", "m2", "core"]
 order: "a0"
 ---
 # M2: Orientation blend (slerp N to V, randomness, local up axis)

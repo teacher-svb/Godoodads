@@ -2,7 +2,7 @@
 
 [ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_77b0q"]
 [ext_resource type="Resource" path="res://demo/wfc_generator/assets/ruin_paths_tileset.tres" id="2_wna4j"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcSettings.cs" id="3_7f4nc"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcSettings.cs" id="3_7f4nc"]
 
 [sub_resource type="Resource" id="Resource_amm25"]
 script = ExtResource("3_7f4nc")

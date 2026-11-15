@@ -3,12 +3,12 @@ id: "dist-readme-csharp-solution-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "Distribution"
+epic: "Godoodads"
 dueDate: null
 created: "2026-11-09T11:50:00.000Z"
-modified: "2026-11-09T11:50:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T11:50:00.000Z"
-labels: ["docs"]
+labels: ["docs", "distribution"]
 order: "a1"
 ---
 # Distribution: C# solution step in the install instructions

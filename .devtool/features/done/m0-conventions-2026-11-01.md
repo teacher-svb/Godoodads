@@ -3,12 +3,12 @@ id: "m0-conventions-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M0 Foundations"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T00:02:51.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:02:51.000Z"
-labels: ["docs"]
+labels: ["v1.0.0", "m0", "docs"]
 order: "a8"
 ---
 # M0: CONVENTIONS.md

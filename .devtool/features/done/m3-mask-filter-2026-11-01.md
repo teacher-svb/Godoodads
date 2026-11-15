@@ -3,12 +3,12 @@ id: "m3-mask-filter-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M3 Mask texture"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:07:27.000Z"
-modified: "2026-11-01T01:08:28.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:08:28.000Z"
-labels: ["core"]
+labels: ["v1.0.0", "m3", "core"]
 order: "a0"
 ---
 # M3: Mask image and mask filter (Core)

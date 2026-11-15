@@ -3,12 +3,12 @@ id: "wfc-1-3-2-failed-seed-and-clear-2026-11-14"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC 1.3.2"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-14T20:15:00.000Z"
-modified: "2026-11-14T21:05:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-14T21:05:00.000Z"
-labels: ["resources", "adapters", "editor"]
+labels: ["v1.3.2", "resources", "adapters", "editor", "ui"]
 order: "e1"
 ---
 # WFC 1.3.2: Keep the last good seed after a failure, and a Clear Bounds button

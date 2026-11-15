@@ -1,0 +1,39 @@
+[gd_scene format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/prototype/prototype_library.tres" id="1_87geo"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/prototype/prototype_corridor_tileset.tres" id="2_lk1qh"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcSettings.cs" id="3_u3pxr"]
+
+[sub_resource type="Resource" id="Resource_n4c5n"]
+script = ExtResource("3_u3pxr")
+TileSet = ExtResource("2_lk1qh")
+Seed = 7
+BoundsSize = Vector3i(24, 1, 24)
+PathSocket = "path"
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ejxfl"]
+
+[sub_resource type="Sky" id="Sky_d57tb"]
+sky_material = SubResource("ProceduralSkyMaterial_ejxfl")
+
+[sub_resource type="Environment" id="Environment_nsgb7"]
+background_mode = 2
+sky = SubResource("Sky_d57tb")
+ambient_light_source = 3
+tonemap_mode = 2
+
+[node name="PrototypeLayout" type="Node3D" unique_id=1031287251]
+
+[node name="GridMap" type="GridMap" parent="." unique_id=476434502]
+mesh_library = ExtResource("1_87geo")
+data = {
+"cells": PackedInt32Array(6, 3, 4, 7, 3, 6, 3, 5, 1441796, 3, 6, 1048582, 14, 4, 655364, 13, 4, 6, 17, 7, 1441796, 17, 8, 1048582, 8, 14, 1048580, 8, 13, 1048582, 12, 17, 4, 13, 17, 6)
+}
+metadata/godoodads_wfc_settings = SubResource("Resource_n4c5n")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1834120206]
+transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=841586328]
+environment = SubResource("Environment_nsgb7")

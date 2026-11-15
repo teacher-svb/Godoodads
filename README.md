@@ -7,13 +7,14 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 | Addon | Folder | Status | Brief |
 |---|---|---|---|
 | MultiMesh Scatter | `addons/multimesh_scatter/` | 1.2.0, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
-| WFC Generator | `addons/wfc_generator/` | 1.3.2, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
+| WFC Generator | `addons/wfc_generator/` | 1.3.3, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
+| godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | planned (milestones `m0`–`m5`) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
 
 ## Install an addon
 
 The addons need Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
-1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `wfc_generator-1.3.2.zip` or `multimesh_scatter-1.2.0.zip`. Each release is named after its addon.
+1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `wfc_generator-1.3.3.zip` or `multimesh_scatter-1.2.0.zip`. Each release is named after its addon.
 2. **Extract it into your project's root folder**, next to `project.godot`. Every zip contains the addon's folder and `editor_tools_common`, the shared helpers, both under `addons/`. When you install a second Godoodads addon, let the newer `editor_tools_common` replace the older one.
 3. **Create a C# solution** if your project has none: *Project → Tools → C# → Create C# solution*.
 4. **Build** the project (the hammer icon, or `dotnet build`).
@@ -44,7 +45,7 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### WFC Generator
 
-Guided paths, socket editing and measured tile shares are planned for 1.3 (epic *WFC 1.3*), and the 2D `TileMapLayer` adapter for 1.4 (epic *WFC 1.4*). Region weights and multi-cell tiles are idea cards in the epic *WFC 2.0*. Not planned yet:
+Guided paths, socket editing and measured tile shares are planned for 1.3 (label `v1.3.0`), and the 2D `TileMapLayer` adapter for 1.4 (label `v1.4.0`). Region weights and multi-cell tiles are idea cards labelled `v2.0.0`. Not planned yet:
 
 - Runtime (in-game) generation
 - Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)

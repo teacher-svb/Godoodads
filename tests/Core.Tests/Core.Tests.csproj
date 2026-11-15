@@ -10,7 +10,7 @@
     <RootNamespace>Godoodads.Tests</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../../addons/*/Core/**/*.cs" LinkBase="Core" />
+    <Compile Include="../../addons/**/Core/**/*.cs" LinkBase="Core" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="GodotSharp" Version="4.7.0" />

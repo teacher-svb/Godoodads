@@ -3,12 +3,12 @@ id: "wfc-idea-region-weights-2026-11-09"
 status: "backlog"
 priority: "medium"
 assignee: null
-epic: "WFC 2.0"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-10T12:00:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: null
-labels: ["idea", "core"]
+labels: ["v2.0.0", "idea", "core"]
 order: "b0"
 ---
 # WFC 2.0: Per-region and per-height weights

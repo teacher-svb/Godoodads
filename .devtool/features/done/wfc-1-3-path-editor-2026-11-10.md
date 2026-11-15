@@ -3,12 +3,12 @@ id: "wfc-1-3-path-editor-2026-11-10"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC 1.3"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T13:00:00.000Z"
-modified: "2026-11-10T14:11:33.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T14:11:33.000Z"
-labels: ["editor", "adapters"]
+labels: ["v1.3.0", "editor", "adapters"]
 order: "e3"
 ---
 # WFC 1.3: Guided paths in the editor
