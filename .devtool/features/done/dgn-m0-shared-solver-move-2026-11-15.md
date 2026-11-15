@@ -1,13 +1,13 @@
 ---
 id: "dgn-m0-shared-solver-move-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T12:39:43.000Z"
-completedAt: null
+modified: "2026-11-15T13:22:17.000Z"
+completedAt: "2026-11-15T13:22:17.000Z"
 labels: ["v1.0.0", "m0", "refactor", "common"]
 order: "a4"
 ---
@@ -49,3 +49,6 @@ Checks:
 1. Focus the editor so it reloads the assembly, then disable and enable WFC Generator.
 2. Open `hillside_free`, `hillside_ground` and `hillside_paths`, open **GridMap > Generate WFC (GDDS)** and Generate with the stored seeds. The result should look as before.
 3. Open a tile set in the inspector: the preview shows as before.
+
+## Board check passed (2026-11-15)
+hillside_free, hillside_ground and hillside_paths generate with their stored seeds and look as before the move. The tile set preview shows (checked on dgn-m0-plugin-skeleton).

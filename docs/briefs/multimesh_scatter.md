@@ -235,7 +235,7 @@ These are candidates for later sub-projects; note ideas in the repo's `README.md
 
 ### 10. Release 1.1: GridMap surfaces
 
-Decided by the board on 2026-11-10. Tracked under the epic *Scatter 1.1*. Everything is additive: presets and scenes from 1.0 keep working and give the same result.
+Decided by the board on 2026-11-10. Tracked under the label `v1.1.0`. Everything is additive: presets and scenes from 1.0 keep working and give the same result.
 
 #### 10.1 GridMap as a surface
 

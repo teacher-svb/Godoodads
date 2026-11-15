@@ -8,6 +8,7 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 |---|---|---|---|
 | MultiMesh Scatter | `addons/multimesh_scatter/` | 1.2.0, see its [README](addons/multimesh_scatter/README.md) | [docs/briefs/multimesh_scatter.md](docs/briefs/multimesh_scatter.md) |
 | WFC Generator | `addons/wfc_generator/` | 1.3.2, see its [README](addons/wfc_generator/README.md) | [docs/briefs/wfc_generator.md](docs/briefs/wfc_generator.md) |
+| godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | planned (milestones `m0`–`m5`) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
 
 ## Install an addon
 
@@ -44,7 +45,7 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### WFC Generator
 
-Guided paths, socket editing and measured tile shares are planned for 1.3 (epic *WFC 1.3*), and the 2D `TileMapLayer` adapter for 1.4 (epic *WFC 1.4*). Region weights and multi-cell tiles are idea cards in the epic *WFC 2.0*. Not planned yet:
+Guided paths, socket editing and measured tile shares are planned for 1.3 (label `v1.3.0`), and the 2D `TileMapLayer` adapter for 1.4 (label `v1.4.0`). Region weights and multi-cell tiles are idea cards labelled `v2.0.0`. Not planned yet:
 
 - Runtime (in-game) generation
 - Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)
