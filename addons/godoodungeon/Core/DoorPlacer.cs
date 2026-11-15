@@ -112,8 +112,29 @@ public static class DoorPlacer
         return null;
     }
 
+    /// <summary>The cells a door's corridor starts with: its lane and then its entry cell.</summary>
+    private static HashSet<Vector2I> Corridor(Vector2I cell, DoorSide side, LayoutSettings settings)
+    {
+        var cells = new HashSet<Vector2I>();
+        for (int step = 1; step <= LaneLength(settings) + 1; step++)
+            cells.Add(cell + side.Offset() * step);
+        return cells;
+    }
+
+    /// <summary>The first cell past a door's lane, where its corridor starts routing.</summary>
+    public static Vector2I EntryCell(Door door, LayoutSettings settings) => door.Cell + door.Side.Offset() * (LaneLength(settings) + 1);
+
     private static bool LaneIsFree(DungeonLayout layout, LayoutSettings settings, OccupancyGrid occupied, int room, Vector2I cell, DoorSide side)
     {
+        // The lane and the entry cell (where routing starts) may not touch another door's. Guided paths
+        // never routes through another open face's entry cell, so two doors sharing one wait for each
+        // other forever; and two lanes that meet close into a pair with no open face left
+        // (both found in dgn-m2-corridor-inputs).
+        var own = Corridor(cell, side, settings);
+        foreach (var door in layout.Doors)
+            if (Corridor(door.Cell, door.Side, settings).Overlaps(own))
+                return false;
+
         int length = LaneLength(settings) + 1;
         for (int step = 1; step <= length; step++)
         {

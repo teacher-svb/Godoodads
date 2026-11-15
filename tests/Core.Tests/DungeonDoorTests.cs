@@ -35,6 +35,16 @@ public class DungeonDoorTests
     {
         Assert.True(layout.IsValid, $"{context}: {string.Join("; ", layout.Errors)}");
         int lane = DoorPlacer.LaneLength(settings) + 1;
+
+        // No two doors' lanes or entry cells overlap (guided paths would deadlock or close a pair).
+        var claimed = new Dictionary<Vector2I, Door>();
+        foreach (var door in layout.Doors)
+            for (int step = 1; step <= lane; step++)
+            {
+                var cell = door.Cell + door.Side.Offset() * step;
+                Assert.False(claimed.TryGetValue(cell, out var other), $"{context}: doors {door} and {other} share the corridor cell {cell}");
+                claimed[cell] = door;
+            }
         for (int r = 0; r < layout.Rooms.Count; r++)
         {
             var room = layout.Rooms[r];
