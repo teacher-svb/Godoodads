@@ -27,7 +27,9 @@ To try it straight away, the demo scenes are in this repository under `demo/wfc_
 
 ### Updating
 
-Close Godot, delete `addons/wfc_generator/`, then extract the new zip as above, so files removed in the new version do not linger. Build again before you reopen the dialog. Scenes and tile sets from older versions keep working; the CHANGELOG lists what changed.
+Close Godot, delete `addons/wfc_generator/`, then extract the new zip as above, so files removed in the new version do not linger. Let the zip's `editor_tools_common` replace yours. Build again before you reopen the dialog. Scenes and tile sets from older versions keep working; the CHANGELOG lists what changed.
+
+**Updating to 1.3.3 or later from an older version:** since 1.3.3 the solver and the tile set resources live in `addons/editor_tools_common/Wfc/`, shared with [godoodungeon](../godoodungeon/README.md). Deleting `addons/wfc_generator/` first matters here: files left over from 1.3.2 cause build errors and "UID duplicate detected" warnings. Open the project in the editor once after updating, so tile sets and scenes saved in the editor find the moved scripts. Files that your own scripts saved name the old script paths, and keep loading through small classes left there. If you also use godoodungeon, keep WFC Generator at 1.3.3 or later.
 
 ### If something goes wrong
 
@@ -38,6 +40,8 @@ Close Godot, delete `addons/wfc_generator/`, then extract the new zip as above, 
 | Build error about a missing SDK or framework | Install the .NET SDK 8.0 or later, then restart Godot. |
 | No GridMap menu in the toolbar | Select a `GridMap` node; the menu only appears for GridMaps. |
 | After a rebuild, the editor still runs the old code | Godot reloads C# when its window gets focus. Click into the editor window, then disable and enable the plugin. |
+| After updating: build errors about types defined twice or not found, or "UID duplicate detected" warnings | Files from the old version are still there. Close Godot, delete `addons/wfc_generator/`, extract the zip again (including `editor_tools_common`), and build. |
+| godoodungeon warns that WFC Generator is too old | Update WFC Generator to 1.3.3 or later. Older versions keep their own copy of the tile set classes, so tile sets load as types godoodungeon cannot use. |
 
 ## Use
 

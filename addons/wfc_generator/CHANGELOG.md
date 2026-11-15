@@ -2,6 +2,16 @@
 
 All notable changes to WFC Generator are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.3] - 2026-11-15
+
+### Changed
+- The solver, the tile set resources (`WfcTile`, `WfcTileSet`, `WfcSettings`), the GridMap adapters, the tile set preview and the bounds handles moved to `addons/editor_tools_common/Wfc/`, so that godoodungeon can share them. Generation is unchanged: the same settings and seed give the same cells.
+- Tile sets, settings and scenes from earlier versions keep loading. Files saved in the editor find the moved scripts by uid. Files saved by your own scripts name the old paths, where small legacy classes now stand in.
+- The **GridMap** toolbar menu is shared with other Godoodads addons that use it, and a tile set shows one preview however many of them are enabled.
+
+### Updating
+- Delete `addons/wfc_generator/` before you extract this version, and let the zip's `editor_tools_common` replace yours. Files left behind from 1.3.2 cause build errors and "UID duplicate detected" warnings.
+
 ## [1.3.2] - 2026-11-14
 
 ### Added
