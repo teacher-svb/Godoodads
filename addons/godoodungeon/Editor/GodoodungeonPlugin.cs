@@ -20,7 +20,7 @@ namespace Godoodads.Dungeon.Editor;
 /// assembly reload, or the GridMap leaving the scene cancels the run, and nothing is written.
 /// </summary>
 [Tool]
-public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
+public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, IBoundsBoxes
 {
     /// <summary>Menu item, dialog title and undo action name. GDDS = Godoodads, this suite.</summary>
     private const string ToolName = "Generate Dungeon (GDDS)";
@@ -29,6 +29,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
     private const double ProgressInterval = 0.1;
     private const int MaxReportedErrors = 12;
     private const string WfcGeneratorConfig = "res://addons/wfc_generator/plugin.cfg";
+    private static readonly Color BoundsColour = new(0.7f, 0.45f, 1f);
 
     /// <summary>
     /// One running generation. Never survives an assembly reload, which cancels it first.
@@ -45,6 +46,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
     private DungeonSettings _settings = new();
     private ActiveRun _run;
     private double _sinceProgress;
+    private BoundsGizmoPlugin _gizmo;
+    private MeshInstance3D _overlay;
+    private string _overlayState;
 
     /// <summary>Randomised seeds that failed since the dialog was opened. Randomise Seed does not pick them again.</summary>
     private readonly HashSet<long> _failedSeeds = new();
@@ -59,6 +63,10 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
         _tileSetInspector = TileSetInspectorPlugin.Register(this);
         _dialogFilter = new DialogInspectorFilterPlugin();
         AddInspectorPlugin(_dialogFilter);
+        _gizmo = new BoundsGizmoPlugin { Owner = this, GizmoName = "godoodungeon bounds" };
+        AddNode3DGizmoPlugin(_gizmo);
+        // Forwarded input reaches this plugin before the GridMap editor, which would take handle drags.
+        SetInputEventForwardingAlwaysEnabled();
 
         _dialog = new ToolDialog(ToolName, ActionText, "godoodungeon_dialog_size") { Filter = _dialogFilter };
         _dialog.ActionPressed += OnActionPressed;
@@ -73,7 +81,14 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
     public override void _ExitTree()
     {
         StopRun();
+        RemoveOverlay();
         DisconnectSettings();
+        if (_gizmo != null)
+        {
+            _gizmo.Owner = null;
+            RemoveNode3DGizmoPlugin(_gizmo);
+            _gizmo = null;
+        }
         _menu?.Remove();
         _menu = null;
         if (_tileSetInspector != null)
@@ -117,7 +132,10 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
 
     public override void _Process(double delta)
     {
-        if (_dialog == null || _run == null)
+        if (_dialog == null)
+            return;
+        UpdateOverlay();
+        if (_run == null)
             return;
 
         if (!TargetIsAlive)
@@ -457,6 +475,189 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener
         if (_dialog != null)
             _dialog.OkButtonText = running ? StopText : ActionText;
     }
+
+    // ---- Viewport overlay and bounds handles -----------------------------------------------
+
+    /// <summary>Draws the bounds while the dialog is open. The overlay has no owner, so it is never saved.</summary>
+    private void UpdateOverlay()
+    {
+        if (!_dialog.Visible || !TargetIsAlive)
+        {
+            RemoveOverlay();
+            return;
+        }
+
+        var (min, max) = BoundsGizmoPlugin.Extents(_target, _settings.BoundsOrigin, _settings.BoundsSize);
+        string state = $"{min}|{max}";
+        if (state != _overlayState)
+            _target.UpdateGizmos();
+
+        if (_overlay == null || !IsInstanceValid(_overlay))
+        {
+            _overlay = new MeshInstance3D
+            {
+                Mesh = new ImmediateMesh(),
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+                MaterialOverride = new StandardMaterial3D
+                {
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    NoDepthTest = true,
+                    VertexColorUseAsAlbedo = true,
+                },
+            };
+            _target.AddChild(_overlay);
+            _overlayState = null;
+        }
+        if (state == _overlayState)
+            return;
+        _overlayState = state;
+
+        var mesh = (ImmediateMesh)_overlay.Mesh;
+        mesh.ClearSurfaces();
+        mesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
+        AddBox(mesh, min, max, BoundsColour);
+        mesh.SurfaceEnd();
+    }
+
+    private void RemoveOverlay()
+    {
+        if (_overlay != null && IsInstanceValid(_overlay))
+        {
+            _overlay.QueueFree();
+            if (TargetIsAlive)
+                _target.UpdateGizmos();   // hides the handles
+        }
+        _overlay = null;
+        _overlayState = null;
+    }
+
+    private const float HandleRadius = 12f;
+    private int _dragHandle = -1;
+    private Vector3I _dragOrigin;
+    private Vector3I _dragSize;
+
+    public override int _Forward3DGuiInput(Camera3D viewportCamera, InputEvent @event)
+    {
+        const int pass = (int)AfterGuiInput.Pass, stop = (int)AfterGuiInput.Stop;
+        var map = HandleTarget;
+        if (map == null || !EditorInterface.Singleton.GetSelection().GetSelectedNodes().Contains(map))
+        {
+            _dragHandle = -1;
+            return pass;
+        }
+
+        if (_dragHandle >= 0)
+        {
+            switch (@event)
+            {
+                case InputEventMouseMotion motion:
+                    var (origin, size) = BoundsGizmoPlugin.DragFace(map, viewportCamera, motion.Position, _dragHandle, BoxOrigin(0), BoxSize(0));
+                    SetBox(0, origin, size);
+                    return stop;
+                case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
+                    CommitBox(0, _dragOrigin, _dragSize, false);
+                    _dragHandle = -1;
+                    return stop;
+                case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }:
+                case InputEventKey { Keycode: Key.Escape, Pressed: true }:
+                    CommitBox(0, _dragOrigin, _dragSize, true);
+                    _dragHandle = -1;
+                    return stop;
+            }
+            return pass;
+        }
+
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } press)
+        {
+            int handle = HandleAt(map, viewportCamera, press.Position);
+            if (handle < 0)
+                return pass;
+            _dragHandle = handle;
+            _dragOrigin = BoxOrigin(0);
+            _dragSize = BoxSize(0);
+            return stop;
+        }
+        return pass;
+    }
+
+    /// <summary>The face of the bounds whose handle is under the mouse, or -1.</summary>
+    private int HandleAt(GridMap map, Camera3D camera, Vector2 mouse)
+    {
+        int best = -1;
+        float bestDistance = HandleRadius;
+        var positions = BoundsGizmoPlugin.HandlePositions(map, BoxOrigin(0), BoxSize(0));
+        for (int direction = 0; direction < Directions.Count; direction++)
+        {
+            var world = map.GlobalTransform * positions[direction];
+            if (camera.IsPositionBehind(world))
+                continue;
+            float distance = camera.UnprojectPosition(world).DistanceTo(mouse);
+            if (distance < bestDistance)
+            {
+                bestDistance = distance;
+                best = direction;
+            }
+        }
+        return best;
+    }
+
+    /// <summary>The GridMap whose bounds have handles: the dialog's target while the dialog is open.</summary>
+    public GridMap HandleTarget => _dialog != null && _dialog.Visible && TargetIsAlive ? _target : null;
+
+    public int BoxCount => 1;
+
+    public bool BoxVisible(int box) => box == 0;
+
+    public Vector3I BoxOrigin(int box) => _settings.BoundsOrigin;
+
+    public Vector3I BoxSize(int box) => _settings.BoundsSize;
+
+    /// <summary>Changes the bounds while a handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
+    public void SetBox(int box, Vector3I origin, Vector3I size)
+    {
+        _settings.BoundsOrigin = origin;
+        _settings.BoundsSize = size;
+        _settings.NotifyPropertyListChanged();
+        if (TargetIsAlive)
+            _target.UpdateGizmos();
+    }
+
+    /// <summary>Ends a handle drag: puts the bounds back when cancelled, otherwise adds one undo step.</summary>
+    public void CommitBox(int box, Vector3I origin, Vector3I size, bool cancel)
+    {
+        if (cancel)
+        {
+            SetBox(box, origin, size);
+            return;
+        }
+        var undoRedo = GetUndoRedo();
+        undoRedo.CreateAction("Resize Dungeon Bounds");
+        undoRedo.AddDoMethod(this, MethodName.SetBox, box, BoxOrigin(box), BoxSize(box));
+        undoRedo.AddUndoMethod(this, MethodName.SetBox, box, origin, size);
+        undoRedo.CommitAction(false);
+    }
+
+    private static void AddBox(ImmediateMesh mesh, Vector3 min, Vector3 max, Color colour)
+    {
+        for (int corner = 0; corner < 8; corner++)
+        {
+            var from = Corner(min, max, corner);
+            for (int axis = 1; axis <= 4; axis <<= 1)
+            {
+                if ((corner & axis) != 0)
+                    continue;
+                mesh.SurfaceSetColor(colour);
+                mesh.SurfaceAddVertex(from);
+                mesh.SurfaceSetColor(colour);
+                mesh.SurfaceAddVertex(Corner(min, max, corner | axis));
+            }
+        }
+    }
+
+    private static Vector3 Corner(Vector3 min, Vector3 max, int bits) => new(
+        (bits & 1) != 0 ? max.X : min.X,
+        (bits & 2) != 0 ? max.Y : min.Y,
+        (bits & 4) != 0 ? max.Z : min.Z);
 
     /// <summary>A warning when WFC Generator older than 1.3.3 is installed (brief godoodungeon §4.1), else empty.</summary>
     private static string WfcGeneratorWarning()
