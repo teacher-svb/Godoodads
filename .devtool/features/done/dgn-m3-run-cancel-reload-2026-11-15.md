@@ -1,13 +1,13 @@
 ---
 id: "dgn-m3-run-cancel-reload-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T18:39:15.000Z"
-completedAt: null
+modified: "2026-11-15T18:39:37.000Z"
+completedAt: "2026-11-15T18:39:37.000Z"
 labels: ["v1.0.0", "m3", "editor"]
 order: "d4"
 ---
@@ -42,3 +42,4 @@ Probe (headless editor, scratch copy). It opened `prototype_m2_dungeon.tscn`, se
 
 ## Board check (2026-11-15)
 The board could not interrupt a run by hand: even 400 × 1 × 400 with 400 rooms finishes before Stop, a rebuild or closing the scene can happen. Generate itself works (checked on `dgn-m3-dialog`).
+- Decision (2026-11-15): accepted on the automated coverage. Stop is covered by the headless probe through the real dialog (a 220×220, 150-room run, GridMap unchanged). Cancelling mid-solve is covered by `DungeonJobTests.Cancelling_stops_within_one_solve`. Rebuild and scene close use the same code as WFC Generator (`OnBeforeSerialize`, and the target leaving the tree), which was checked by hand there. M5 performance measures large runs.
