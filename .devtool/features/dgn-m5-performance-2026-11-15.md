@@ -6,7 +6,7 @@ assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:20:16.000Z"
+modified: "2026-11-15T19:26:37.000Z"
 completedAt: null
 labels: ["v1.0.0", "m5", "performance"]
 order: "f2"
@@ -41,3 +41,7 @@ The target (under 10 s at 64×64) is met by a factor of about 500. Headless runs
 
 ## Manual check (board)
 On your machine, open `demo/godoodungeon/dungeon_free.tscn`, set Bounds Size to 128 × 1 × 128 and Room Count to 60, and Generate. The status line gives the time. Note it here, and whether the editor stays responsive while the GridMap redraws.
+
+## Board check (2026-11-15), in progress
+- On the board's machine there is a noticeable pause: "Generated … in 1.2 s" at both 64×64 and 128×128, with the pause about as long. Headless, the same run takes 0.1 s (frame timeline through the real dialog, with and without Randomise Seed), plus one 391–404 ms frame after the commit while the GridMap and marker nodes are taken in. Ruled out headless: markers alone (about 1 s longest frame with or without them at 128×128), storing settings and the record on the selected GridMap (10–42 ms), and the cell writes (1 ms) and diff (19 ms).
+- To find the GUI-only cost, the status line now splits the time: "generated in x s, written in y s" (the write covers the cells, markers and the undo action).

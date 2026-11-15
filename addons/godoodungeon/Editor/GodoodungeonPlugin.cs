@@ -316,6 +316,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
     private void Commit(ActiveRun run, DungeonResult result)
     {
+        double generated = run.Clock.Elapsed.TotalSeconds;
+        var writing = Stopwatch.StartNew();
         var previous = DungeonGridMap.ReadRecord(_target);
         var cells = DungeonGridMap.Cells(result, run.TileSets.Room, run.TileSets.Corridor);
         var (changes, record) = DungeonGridMap.Write(_target, previous, cells);
@@ -334,7 +336,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         var layout = result.Layout;
         _dialog.SetStatus($"Generated {layout.Rooms.Count} rooms, {layout.Doors.Count} doors and {result.RouteCount} corridors "
-            + $"in {run.Clock.Elapsed.TotalSeconds:F1} s. Seed {run.Seed}.", ToolDialog.Severity.Success);
+            + $"in {generated:F1} s, written in {writing.Elapsed.TotalSeconds:F1} s. Seed {run.Seed}.", ToolDialog.Severity.Success);
         if (result.LayoutAttempt > 0)
             _dialog.AddStatus($"Used layout {result.LayoutAttempt + 1}; the earlier one(s) could not be finished: "
                 + string.Join(" ", result.Attempts.Select(a => a.Message)));
