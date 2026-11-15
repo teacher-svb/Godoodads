@@ -69,6 +69,9 @@ public static class DungeonTileRules
                 if (StraightVariant(corridor, path, alongX: false) < 0)
                     errors.Add($"The corridor tile set has no straight piece along Z: a tile with '{path}' on exactly +Z and -Z. Give the straight piece four rotations.");
             }
+            if (HorizontalFaces(corridor).Any(f => f.Socket.Name == path) && !HasJunction(corridor, path))
+                errors.Add($"The corridor tile set has no T piece: a tile with '{path}' on three horizontal sides (with four rotations). "
+                    + "Guided paths joins each corridor into the others with T pieces; without them only two doors can be joined.");
             int empty = EmptyVariant(corridor, path);
             if (empty < 0)
                 errors.Add($"The corridor tile set has no tile without '{path}' faces and with a weight above 0, so the space between corridors cannot be filled. Add an empty tile.");
@@ -114,6 +117,14 @@ public static class DungeonTileRules
                 && (best < 0 || corridor.VariantWeights[variant] > corridor.VariantWeights[best]))
                 best = variant;
         return best;
+    }
+
+    /// <summary>True when a variant has path faces on exactly three horizontal sides, for every one of the four ways.</summary>
+    public static bool HasJunction(CompiledTileSet corridor, string pathSocket)
+    {
+        int all = HorizontalDirections.Aggregate(0, (mask, d) => mask | 1 << d);
+        var masks = corridor.Variants.Select(v => PathFaces(v, pathSocket.Trim())).ToHashSet();
+        return HorizontalDirections.All(missing => masks.Contains(all & ~(1 << missing)));
     }
 
     /// <summary>Bit mask of the horizontal faces of a variant whose socket name is the path socket (any +/- form).</summary>

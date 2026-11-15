@@ -12,44 +12,11 @@ using static GdUnit4.Assertions;
 [TestSuite]
 public class DungeonSettingsTests
 {
-    private static WfcTile Tile(string name, int item, string[] s, TileRotation rotation = TileRotation.None, float weight = 1) => new()
-    {
-        ResourceName = name, Item = item, Rotation = rotation, Weight = weight,
-        SocketPosX = s[0], SocketNegX = s[1], SocketPosY = s[2], SocketNegY = s[3], SocketPosZ = s[4], SocketNegZ = s[5],
-    };
-
-    private static MeshLibrary Library()
-    {
-        var library = new MeshLibrary();
-        for (int i = 0; i < 6; i++)
-        {
-            library.CreateItem(i);
-            library.SetItemMesh(i, new BoxMesh());
-        }
-        return library;
-    }
-
-    /// <summary>The M0 prototype's rules: a one-sided edge socket, a weight-0 door, corridor straights and an empty tile.</summary>
-    private static DungeonSettings Valid(MeshLibrary library = null)
-    {
-        library ??= Library();
-        var room = new WfcTileSet { Library = library };
-        room.Tiles.Add(Tile("Floor", 0, new[] { "in", "in", "v", "v", "in", "in" }));
-        room.Tiles.Add(Tile("Wall", 1, new[] { "outside+", "in", "v", "v", "edge", "edge" }, TileRotation.FourWay));
-        room.Tiles.Add(Tile("Corner", 2, new[] { "outside+", "edge", "v", "v", "outside+", "edge" }, TileRotation.FourWay));
-        room.Tiles.Add(Tile("Door", 3, new[] { "outside+", "in", "v", "v", "edge", "edge" }, TileRotation.FourWay, 0));
-        var corridor = new WfcTileSet { Library = library };
-        corridor.Tiles.Add(Tile("Straight", 4, new[] { "path", "path", "v", "v", "x", "x" }, TileRotation.FourWay));
-        corridor.Tiles.Add(Tile("End", 5, new[] { "path", "x", "v", "v", "x", "x" }, TileRotation.FourWay));
-        corridor.Tiles.Add(Tile("Empty", WfcTile.EmptyItem, new[] { "x", "x", "v", "v", "x", "x" }, TileRotation.None, 20));
-        return new DungeonSettings { RoomTileSet = room, CorridorTileSet = corridor, DoorTile = 3 };
-    }
-
     [TestCase]
     [RequireGodotRuntime]
     public void Valid_settings_pass_and_bind_both_tile_sets()
     {
-        var settings = Valid();
+        var settings = DungeonEngineTiles.Valid();
         var map = new GridMap { MeshLibrary = settings.RoomTileSet.Library };
         var check = DungeonTileSets.Check(settings, map);
         AssertThat(string.Join("; ", check.Errors)).IsEqual("");
@@ -65,31 +32,31 @@ public class DungeonSettingsTests
     {
         AssertThat(DungeonTileSets.Check(new DungeonSettings()).Errors).Contains("Choose a Room Tile Set.", "Choose a Corridor Tile Set.");
 
-        var symmetric = Valid();
+        var symmetric = DungeonEngineTiles.Valid();
         symmetric.RoomTileSet.Tiles[1].SocketPosX = "outside";
         AssertThat(DungeonTileSets.Check(symmetric).Errors.Single()).StartsWith("Room Edge Socket 'outside' must be one-sided");
 
-        var noDoor = Valid();
+        var noDoor = DungeonEngineTiles.Valid();
         noDoor.DoorTile = -1;
         AssertThat(DungeonTileSets.Check(noDoor).Errors.Single()).IsEqual("Choose the Door Tile from the room tile set.");
 
-        var cornerDoor = Valid();
+        var cornerDoor = DungeonEngineTiles.Valid();
         cornerDoor.DoorTile = 2;
         AssertThat(DungeonTileSets.Check(cornerDoor).Errors.Single()).StartsWith("The Door Tile 'Corner' needs exactly one horizontal face");
 
-        var wrongPath = Valid();
+        var wrongPath = DungeonEngineTiles.Valid();
         wrongPath.PathSocket = "road";
         AssertThat(DungeonTileSets.Check(wrongPath).Errors.First()).StartsWith("No corridor tile has a face 'road'");
 
-        var noStraight = Valid();
+        var noStraight = DungeonEngineTiles.Valid();
         noStraight.CorridorTileSet.Tiles.RemoveAt(0);
         AssertThat(DungeonTileSets.Check(noStraight).Errors.Count(e => e.Contains("no straight piece"))).IsEqual(2);
 
-        var noEmpty = Valid();
-        noEmpty.CorridorTileSet.Tiles.RemoveAt(2);
+        var noEmpty = DungeonEngineTiles.Valid();
+        noEmpty.CorridorTileSet.Tiles.RemoveAt(5);
         AssertThat(DungeonTileSets.Check(noEmpty).Errors.Single()).StartsWith("The corridor tile set has no tile without 'path' faces");
 
-        var weightedDoor = Valid();
+        var weightedDoor = DungeonEngineTiles.Valid();
         weightedDoor.RoomTileSet.Tiles[3].Weight = 1;
         var weighted = DungeonTileSets.Check(weightedDoor);
         AssertThat(weighted.IsValid).IsTrue();
@@ -100,20 +67,20 @@ public class DungeonSettingsTests
     [RequireGodotRuntime]
     public void Libraries_bounds_and_layout_numbers_are_checked()
     {
-        var mixed = Valid();
-        mixed.CorridorTileSet.Library = Library();
+        var mixed = DungeonEngineTiles.Valid();
+        mixed.CorridorTileSet.Library = DungeonEngineTiles.Library();
         AssertThat(DungeonTileSets.Check(mixed).Errors.Single()).StartsWith("The room and corridor tile sets use different MeshLibrary");
 
-        var settings = Valid();
-        var map = new GridMap { MeshLibrary = Library() };
+        var settings = DungeonEngineTiles.Valid();
+        var map = new GridMap { MeshLibrary = DungeonEngineTiles.Library() };
         AssertThat(DungeonTileSets.Check(settings, map).Errors.Single()).IsEqual("The GridMap uses a different MeshLibrary than the tile sets.");
         map.Free();
 
-        var tall = Valid();
+        var tall = DungeonEngineTiles.Valid();
         tall.RoomHeight = 3;
         AssertThat(DungeonTileSets.Check(tall).Errors.Single()).IsEqual("Room Height is 3, but the bounds have 1 layer(s) on Y.");
 
-        var crowded = Valid();
+        var crowded = DungeonEngineTiles.Valid();
         crowded.Gap = 1;
         AssertThat(DungeonTileSets.Check(crowded).Errors.Single()).StartsWith("Gap is 1, but Wall Clearance 1 needs a gap of at least 3");
     }
@@ -122,7 +89,7 @@ public class DungeonSettingsTests
     [RequireGodotRuntime]
     public void The_door_tile_is_a_drop_down_of_the_room_tiles()
     {
-        var settings = Valid();
+        var settings = DungeonEngineTiles.Valid();
         var property = settings.GetPropertyList().Single(p => p["name"].AsString() == "DoorTile");
         AssertThat((PropertyHint)property["hint"].AsInt64()).IsEqual(PropertyHint.Enum);
         AssertThat(property["hint_string"].AsString()).IsEqual("(none):-1,Floor:0,Wall:1,Corner:2,Door:3");
@@ -136,7 +103,7 @@ public class DungeonSettingsTests
     [RequireGodotRuntime]
     public void Settings_survive_a_save_and_reload_of_the_scene()
     {
-        var settings = Valid();
+        var settings = DungeonEngineTiles.Valid();
         settings.Seed = 4242;
         settings.RoomCount = 17;
         settings.MinRoomSize = new Vector2I(4, 6);
@@ -181,7 +148,7 @@ public class DungeonSettingsTests
     [RequireGodotRuntime]
     public void Layout_settings_take_the_bounds_x_and_z()
     {
-        var settings = Valid();
+        var settings = DungeonEngineTiles.Valid();
         settings.BoundsSize = new Vector3I(30, 4, 50);
         var layout = settings.ToLayoutSettings();
         AssertThat(layout.Bounds).IsEqual(new Vector2I(30, 50));
