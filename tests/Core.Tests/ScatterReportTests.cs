@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
-using Godoodads.MultiMeshScatter.Core;
+using Godoodads.Scatter.Core;
 using Xunit;
 
 namespace Godoodads.Tests;

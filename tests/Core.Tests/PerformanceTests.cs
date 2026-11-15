@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using Godot;
-using Godoodads.MultiMeshScatter.Core;
+using Godoodads.Scatter.Core;
 using Xunit;
 using Xunit.Abstractions;
 

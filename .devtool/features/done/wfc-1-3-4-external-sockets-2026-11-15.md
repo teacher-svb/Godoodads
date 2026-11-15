@@ -3,7 +3,7 @@ id: "wfc-1-3-4-external-sockets-2026-11-15"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-15T19:39:57.000Z"
 modified: "2026-11-15T19:39:57.000Z"

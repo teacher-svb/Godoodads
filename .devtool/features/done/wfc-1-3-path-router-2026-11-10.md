@@ -3,7 +3,7 @@ id: "wfc-1-3-path-router-2026-11-10"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-10T13:00:00.000Z"
 modified: "2026-11-15T12:32:30.000Z"

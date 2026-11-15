@@ -3,7 +3,7 @@ id: "wfc-m2-dialog-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
 modified: "2026-11-15T12:32:30.000Z"

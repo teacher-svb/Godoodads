@@ -801,7 +801,10 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         (bits & 2) != 0 ? max.Y : min.Y,
         (bits & 4) != 0 ? max.Z : min.Z);
 
-    /// <summary>A warning when WFC Generator older than 1.3.3 is installed (brief godoodungeon §4.1), else empty.</summary>
+    /// <summary>
+    /// A warning when WFC Generator older than 1.3.3 is installed (brief godoodungeon §4.1), else empty.
+    /// Versions up to 1.3.4 live in addons/wfc_generator; from 1.4.0 on it is godoowave, which is never too old.
+    /// </summary>
     private static string WfcGeneratorWarning()
     {
         if (!FileAccess.FileExists(WfcGeneratorConfig))
@@ -811,7 +814,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             return "";
         string version = config.GetValue("plugin", "version", "").AsString();
         return WfcGeneratorVersion.NeedsUpdate(version)
-            ? $"godoodungeon: WFC Generator {version} is installed. Update it to {WfcGeneratorVersion.Minimum} or later. "
+            ? $"godoodungeon: WFC Generator {version} is installed. Replace it with godoowave, its new name from 1.4.0 on. "
               + "Older versions keep their own copy of the tile set classes, so tile sets load as types godoodungeon cannot use."
             : "";
     }

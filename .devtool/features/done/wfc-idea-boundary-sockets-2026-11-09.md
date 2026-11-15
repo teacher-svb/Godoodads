@@ -3,7 +3,7 @@ id: "wfc-idea-boundary-sockets-2026-11-09"
 status: "done"
 priority: "low"
 assignee: null
-epic: "WFC Generator"
+epic: "godoowave"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
 modified: "2026-11-15T12:32:30.000Z"
