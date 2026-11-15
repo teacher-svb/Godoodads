@@ -337,6 +337,13 @@ Requested on 2026-11-14, tracked under the label `v1.3.2`.
 - **Failed seed:** with Randomise Seed on, a Generate that does not succeed (no solution, out of attempts, path errors, solver error, stopped or cancelled) puts Seed back to the seed before it, since the GridMap was not changed. Seeds that failed are not picked again while the dialog stays open.
 - **Clear Bounds** button: clears the bounds by the rules of Clear Bounds First and Keep Placed Cells, without solving, as one undo step with the regenerate record (entries in the bounds go, pins too) and the tagged markers on cleared cells. Needs no tile set. Keep Placed Cells is therefore always shown.
 
+#### 13.8 Patches 1.3.3 and 1.3.4
+
+Both came with godoodungeon (dungeon brief) on 2026-11-15, tracked under the labels `v1.3.3` and `v1.3.4`.
+
+- **1.3.3:** the solver, resources, adapters, the tile set preview and the bounds gizmo moved to `addons/editor_tools_common/Wfc/`, with legacy classes at the old resource paths. The GridMap menu and the tile set preview are shared with godoodungeon. Generation is unchanged.
+- **1.3.4: External Sockets** on `WfcTileSet`: sockets that something outside the tiles supplies (a boundary socket, or the `outside-` of a godoodungeon room's bounds). The tile set check, its edge-only analysis and the preview's red faces count them as partners. Generation ignores them, and an empty list changes nothing.
+
 ---
 
 ### 14. Release 1.4
