@@ -44,6 +44,9 @@ public sealed class DungeonLayout
     public List<RoomRect> Rooms { get; } = new();
     public List<RoomEdge> Edges { get; } = new();
     public List<Door> Doors { get; } = new();
+
+    /// <summary>Per edge (same index as <see cref="Edges"/>), the door each of its two rooms uses, or -1 when a room got none.</summary>
+    public List<(int A, int B)> EdgeDoors { get; } = new();
     public List<string> Warnings { get; } = new();
     public List<string> Errors { get; } = new();
 

@@ -83,7 +83,7 @@ public partial class DungeonSettings : Resource
     [ExportGroup("Bounds")]
     [Export] public Vector3I BoundsOrigin { get; set; }
 
-    /// <summary>X and Z hold the dungeon; Y holds the room and corridor layers, from the bottom.</summary>
+    /// <summary>X and Z hold the dungeon; Y holds the room layers, from the bottom. Corridors use the bottom layer.</summary>
     [Export] public Vector3I BoundsSize { get; set; } = new(48, 1, 48);
 
     // ---- Layout --------------------------------------------------------------------------
@@ -114,8 +114,6 @@ public partial class DungeonSettings : Resource
 
     [Export(PropertyHint.Range, "1,4,1")] public int MaxDoorsPerRoom { get; set; } = 4;
 
-    /// <summary>Corridor layers from the bottom of the bounds. 1 keeps corridors on the floor layer.</summary>
-    [Export(PropertyHint.Range, "1,16,1,or_greater")] public int CorridorHeight { get; set; } = 1;
 
     // ---- Limits --------------------------------------------------------------------------
 
@@ -153,11 +151,7 @@ public partial class DungeonSettings : Resource
         {
             if (RoomHeight > BoundsSize.Y)
                 errors.Add($"Room Height is {RoomHeight}, but the bounds have {BoundsSize.Y} layer(s) on Y.");
-            if (CorridorHeight > BoundsSize.Y)
-                errors.Add($"Corridor Height is {CorridorHeight}, but the bounds have {BoundsSize.Y} layer(s) on Y.");
         }
-        if (CorridorHeight < 1)
-            errors.Add($"Corridor Height is {CorridorHeight}. Corridors need at least 1 layer.");
         if (LayoutAttempts < 1)
             errors.Add($"Layout Attempts is {LayoutAttempts}. Use at least 1.");
         return errors;

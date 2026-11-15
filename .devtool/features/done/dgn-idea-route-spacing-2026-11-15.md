@@ -1,13 +1,13 @@
 ---
 id: "dgn-idea-route-spacing-2026-11-15"
-status: "backlog"
+status: "done"
 priority: "low"
 assignee: null
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T13:24:58.000Z"
-modified: "2026-11-15T13:24:58.000Z"
-completedAt: null
+modified: "2026-11-15T18:22:42.000Z"
+completedAt: "2026-11-15T18:22:42.000Z"
 labels: ["v2.0.0", "core", "idea"]
 order: "c4"
 ---
@@ -19,3 +19,6 @@ Guided paths can lay two routes in adjacent cells, so two corridors run side by 
 - An option in the shared `PathRouter` (`editor_tools_common/Wfc/Core`): cells next to a route laid earlier are blocked or cost more for later routes, except where a route joins the network.
 - Additive and off by default, so WFC Generator results do not change.
 - The board decided on 2026-11-15 (M0 review) that v1 accepts adjacent corridors.
+
+## Covered (2026-11-15)
+The board chose room-to-room routing with corridors kept apart, card `dgn-m3-edge-router`. Guided paths is no longer used for dungeon corridors, so the shared PathRouter needs no option.

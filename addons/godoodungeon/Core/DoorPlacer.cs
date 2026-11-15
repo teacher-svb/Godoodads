@@ -23,11 +23,13 @@ public static class DoorPlacer
     public static void Place(DungeonLayout layout, LayoutSettings settings, OccupancyGrid occupied = null)
     {
         layout.Doors.Clear();
+        layout.EdgeDoors.Clear();
         var bySide = new Dictionary<(int Room, DoorSide Side), int>();
         foreach (var edge in layout.Edges)
         {
-            DoorFor(layout, settings, occupied, bySide, edge.A, edge.B);
-            DoorFor(layout, settings, occupied, bySide, edge.B, edge.A);
+            int a = DoorFor(layout, settings, occupied, bySide, edge.A, edge.B);
+            int b = DoorFor(layout, settings, occupied, bySide, edge.B, edge.A);
+            layout.EdgeDoors.Add((a, b));
         }
         for (int room = 0; room < layout.Rooms.Count; room++)
             if (!layout.Doors.Any(d => d.Room == room))

@@ -69,9 +69,16 @@ public static class DungeonTileRules
                 if (StraightVariant(corridor, path, alongX: false) < 0)
                     errors.Add($"The corridor tile set has no straight piece along Z: a tile with '{path}' on exactly +Z and -Z. Give the straight piece four rotations.");
             }
-            if (HorizontalFaces(corridor).Any(f => f.Socket.Name == path) && !HasJunction(corridor, path))
-                errors.Add($"The corridor tile set has no T piece: a tile with '{path}' on three horizontal sides (with four rotations). "
-                    + "Guided paths joins each corridor into the others with T pieces; without them only two doors can be joined.");
+            if (HorizontalFaces(corridor).Any(f => f.Socket.Name == path))
+            {
+                if (!HasBends(corridor, path))
+                    errors.Add($"The corridor tile set has no bend in every rotation: a tile with '{path}' on two sides at a right angle (with four rotations). Corridors turn with it.");
+                if (!HasJunction(corridor, path))
+                    errors.Add($"The corridor tile set has no T piece: a tile with '{path}' on three horizontal sides (with four rotations). "
+                        + "Corridors that meet join with T pieces; without them only two doors can be joined.");
+                if (!HasCross(corridor, path))
+                    errors.Add($"The corridor tile set has no cross: a tile with '{path}' on all four horizontal sides. Corridors that cross need it.");
+            }
             int empty = EmptyVariant(corridor, path);
             if (empty < 0)
                 errors.Add($"The corridor tile set has no tile without '{path}' faces and with a weight above 0, so the space between corridors cannot be filled. Add an empty tile.");
@@ -123,9 +130,24 @@ public static class DungeonTileRules
     public static bool HasJunction(CompiledTileSet corridor, string pathSocket)
     {
         int all = HorizontalDirections.Aggregate(0, (mask, d) => mask | 1 << d);
-        var masks = corridor.Variants.Select(v => PathFaces(v, pathSocket.Trim())).ToHashSet();
+        var masks = Masks(corridor, pathSocket);
         return HorizontalDirections.All(missing => masks.Contains(all & ~(1 << missing)));
     }
+
+    private static HashSet<int> Masks(CompiledTileSet corridor, string pathSocket) =>
+        corridor.Variants.Select(v => PathFaces(v, pathSocket.Trim())).ToHashSet();
+
+    /// <summary>True when the four right-angle bends all exist.</summary>
+    public static bool HasBends(CompiledTileSet corridor, string pathSocket)
+    {
+        var masks = Masks(corridor, pathSocket);
+        int px = 1 << Directions.PosX, nx = 1 << Directions.NegX, pz = 1 << Directions.PosZ, nz = 1 << Directions.NegZ;
+        return new[] { px | pz, pz | nx, nx | nz, nz | px }.All(masks.Contains);
+    }
+
+    /// <summary>True when a piece with path faces on all four horizontal sides exists.</summary>
+    public static bool HasCross(CompiledTileSet corridor, string pathSocket) =>
+        Masks(corridor, pathSocket).Contains(HorizontalDirections.Aggregate(0, (mask, d) => mask | 1 << d));
 
     /// <summary>Bit mask of the horizontal faces of a variant whose socket name is the path socket (any +/- form).</summary>
     public static int PathFaces(TileVariant variant, string pathSocket)

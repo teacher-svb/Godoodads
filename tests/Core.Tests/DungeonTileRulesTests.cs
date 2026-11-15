@@ -25,7 +25,13 @@ public class DungeonTileRulesTests
         new(S("path", "path", "v", "v", "x", "x"), TileRotation.FourWay),
         new(S("x", "x", "v", "v", "x", "x"), TileRotation.None, 20),
         new(S("path", "path", "v", "v", "path", "x"), TileRotation.FourWay),
+        new(S("path", "x", "v", "v", "path", "x"), TileRotation.FourWay),
+        new(S("path", "path", "v", "v", "path", "path")),
     };
+
+    private const int CEnd = 0, CStraight = 1, CEmpty = 2, CTee = 3, CBend = 4, CCross = 5;
+
+    private static TileDefinition[] Without(params int[] indices) => CorridorTiles.Where((_, i) => !indices.Contains(i)).ToArray();
 
     private const int Door = 3;
 
@@ -107,30 +113,39 @@ public class DungeonTileRulesTests
     [Fact]
     public void Straights_are_needed_along_both_axes()
     {
-        var onlyX = new[] { new TileDefinition(S("path", "path", "v", "v", "x", "x")), CorridorTiles[2], CorridorTiles[3] };
+        var onlyX = Without(CStraight).Append(new TileDefinition(S("path", "path", "v", "v", "x", "x"))).ToArray();
         Assert.StartsWith("The corridor tile set has no straight piece along Z", Assert.Single(Check(corridor: onlyX).Errors));
 
-        var noStraight = new[] { CorridorTiles[0], CorridorTiles[2], CorridorTiles[3] };
+        var noStraight = Without(CStraight);
         Assert.Equal(2, Check(corridor: noStraight).Errors.Count(e => e.Contains("no straight piece")));
     }
 
     [Fact]
     public void T_pieces_are_needed_in_all_four_ways()
     {
-        var withoutT = CorridorTiles.Take(3);
+        var withoutT = Without(CTee);
         Assert.StartsWith("The corridor tile set has no T piece", Assert.Single(Check(corridor: withoutT).Errors));
 
-        var oneWayT = CorridorTiles.Take(3).Append(new TileDefinition(S("path", "path", "v", "v", "path", "x")));
+        var oneWayT = Without(CTee).Append(new TileDefinition(S("path", "path", "v", "v", "path", "x")));
         Assert.StartsWith("The corridor tile set has no T piece", Assert.Single(Check(corridor: oneWayT).Errors));
+    }
+
+    [Fact]
+    public void Bends_and_a_cross_are_needed()
+    {
+        Assert.StartsWith("The corridor tile set has no bend in every rotation", Assert.Single(Check(corridor: Without(CBend)).Errors));
+        Assert.StartsWith("The corridor tile set has no cross", Assert.Single(Check(corridor: Without(CCross)).Errors));
+        var oneWayBend = Without(CBend).Append(new TileDefinition(S("path", "x", "v", "v", "path", "x")));
+        Assert.StartsWith("The corridor tile set has no bend", Assert.Single(Check(corridor: oneWayBend).Errors));
     }
 
     [Fact]
     public void An_empty_tile_with_weight_is_needed()
     {
-        var withoutEmpty = new[] { CorridorTiles[0], CorridorTiles[1], CorridorTiles[3] };
+        var withoutEmpty = Without(CEmpty);
         Assert.StartsWith("The corridor tile set has no tile without 'path' faces", Assert.Single(Check(corridor: withoutEmpty).Errors));
 
-        var weightlessEmpty = new[] { CorridorTiles[0], CorridorTiles[1], CorridorTiles[3], new TileDefinition(S("x", "x", "v", "v", "x", "x"), TileRotation.None, 0) };
+        var weightlessEmpty = Without(CEmpty).Append(new TileDefinition(S("x", "x", "v", "v", "x", "x"), TileRotation.None, 0));
         Assert.Single(Check(corridor: weightlessEmpty).Errors);
     }
 
@@ -153,6 +168,6 @@ public class DungeonTileRulesTests
         Assert.Equal((1 << Directions.PosX) | (1 << Directions.NegX), DungeonTileRules.PathFaces(corridor.Variants[alongX], "path"));
         Assert.Equal((1 << Directions.PosZ) | (1 << Directions.NegZ), DungeonTileRules.PathFaces(corridor.Variants[alongZ], "path"));
         int empty = DungeonTileRules.EmptyVariant(corridor, "path");
-        Assert.Equal(2, corridor.Variants[empty].TileIndex);
+        Assert.Equal(CEmpty, corridor.Variants[empty].TileIndex);
     }
 }

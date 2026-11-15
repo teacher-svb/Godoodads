@@ -52,7 +52,7 @@ public partial class BuildM2Dungeon : Node
         var clock = System.Diagnostics.Stopwatch.StartNew();
         var result = new DungeonJob(DungeonGridMap.Request(settings, tileSets, handPlaced)).RunNow();
         GD.Print($"M2 dungeon: {result.Status} in {clock.ElapsedMilliseconds} ms, layout attempt {result.LayoutAttempt + 1}, "
-            + $"{result.Layout?.Rooms.Count} rooms, {result.Layout?.Doors.Count} doors, {result.RouteCount} routes over {result.RouteCells} cells, "
+            + $"{result.Layout?.Rooms.Count} rooms, {result.Layout?.Doors.Count} doors, {result.RouteCount} corridors over {result.RouteCells} cells, "
             + $"{result.Backtracks} backtracks, {result.Restarts} restarts.");
         foreach (var failure in result.Attempts)
             GD.Print($"  attempt {failure.Attempt + 1} failed: {failure.Message}");
@@ -70,7 +70,7 @@ public partial class BuildM2Dungeon : Node
         DungeonSettings.StoreOn(map, settings);
         GD.Print($"M2 dungeon: wrote {changes.Do.Length / CellChanges.Stride} cells; {handPlaced.Count} hand-placed cells kept.");
         GD.Print(LayoutText.Render(result.Layout, new Vector2I(settings.BoundsSize.X, settings.BoundsSize.Z),
-            Occupancy(handPlaced, settings)));
+            Occupancy(handPlaced, settings), result.CorridorFaces));
 
         var root = new Node3D { Name = "PrototypeM2Dungeon" };
         root.AddChild(map);

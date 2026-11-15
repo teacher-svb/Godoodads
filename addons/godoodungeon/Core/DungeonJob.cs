@@ -15,7 +15,6 @@ public sealed record DungeonRequest
     /// <summary>The GridMap cell of the bounds origin.</summary>
     public Vector3I Origin { get; init; }
 
-    public int CorridorHeight { get; init; } = 1;
 
     public CompiledTileSet RoomTiles { get; init; }
     public int DoorTile { get; init; } = -1;
@@ -82,15 +81,18 @@ public sealed record DungeonResult
     public int RouteCount { get; init; }
     public int RouteCells { get; init; }
 
+    /// <summary>The routed path faces per layout cell (see <see cref="CorridorPlan.Faces"/>), when solved.</summary>
+    public int[] CorridorFaces { get; init; }
+
     /// <summary>The rooms the connectivity check could not reach, with <see cref="DungeonStatus.InternalError"/>.</summary>
     public IReadOnlyList<int> UnreachableRooms { get; init; } = Array.Empty<int>();
 }
 
 /// <summary>
 /// Generates a dungeon on a background thread (brief godoodungeon §4.5): layout, then one solve per
-/// room, then the corridor solve, each with a seed derived from the Generate seed. A room that still
-/// fails after the solver's restarts, or corridors that cannot be routed or solved, start the next
-/// layout attempt. The owner polls <see cref="IsFinished"/> and writes the result on its own thread.
+/// room, then the corridors routed along the room graph (<see cref="CorridorRouter"/>) and solved,
+/// each with a seed derived from the Generate seed. A room that still fails after the solver's
+/// restarts, or corridors that cannot be routed or solved, start the next layout attempt. The owner polls <see cref="IsFinished"/> and writes the result on its own thread.
 /// </summary>
 public sealed class DungeonJob
 {
@@ -205,23 +207,25 @@ public sealed class DungeonJob
                 continue;
             }
 
+            Volatile.Write(ref _stage, $"Layout {attempt + 1}: routing corridors");
+            long corridorSeed = LayoutSeeds.Corridors(request.Seed, attempt);
+            var plan = CorridorRouter.Route(layout, settings, occupied, request.PathWander, corridorSeed);
+            if (!plan.IsValid)
+            {
+                failures.Add(new AttemptFailure(attempt, $"Corridors: {plan.Error}", plan.ErrorCell is { } at ? layout.GridCell(at) : null));
+                continue;
+            }
+
             Volatile.Write(ref _stage, $"Layout {attempt + 1}: corridors");
             bool HandPlaced(Vector3I cell) => request.HandPlaced.Contains(cell);
-            var corridorInput = SolveInputs.Corridors(layout, settings.Bounds, request.CorridorHeight, settings.WallClearance,
-                request.CorridorTiles, request.PathSocket, request.PathWander, HandPlaced);
+            var corridorInput = SolveInputs.Corridors(layout, plan, request.CorridorTiles, request.PathSocket, HandPlaced);
             if (!corridorInput.IsValid)
                 return new DungeonResult { Status = DungeonStatus.Invalid, Layout = layout, Errors = new[] { corridorInput.Error } };
-            var corridors = Solve(corridorInput, request.CorridorTiles, LayoutSeeds.Corridors(request.Seed, attempt), request);
+            var corridors = Solve(corridorInput, request.CorridorTiles, corridorSeed, request);
             if (corridors == null)
                 return Cancelled(layout, failures);
             backtracks += corridors.Result?.Backtracks ?? 0;
             restarts += corridors.Result?.Restarts ?? 0;
-            if (corridors.Plan is { IsValid: false } plan)
-            {
-                var error = plan.Errors[0];
-                failures.Add(new AttemptFailure(attempt, $"Corridors: {error.Message}", error.Cells.Count > 0 ? error.Cells[0] : null));
-                continue;
-            }
             if (corridors.Result?.Status != SolveStatus.Solved)
             {
                 failures.Add(new AttemptFailure(attempt, $"The corridors could not be solved ({Describe(corridors)}).",
@@ -239,7 +243,7 @@ public sealed class DungeonJob
                 UnreachableRooms = unreachable,
                 Layout = layout, Solves = solves, Attempts = failures, LayoutAttempt = attempt,
                 Backtracks = backtracks, Restarts = restarts,
-                RouteCount = corridors.Plan?.RouteCount ?? 0, RouteCells = corridors.Plan?.RouteCellCount ?? 0,
+                RouteCount = plan.RouteCount, RouteCells = plan.RouteCells, CorridorFaces = plan.Faces,
             };
         }
         return new DungeonResult { Status = DungeonStatus.Failed, Layout = layout, Attempts = failures };
@@ -248,8 +252,12 @@ public sealed class DungeonJob
     /// <summary>Runs one solve as a <see cref="SolveJob"/>, so a cancel stops it mid-solve. Null when cancelled.</summary>
     private SolveJob Solve(SolveInput input, CompiledTileSet tiles, long seed, DungeonRequest request)
     {
-        var options = new SolveOptions { Seed = seed, MaxBacktracks = request.MaxBacktracks, MaxRestarts = request.MaxRestarts, Boundary = input.Boundary };
-        var job = new SolveJob(input.Grid, tiles, input.Initial, options, paths: input.Paths);
+        var options = new SolveOptions
+        {
+            Seed = seed, MaxBacktracks = request.MaxBacktracks, MaxRestarts = request.MaxRestarts,
+            Boundary = input.Boundary, Restrictions = input.Restrictions,
+        };
+        var job = new SolveJob(input.Grid, tiles, input.Initial, options);
         Volatile.Write(ref _current, job);
         if (_cancellation.IsCancellationRequested)
             return null;
@@ -279,7 +287,7 @@ public sealed class DungeonJob
     private static OccupancyGrid Occupied(DungeonRequest request)
     {
         var occupied = new OccupancyGrid(request.Layout.Bounds);
-        int layers = Math.Max(request.Layout.RoomHeight, request.CorridorHeight);
+        int layers = request.Layout.RoomHeight;
         foreach (var cell in request.HandPlaced)
             if (cell.Y >= request.Origin.Y && cell.Y < request.Origin.Y + layers)
                 occupied.Take(new Vector2I(cell.X - request.Origin.X, cell.Z - request.Origin.Z));

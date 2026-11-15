@@ -57,7 +57,6 @@ public static class DungeonGridMap
     {
         Layout = settings.ToLayoutSettings(),
         Origin = settings.BoundsOrigin,
-        CorridorHeight = settings.CorridorHeight,
         RoomTiles = tileSets.Room.Compiled,
         DoorTile = settings.DoorTile,
         EdgeSocket = settings.RoomEdgeSocket,

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using Godoodads.Common.Wfc.Core;
 
@@ -12,8 +13,8 @@ namespace Godoodads.Dungeon.Core;
 /// </summary>
 public sealed record SolveInput(Vector3I Origin, GridTopology Grid, int[] Initial, Socket?[] Boundary, string Error = null)
 {
-    /// <summary>The guided paths to lay out before solving, for the corridor solve; null for rooms.</summary>
-    public PathRequest Paths { get; init; }
+    /// <summary>The variants each cell may use, for the corridor solve; null for rooms.</summary>
+    public CellRestrictions Restrictions { get; init; }
 
     public bool IsValid => Error == null;
 
@@ -68,60 +69,62 @@ public static class SolveInputs
     }
 
     /// <summary>
-    /// The corridor solve: the layout grid × <paramref name="corridorHeight"/> layers from the bottom.
-    /// Room cells and hand-placed cells are excluded. The Wall Clearance ring around each room is
-    /// fixed to the empty variant, so routes never touch a room wall. Outside each door, a lane of
-    /// max(clearance, 1) cells is fixed to the straight variant that runs through the door; its face
-    /// towards the excluded door counts as connected, so guided paths routes from its outer end.
-    /// Every other cell is free; guided paths keeps path variants off them unless a route passes.
+    /// The corridor solve on the bottom layer of the layout grid, from a <see cref="CorridorPlan"/>.
+    /// Room cells and hand-placed cells are excluded. Every routed cell may only use corridor variants
+    /// with exactly its path faces, and every other cell only variants without path faces, so the
+    /// solve draws the planned corridors and nothing else, while weights still choose among the
+    /// variants that fit.
     /// </summary>
-    /// <param name="bounds">The layout grid size (the bounds' X and Z).</param>
     /// <param name="handPlaced">GridMap cells that hold hand-placed items; null means none.</param>
-    public static SolveInput Corridors(DungeonLayout layout, Vector2I bounds, int corridorHeight, int wallClearance,
-        CompiledTileSet tiles, string pathSocket, float wander, Func<Vector3I, bool> handPlaced = null)
+    public static SolveInput Corridors(DungeonLayout layout, CorridorPlan plan, CompiledTileSet tiles, string pathSocket,
+        Func<Vector3I, bool> handPlaced = null)
     {
         var origin = layout.Origin;
-        var grid = GridTopology.Create3D(new Vector3I(bounds.X, Math.Max(corridorHeight, 1), bounds.Y));
+        var grid = GridTopology.Create3D(new Vector3I(plan.Size.X, 1, plan.Size.Y));
         var initial = new int[grid.CellCount];
         Array.Fill(initial, WfcSolver.Free);
         string path = pathSocket?.Trim() ?? "";
-        var paths = new PathRequest(path, wander, origin);
 
-        int empty = DungeonTileRules.EmptyVariant(tiles, path);
-        int alongX = DungeonTileRules.StraightVariant(tiles, path, alongX: true);
-        int alongZ = DungeonTileRules.StraightVariant(tiles, path, alongX: false);
-        if (empty < 0 || alongX < 0 || alongZ < 0)
-            return new SolveInput(origin, grid, initial, null, "The corridor tile set needs straight pieces along X and Z and an empty tile with a weight above 0.") { Paths = paths };
-
-        bool Inside(Vector2I cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < bounds.X && cell.Y < bounds.Y;
-        void SetColumn(Vector2I cell, int value, int layers)
+        // One class of variants per path face mask that occurs, mask 0 (no path faces) first.
+        var classOfMask = new Dictionary<int, int>();
+        var classes = new List<IReadOnlyList<int>>();
+        int ClassOf(int mask)
         {
-            if (!Inside(cell))
-                return;
-            for (int y = 0; y < layers; y++)
-                initial[grid.Index(new Vector3I(cell.X, y, cell.Y))] = value;
+            if (classOfMask.TryGetValue(mask, out int index))
+                return index;
+            var variants = Enumerable.Range(0, tiles.Variants.Count).Where(v => DungeonTileRules.PathFaces(tiles.Variants[v], path) == mask).ToList();
+            classOfMask[mask] = classes.Count;
+            classes.Add(variants);
+            return classes.Count - 1;
         }
-
-        foreach (var room in layout.Rooms)
-            foreach (var cell in room.Ring(wallClearance))
-                SetColumn(cell, empty, grid.Size.Y);
-        foreach (var door in layout.Doors)
+        ClassOf(0);
+        var classOfCell = new int[grid.CellCount];
+        for (int cell = 0; cell < grid.CellCount; cell++)
         {
-            int straight = door.Side is DoorSide.PosX or DoorSide.NegX ? alongX : alongZ;
-            int lane = Math.Max(wallClearance, 1);
-            for (int step = 0; step < lane; step++)
-                if (Inside(door.Outside + door.Side.Offset() * step))
-                    initial[grid.Index(new Vector3I(door.Outside.X + door.Side.Offset().X * step, 0, door.Outside.Y + door.Side.Offset().Y * step))] = straight;
+            var at = grid.Coordinates(cell);
+            classOfCell[cell] = ClassOf(plan.Faces[at.Z * plan.Size.X + at.X]);
         }
-        // Rooms and hand-placed cells last, so nothing is ever fixed on top of them.
+        foreach (var (mask, index) in classOfMask)
+            if (classes[index].Count == 0)
+                return new SolveInput(origin, grid, initial, null,
+                    $"The corridor tile set has no piece with '{path}' faces on {DescribeMask(mask)}, which the corridors need.");
+
         foreach (var room in layout.Rooms)
             foreach (var cell in room.Cells())
-                SetColumn(cell, WfcSolver.Excluded, grid.Size.Y);
+                if (cell.X >= 0 && cell.Y >= 0 && cell.X < plan.Size.X && cell.Y < plan.Size.Y)
+                    initial[grid.Index(new Vector3I(cell.X, 0, cell.Y))] = WfcSolver.Excluded;
         if (handPlaced != null)
             for (int cell = 0; cell < grid.CellCount; cell++)
                 if (handPlaced(origin + grid.Coordinates(cell)))
                     initial[cell] = WfcSolver.Excluded;
+        for (int cell = 0; cell < grid.CellCount; cell++)
+            if (initial[cell] == WfcSolver.Excluded)
+                classOfCell[cell] = CellRestrictions.None;
 
-        return new SolveInput(origin, grid, initial, null) { Paths = paths };
+        return new SolveInput(origin, grid, initial, null) { Restrictions = new CellRestrictions(classOfCell, classes) };
     }
+
+    /// <summary>"+X and -Z" for a mask of WFC directions.</summary>
+    public static string DescribeMask(int mask) => mask == 0 ? "no side"
+        : string.Join(" and ", DungeonTileRules.HorizontalDirections.Where(d => (mask & (1 << d)) != 0).Select(Directions.Name));
 }

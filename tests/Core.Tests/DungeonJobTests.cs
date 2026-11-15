@@ -62,20 +62,18 @@ public class DungeonJobTests
     }
 
     [Fact]
-    public void A_layout_whose_corridors_cannot_be_routed_is_replaced_by_the_next_attempt()
+    public void Corridors_that_cannot_be_routed_move_to_the_next_layout_and_are_reported()
     {
-        // About 1 in 50 layouts has a corridor that cannot be routed (dgn-m2-corridor-inputs).
-        DungeonResult recovered = null;
-        for (long seed = 0; seed < 150 && recovered == null; seed++)
-        {
-            var result = new DungeonJob(Request(seed)).RunNow();
-            Assert.Equal(DungeonStatus.Solved, result.Status);
-            if (result.LayoutAttempt > 0)
-                recovered = result;
-        }
-        Assert.NotNull(recovered);
-        Assert.Equal(recovered.LayoutAttempt, recovered.Attempts.Count);
-        Assert.StartsWith("Corridors: ", recovered.Attempts[0].Message);
+        // A wall of hand-placed cells across the bounds: rooms fit on both sides, corridors never join them.
+        var request = Request(2, new LayoutSettings { Bounds = new Vector2I(40, 40), RoomCount = 6 }) with { LayoutAttempts = 3 };
+        var wall = new HashSet<Vector3I>();
+        for (int z = 0; z < 40; z++)
+            wall.Add(request.Origin + new Vector3I(20, 0, z));
+        var result = new DungeonJob(request with { HandPlaced = wall }).RunNow();
+        Assert.Equal(DungeonStatus.Failed, result.Status);
+        Assert.Equal(new[] { 0, 1, 2 }, result.Attempts.Select(a => a.Attempt));
+        Assert.All(result.Attempts, a => Assert.StartsWith("Corridors: No corridor could join room ", a.Message));
+        Assert.All(result.Attempts, a => Assert.NotNull(a.Cell));
     }
 
     [Fact]

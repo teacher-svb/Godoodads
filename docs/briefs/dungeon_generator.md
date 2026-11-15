@@ -12,7 +12,7 @@
 
 WFC Generator fills a `GridMap` with modules from local socket rules. That gives good terrain and ruins, but not dungeons: socket rules cannot express "a closed room of 5 to 9 cells across with two doors, joined to every other room by a corridor", because WFC has no global structure (WFC brief §6.1).
 
-Dungeon Generator adds that global structure in front of the WFC solver. A **layout** stage decides where the rooms are and where their doors go. Then the WFC solver fills each room with a room tile set, and fills the space between the rooms with corridors using guided paths (WFC brief §13.3), which already joins every path end into one connected network. This is the hybrid most recent work uses: an abstract layout for the global structure, and WFC for local detail (§11).
+Dungeon Generator adds that global structure in front of the WFC solver. A **layout** stage decides where the rooms are and where their doors go. Then the WFC solver fills each room with a room tile set. The corridors are routed along the room graph, from each room's door to its neighbour's door, and the WFC solver fills them in with the corridor tile set (card `dgn-m3-edge-router`; M0–M2 used guided paths, see §4.4). This is the hybrid most recent work uses: an abstract layout for the global structure, and WFC for local detail (§11).
 
 The suite's conventions (`CONVENTIONS.md`) apply, and it reuses `addons/editor_tools_common/`.
 
@@ -34,7 +34,7 @@ Deliver a Godot editor addon that lets a level designer select a `GridMap`, choo
 | Naming | The suite's addons move to `godoo<name>` names. The existing ones become `godoowave` and `godooscatter` in a later rename, which is not part of this project. The shared folder and the namespaces above keep their current names until then |
 | Solver | The WFC solver, moved into `addons/editor_tools_common/Wfc/` and shared with WFC Generator (decided 2026-11-15) |
 | Output in v1 | One `GridMap`: rooms and corridors in the same map (decided 2026-11-15) |
-| Floors in v1 | One floor. Corridors may climb inside their layer range if the corridor tile set has stairs (decided 2026-11-15) |
+| Floors in v1 | One floor (decided 2026-11-15). Corridors stay on the bottom layer of the bounds (since `dgn-m3-edge-router`) |
 | Rooms in v1 | Generated rectangles, filled by WFC (decided 2026-11-15) |
 | Usage | Editor-only, with `Core/` kept free of editor and engine objects |
 | Target size | 64×64 cells, 20 rooms. Size is freely configurable |
@@ -80,7 +80,7 @@ tests/godoodungeon/
 - Dungeon Generator uses two ordinary `WfcTileSet` resources with the same `MeshLibrary`: a **room tile set** (floors, walls, corners, doors, props) and a **corridor tile set** (path pieces and an empty tile). No new tile set type.
 - **Room edge socket** (setting, for example `outside`): the socket name of the faces that point out of a room. It must be **one-sided**. Wall, corner and door tiles carry `outside+` on their outer faces, and the four side faces of each room's bounds get `outside-` as their boundary socket (WFC brief §12.1). Only the boundary can then face an outer face, which forces walls around every room and keeps them out of the interior. With a symmetric `outside`, two outer faces can meet inside a room, and the M0 prototype filled its rooms with back-to-back walls and clusters of corners. A room tile set that uses the edge socket name without a `+` on any tile face is a validation error.
 - **Door tile** (setting): a tile of the room tile set with exactly one horizontal face that has the room edge socket. That face is the door's outside. A door tile that does not qualify is a validation error. Weight 0 suits it: the solver then never places doors by itself (WFC brief §11.1), and only the layout does.
-- **Path socket** (setting): the corridor tile set's path socket, as in WFC brief §13.3. The corridor tile set needs straight path variants along X and Z (path faces on two opposite sides), T pieces in all four ways (path faces on three sides: guided paths joins each corridor into the others with them, so without them only two doors can be joined; found in `dgn-m2-gridmap-write`), and a variant without path faces, with a weight above 0, for the space between corridors. Missing any of them is a validation error.
+- **Path socket** (setting): the corridor tile set's path socket, as in WFC brief §13.3. The corridor tile set needs every piece a corridor can be made of: straights along X and Z, bends, T pieces (all in four rotations) and a cross, plus a variant without path faces, with a weight above 0, for the space between corridors. Missing any of them is a validation error. (T pieces were found missing in `dgn-m2-gridmap-write`; bends and the cross became necessary with the router of `dgn-m3-edge-router`.)
 
 #### 4.3 Layout
 
@@ -93,10 +93,11 @@ The layout is pure Core, runs on a 2D grid of the bounds' X and Z, and is determ
 
 #### 4.4 Building the solve inputs
 
-The layout becomes ordinary WFC inputs. Core builds them directly as `initial` arrays, `SolveOptions.Boundary` and a `PathRequest`, so no placeholder items are written to the GridMap.
+The layout becomes ordinary WFC inputs. Core builds them directly as `initial` arrays, `SolveOptions.Boundary` and `SolveOptions.Restrictions`, so no placeholder items are written to the GridMap.
 
 - **Room solve**, one per room: the bounds are the room's footprint × room height, starting at the bounds' bottom layer. The four side faces have the room edge socket as their boundary. The door cells are fixed to the door tile, rotated so that its outside faces out of the room. Other cells are free.
-- **Corridor solve**, one for the whole dungeon: the bounds are the dungeon bounds' footprint × the corridor layer range (default the bottom layer only). Room cells and occupied cells are `Excluded`. The ring of Wall Clearance cells around each room is fixed to the corridor tile set's variant without path faces (its empty tile), so routes never touch a room wall (decided 2026-11-15, M0 review: a socket rule cannot do this reliably, because guided paths lays routes before the solve and only checks path faces). Outside each door, a lane of Wall Clearance cells (at least one) is fixed to the corridor straight variant that runs through the door. Its face towards the excluded door counts as connected (WFC brief §13.3), so guided paths only routes its outward face. Guided paths then joins all doors into one network, and every cell off the routes gets a variant without path faces.
+- **Corridor routing** (decided 2026-11-15 after the board saw corridors wrapping around rooms in the M2 review scene; card `dgn-m3-edge-router`): rooms are nodes of the path network. For each graph edge, one corridor runs from the lane outside one room's door to the lane outside the neighbour's door (`DungeonLayout.EdgeDoors`), by A* over the layout grid. Room footprints with their Wall Clearance ring, hand-placed cells and other doors' lanes are blocked. A shared corridor cell is cheap, so corridors that meet merge into T or cross pieces. A cell next to a corridor it does not join costs extra, which keeps corridors apart (measured: 4 side-by-side pairs over 2,813 corridor cells in 50 dungeons). Turns cost a little, and Path Wander adds seeded noise. Guided paths joined each door to the *nearest* corridor instead, so a room's second door got a corridor running round the room into the first.
+- **Corridor solve**, one for the whole dungeon, on the bottom layer of the bounds' footprint: room cells and hand-placed cells are `Excluded`. Every routed cell (lanes included) may only use corridor variants with exactly its path faces, and every other cell only variants without path faces (`CellRestrictions`), so the solve draws the planned corridors and nothing else, while weights still choose among the variants that fit.
 
 #### 4.5 Solve run
 
@@ -122,7 +123,7 @@ The layout becomes ordinary WFC inputs. Core builds them directly as `initial` a
 
 - Errors before solving: invalid tile set settings (4.2), a room size that does not fit the bounds, and room count limits.
 - Layout shortfalls ("placed 14 of 20 rooms") are warnings, not failures.
-- Room and corridor failures report the room index or the path error from guided paths, with coordinates, and use WFC Generator's failure overlay.
+- Room and corridor failures report the room index or the corridor that could not be routed, with coordinates, and use WFC Generator's failure overlay.
 - Errors and warnings go to the dialog status area and the editor toaster.
 
 ---
@@ -140,8 +141,8 @@ The layout becomes ordinary WFC inputs. Core builds them directly as `initial` a
 
 ### 6. Known pitfalls
 
-1. Corridors next to a room get no socket matching against the room's walls, because the room cells are excluded. In the M0 prototype, a corridor along a room wall gave a thick double wall. Wall Clearance (4.3, 4.4) keeps corridors away from rooms. Two corridors can still run side by side; route spacing is the idea card `dgn-idea-route-spacing`.
-2. Guided paths can fail when routes crowd each other: a route never passes another door's entry cell while that door waits to be joined, so a 1-cell channel between two clearance rings can close. Measured on `dgn-m2-corridor-inputs`: with the lane rule (4.3), 1–2 of 100 layouts at gap 3 and none at gap 4 or 5. The layout attempts (4.5) cover them. The acceptance criteria measure reliability.
+1. Corridors next to a room get no socket matching against the room's walls, because the room cells are excluded. In the M0 prototype, a corridor along a room wall gave a thick double wall. Wall Clearance (4.3, 4.4) keeps corridors away from rooms. The corridor router also keeps corridors apart (4.4).
+2. A corridor cannot be routed when rooms, clearance rings and hand-placed cells close every way between two doors (for example a wall of hand-placed cells across the bounds). The layout attempts (4.5) try other layouts and then report the corridor. With guided paths (M2), 1–2 of 100 layouts also failed on crowded 1-cell channels; the router has no such case. The acceptance criteria measure reliability.
 3. Moving the shared solver breaks files saved without uids, and a mixed install with an old WFC Generator loads the wrong types (§10.1, §10.2). The legacy stubs and the version warning in §4.1 cover both.
 4. The corridor solve runs over the whole dungeon footprint. At the target size that is small (4,096 cells per layer), but large bounds with many layers need a check in M5.
 5. `SpatialMenuHook` and `TileSetInspectorPlugin` were built for one addon per menu and per inspector. With two, items clash and previews double (§10.3, §10.4). `editor_tools_common` is also replaced by the newest copy when a second addon is installed (root README), so the fixed hook must keep its current API for MultiMesh Scatter 1.2.0.
@@ -207,7 +208,7 @@ Note further ideas as idea cards in the epic `godoodungeon` with the labels `v2.
 
 ### 11. Research summary (2026-11-15)
 
-- **Constructive room and corridor generators:** BSP, and random placement with a Delaunay triangulation, a minimum spanning tree, re-added edges for loops and A* corridors (TinyKeep, [Vazgriz](https://vazgriz.com/119/procedurally-generated-dungeons/), with stairs in 3D). Guided paths already joins doors nearest first, which acts like the MST and A* steps, so v1 only needs the room graph to decide door sides.
+- **Constructive room and corridor generators:** BSP, and random placement with a Delaunay triangulation, a minimum spanning tree, re-added edges for loops and A* corridors (TinyKeep, [Vazgriz](https://vazgriz.com/119/procedurally-generated-dungeons/), with stairs in 3D). godoodungeon follows this recipe: the room graph is the MST plus loops, and since `dgn-m3-edge-router` its own A* routes one corridor per graph edge. Guided paths, used until M2, joined doors nearest first instead, which made corridors wrap around rooms.
 - **Graph and room templates:** [Edgar](https://ondrejnepozitek.github.io/Edgar-Unity/docs/introduction/) places hand-made room templates along a level graph. This is the model for the room stamps idea after v1.
 - **Mission grammars and cycles:** [Dormans 2010](https://pcgworkshop.com/archive/dormans2010adventures.pdf) and [Unexplored](https://www.boristhebrave.com/2021/04/10/dungeon-generation-in-unexplored/). This is the model for room roles and lock and key after v1.
 - **Layout first, then WFC:** [CG-WFC](https://blog.ptidej.net/content/files/2025/11/_ICSE_GAS_Laurent____Graph_WFC_Procedural_Gen-1_compressed.pdf), [Growing Graph WFC](https://dl.acm.org/doi/full/10.1145/3807895.3807922). This is the approach chosen here.
