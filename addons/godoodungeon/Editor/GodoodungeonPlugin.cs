@@ -30,6 +30,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private const int MaxReportedErrors = 12;
     private const string WfcGeneratorConfig = "res://addons/wfc_generator/plugin.cfg";
     private static readonly Color BoundsColour = new(0.7f, 0.45f, 1f);
+    private static readonly Color RoomColour = new(0.3f, 0.8f, 1f);
+    private static readonly Color DoorColour = new(1f, 0.85f, 0.2f);
+    private static readonly Color CorridorColour = new(0.45f, 1f, 0.45f);
 
     /// <summary>
     /// One running generation. Never survives an assembly reload, which cancels it first.
@@ -49,6 +52,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private BoundsGizmoPlugin _gizmo;
     private MeshInstance3D _overlay;
     private string _overlayState;
+    private string _previewKey;
+    private PreviewResult _preview;
 
     /// <summary>Randomised seeds that failed since the dialog was opened. Randomise Seed does not pick them again.</summary>
     private readonly HashSet<long> _failedSeeds = new();
@@ -175,6 +180,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             return;
 
         _failedSeeds.Clear();
+        _previewKey = null;
         DisconnectSettings();
         _target = _selected;
         _settings = DungeonSettings.StoredOn(_target) is { } stored ? (DungeonSettings)stored.Duplicate() : new DungeonSettings();
@@ -303,7 +309,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.CommitAction();
 
         var layout = result.Layout;
-        _dialog.SetStatus($"Generated {layout.Rooms.Count} rooms, {layout.Doors.Count} doors and {result.RouteCount} corridor routes "
+        _dialog.SetStatus($"Generated {layout.Rooms.Count} rooms, {layout.Doors.Count} doors and {result.RouteCount} corridors "
             + $"in {run.Clock.Elapsed.TotalSeconds:F1} s. Seed {run.Seed}.", ToolDialog.Severity.Success);
         if (result.LayoutAttempt > 0)
             _dialog.AddStatus($"Used layout {result.LayoutAttempt + 1}; the earlier one(s) could not be finished: "
@@ -488,7 +494,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         }
 
         var (min, max) = BoundsGizmoPlugin.Extents(_target, _settings.BoundsOrigin, _settings.BoundsSize);
-        string state = $"{min}|{max}";
+        UpdatePreview();
+        string state = $"{min}|{max}|{(_settings.PreviewLayout ? _previewKey : "")}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -516,7 +523,95 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         mesh.ClearSurfaces();
         mesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
         AddBox(mesh, min, max, BoundsColour);
+        if (_settings.PreviewLayout && _preview?.Layout is { } layout)
+            DrawPreview(mesh, layout, _preview.Corridors);
         mesh.SurfaceEnd();
+    }
+
+    /// <summary>The settings Preview Layout depends on. Hand-placed cells are read again whenever these change.</summary>
+    private string PreviewKey() => string.Join("|", _settings.BoundsOrigin, _settings.BoundsSize, _settings.RoomCount, _settings.MinRoomSize,
+        _settings.MaxRoomSize, _settings.RoomHeight, _settings.Gap, _settings.Margin, _settings.WallClearance, _settings.ExtraConnections,
+        _settings.MaxDoorsPerRoom, _settings.PathWander, _settings.Seed, _settings.LayoutAttempts, _settings.AttemptsPerRoom);
+
+    /// <summary>Recomputes the preview when it is on and a setting it depends on changed.</summary>
+    private void UpdatePreview()
+    {
+        if (!_settings.PreviewLayout)
+        {
+            _previewKey = null;
+            _preview = null;
+            return;
+        }
+        string key = PreviewKey();
+        if (key == _previewKey)
+            return;
+        _previewKey = key;
+
+        var record = DungeonGridMap.ReadRecord(_target);
+        var request = new DungeonRequest
+        {
+            Layout = _settings.ToLayoutSettings(),
+            Origin = _settings.BoundsOrigin,
+            Seed = _settings.Seed,
+            LayoutAttempts = _settings.LayoutAttempts,
+            PathWander = _settings.PathWander,
+            HandPlaced = DungeonGridMap.ReadHandPlaced(_target, _settings.BoundsOrigin, _settings.BoundsSize, record),
+        };
+        _preview = DungeonPreview.Plan(request);
+        if (_run != null)
+            return;
+        if (_preview.IsValid)
+            _dialog.SetStatus($"Preview: {_preview.Layout.Rooms.Count} rooms, {_preview.Layout.Doors.Count} doors, {_preview.Corridors.RouteCount} corridors"
+                + (_preview.LayoutAttempt > 0 ? $" (layout {_preview.LayoutAttempt + 1})" : "") + $". Seed {_settings.Seed}.");
+        else
+            _dialog.SetStatus("Preview: " + string.Join(" ", _preview.Errors.Concat(_preview.Failures.Select(f => $"Layout {f.Attempt + 1}: {f.Message}"))),
+                ToolDialog.Severity.Warning);
+        foreach (string warning in _preview.Layout?.Warnings ?? new List<string>())
+            _dialog.AddStatus(warning, ToolDialog.Severity.Warning);
+    }
+
+    /// <summary>Rooms as boxes, doors as small boxes and corridors as lines along their cells, on the floor of the bounds.</summary>
+    private void DrawPreview(ImmediateMesh mesh, DungeonLayout layout, CorridorPlan corridors)
+    {
+        var origin = _settings.BoundsOrigin;
+        var cell = _target.CellSize;
+        foreach (var room in layout.Rooms)
+        {
+            var (min, max) = BoundsGizmoPlugin.Extents(_target, layout.GridCell(room.Position),
+                new Vector3I(room.Size.X, _settings.RoomHeight, room.Size.Y));
+            AddBox(mesh, min + cell * 0.04f, max - cell * 0.04f, RoomColour);
+        }
+        foreach (var door in layout.Doors)
+        {
+            var centre = _target.MapToLocal(layout.GridCell(door.Cell));
+            AddBox(mesh, centre - cell * 0.3f, centre + cell * 0.3f, DoorColour);
+        }
+        if (corridors == null)
+            return;
+        float floor = -cell.Y * 0.45f;
+        for (int i = 0; i < corridors.Faces.Length; i++)
+        {
+            int faces = corridors.Faces[i];
+            if (faces == 0)
+                continue;
+            var centre = _target.MapToLocal(origin + new Vector3I(i % corridors.Size.X, 0, i / corridors.Size.X)) + new Vector3(0, floor, 0);
+            foreach (int direction in DungeonTileRules.HorizontalDirections)
+            {
+                if ((faces & (1 << direction)) == 0)
+                    continue;
+                var offset = direction switch
+                {
+                    Directions.PosX => new Vector3(cell.X * 0.5f, 0, 0),
+                    Directions.NegX => new Vector3(-cell.X * 0.5f, 0, 0),
+                    Directions.PosZ => new Vector3(0, 0, cell.Z * 0.5f),
+                    _ => new Vector3(0, 0, -cell.Z * 0.5f),
+                };
+                mesh.SurfaceSetColor(CorridorColour);
+                mesh.SurfaceAddVertex(centre);
+                mesh.SurfaceSetColor(CorridorColour);
+                mesh.SurfaceAddVertex(centre + offset);
+            }
+        }
     }
 
     private void RemoveOverlay()

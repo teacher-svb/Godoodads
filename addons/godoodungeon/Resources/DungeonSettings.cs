@@ -46,6 +46,12 @@ public partial class DungeonSettings : Resource
 
     private void RequestClear() => EmitSignal(SignalName.ClearRequested);
 
+    /// <summary>
+    /// Draws the rooms, doors and corridors that Generate would make with these settings and seed,
+    /// without generating. Redraws as the settings change. The drawing is never saved into the scene.
+    /// </summary>
+    [Export] public bool PreviewLayout { get; set; }
+
     // ---- Tile sets -------------------------------------------------------------------------
 
     private WfcTileSet _roomTileSet;

@@ -162,7 +162,7 @@ public sealed class DungeonJob
         if (errors.Count > 0)
             return new DungeonResult { Status = DungeonStatus.Invalid, Errors = errors };
 
-        var occupied = Occupied(request);
+        var occupied = OccupiedGrid(request);
         var failures = new List<AttemptFailure>();
         DungeonLayout layout = null;
         for (int attempt = 0; attempt < Math.Max(1, request.LayoutAttempts); attempt++)
@@ -283,8 +283,8 @@ public sealed class DungeonJob
     private static DungeonResult Cancelled(DungeonLayout layout, List<AttemptFailure> failures) =>
         new() { Status = DungeonStatus.Cancelled, Layout = layout, Attempts = failures };
 
-    /// <summary>The layout grid cells over which a hand-placed cell sits within the room or corridor layers.</summary>
-    private static OccupancyGrid Occupied(DungeonRequest request)
+    /// <summary>The layout grid cells over which a hand-placed cell sits within the room layers.</summary>
+    public static OccupancyGrid OccupiedGrid(DungeonRequest request)
     {
         var occupied = new OccupancyGrid(request.Layout.Bounds);
         int layers = request.Layout.RoomHeight;
