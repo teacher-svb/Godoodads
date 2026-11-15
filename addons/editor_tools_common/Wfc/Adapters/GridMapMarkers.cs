@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Godot;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator.Adapters;
+namespace Godoodads.Common.Wfc.Adapters;
 
 /// <summary>A marker scene to place at a cell, with its transform in GridMap space.</summary>
 public sealed record MarkerPlacement(Vector3I Cell, PackedScene Scene, Transform3D Transform);

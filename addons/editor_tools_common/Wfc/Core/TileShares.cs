@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>
 /// How much of a solved grid each tile covers, next to the share its weight asks for (brief §13.2).

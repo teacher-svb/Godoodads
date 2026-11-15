@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 public enum TileRotation
 {

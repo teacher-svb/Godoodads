@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>
 /// Helpers for editing sockets in the tile set preview (brief §13.1): which face of the tile an

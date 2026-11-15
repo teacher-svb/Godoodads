@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>
 /// A box of cells and the directions that connect them. A neighbour outside the box does not

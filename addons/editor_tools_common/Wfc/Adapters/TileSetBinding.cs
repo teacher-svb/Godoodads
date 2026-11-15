@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Godot;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator.Adapters;
+namespace Godoodads.Common.Wfc.Adapters;
 
 /// <summary>A tile set resource compiled for the solver, with each tile's MeshLibrary item.</summary>
 public sealed class TileSetBinding

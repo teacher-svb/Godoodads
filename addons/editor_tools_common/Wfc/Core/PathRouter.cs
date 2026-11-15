@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using Godot;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>A problem found before solving, with the cells it is about (grid coordinates plus the plan's origin).</summary>
 public sealed record PathError(string Message, IReadOnlyList<Vector3I> Cells);

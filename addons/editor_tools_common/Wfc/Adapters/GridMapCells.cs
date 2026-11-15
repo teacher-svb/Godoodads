@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Godot;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator.Adapters;
+namespace Godoodads.Common.Wfc.Adapters;
 
 /// <summary>
 /// The solver's starting state, read from the cells already in a GridMap. Replaced counts cells a

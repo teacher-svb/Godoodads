@@ -2,7 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>A change to the solved state: a cell resolved, a cell reset (Variant -1) or a restart (Cell -1).</summary>
 public readonly record struct SolveEvent(int Cell, int Variant)

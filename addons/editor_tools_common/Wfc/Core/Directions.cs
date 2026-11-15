@@ -1,6 +1,6 @@
 using Godot;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>
 /// The six axis directions, used as indices into per-face data. A 2D grid uses the X and Z

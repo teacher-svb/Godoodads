@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 public enum SocketKind
 {

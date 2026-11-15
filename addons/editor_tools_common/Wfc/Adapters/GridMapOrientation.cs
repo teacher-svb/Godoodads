@@ -1,6 +1,6 @@
 using System;
 
-namespace Godoodads.WfcGenerator.Adapters;
+namespace Godoodads.Common.Wfc.Adapters;
 
 /// <summary>Converts between quarter turns around +Y and GridMap orthogonal orientation indices.</summary>
 public static class GridMapOrientation

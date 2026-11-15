@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using Godot;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 using Xunit;
 using static Godoodads.Tests.WfcTestTiles;
 

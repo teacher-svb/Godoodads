@@ -4,7 +4,7 @@ using System.Linq;
 using System.Numerics;
 using System.Threading;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>
 /// Wave function collapse over bitset domains, with a trail of changes for chronological

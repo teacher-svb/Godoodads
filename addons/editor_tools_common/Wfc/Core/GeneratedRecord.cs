@@ -5,7 +5,7 @@ using System.IO.Compression;
 using System.Linq;
 using Godot;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>
 /// The non-empty cells a generation wrote, so the next one can replace them (brief §11.2). Stored

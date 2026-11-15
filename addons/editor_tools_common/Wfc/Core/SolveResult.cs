@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Godot;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 public enum SolveStatus
 {

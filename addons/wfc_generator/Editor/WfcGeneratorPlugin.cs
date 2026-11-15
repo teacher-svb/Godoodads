@@ -4,13 +4,15 @@ using System.Diagnostics;
 using System.Linq;
 using Godot;
 using Godoodads.Common;
-using Godoodads.WfcGenerator.Adapters;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Adapters;
+using Godoodads.Common.Wfc.Core;
+using Godoodads.Common.Wfc.Editor;
 
 namespace Godoodads.WfcGenerator.Editor;
 
 [Tool]
-public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
+public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, IBoundsBoxes
 {
     /// <summary>Menu item, dialog title and undo action name. GDDS = Godoodads, this suite.</summary>
     private const string ToolName = "Generate WFC (GDDS)";
@@ -58,10 +60,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
 
         _dialogFilter = new DialogInspectorFilterPlugin();
         AddInspectorPlugin(_dialogFilter);
-        _tileSetInspector = new TileSetInspectorPlugin();
-        AddInspectorPlugin(_tileSetInspector);
+        _tileSetInspector = TileSetInspectorPlugin.Register(this);
 
-        _gizmo = new BoundsGizmoPlugin { Owner = this };
+        _gizmo = new BoundsGizmoPlugin { Owner = this, GizmoName = "WFC Generator bounds" };
         AddNode3DGizmoPlugin(_gizmo);
         // Forwarded input reaches this plugin before the GridMap editor, which would take handle drags.
         SetInputEventForwardingAlwaysEnabled();
@@ -92,7 +93,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener
         }
         if (_tileSetInspector != null)
         {
-            RemoveInspectorPlugin(_tileSetInspector);
+            TileSetInspectorPlugin.Unregister(this, _tileSetInspector);
             _tileSetInspector = null;
         }
         if (_dialog != null)

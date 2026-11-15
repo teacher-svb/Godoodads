@@ -1,7 +1,7 @@
 using Godot;
 using Godot.Collections;
 
-namespace Godoodads.WfcGenerator;
+namespace Godoodads.Common.Wfc;
 
 /// <summary>Socket rules for the items of a MeshLibrary. The library itself is never modified.</summary>
 [Tool, GlobalClass]

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Godoodads.WfcGenerator.Core;
+namespace Godoodads.Common.Wfc.Core;
 
 /// <summary>A tile face whose socket has no partner in any rotation of any tile.</summary>
 public sealed record UnmatchedFace(int TileIndex, int Direction, string Socket);

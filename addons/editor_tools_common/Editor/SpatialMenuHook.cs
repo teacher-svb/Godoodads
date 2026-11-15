@@ -10,6 +10,11 @@ namespace Godoodads.Common;
 /// If the button is not found, a menu button of our own is added to the same toolbar instead;
 /// the plugin then has to drive its visibility through <see cref="SetFallbackVisible"/>.
 ///
+/// That fallback button is shared: a second hook with the same icon (another Godoodads addon) adds
+/// its items to it. The button's metadata lists its users and the visibility each one asks for; it
+/// shows while any user asks, and the last user to leave removes it. Item ids are the first free
+/// ones, so hooks never share an id.
+///
 /// A GodotObject with Variant-only state and method-name Callables, so the hook keeps working
 /// after the editor reloads the C# assembly.
 /// </summary>
@@ -19,6 +24,9 @@ public partial class SpatialMenuHook : RefCounted
     // Built-in menus use small ids; keep ours far away from them.
     private const int BaseId = 7300;
     private const int SeparatorId = BaseId - 1;
+
+    // Metadata on a shared fallback button: instance id of each hook using it -> wanted visibility.
+    private const string UsersMeta = "godoodads_menu_users";
 
     private EditorPlugin _plugin;
     private PopupMenu _popup;
@@ -40,15 +48,21 @@ public partial class SpatialMenuHook : RefCounted
         _plugin = plugin;
         var icon = EditorInterface.Singleton.GetEditorTheme().GetIcon(hostIcon, "EditorIcons");
         var host = FindHost(plugin, icon);
-        if (host != null)
+        if (host != null && !host.HasMeta(UsersMeta))
         {
             _popup = host.GetPopup();
         }
         else
         {
-            _fallback = new MenuButton { Text = fallbackText, Icon = icon, Flat = true, Visible = false };
-            plugin.AddControlToContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _fallback);
+            if (host == null)
+            {
+                host = new MenuButton { Text = fallbackText, Icon = icon, Flat = true, Visible = false };
+                host.SetMeta(UsersMeta, new Dictionary());
+                plugin.AddControlToContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, host);
+            }
+            _fallback = host;
             _popup = _fallback.GetPopup();
+            SetUser(false);
         }
         _popup.Connect(PopupMenu.SignalName.IdPressed, new Callable(this, MethodName.OnIdPressed));
     }
@@ -64,7 +78,9 @@ public partial class SpatialMenuHook : RefCounted
             _popup.AddSeparator("", SeparatorId);
             _hasSeparator = true;
         }
-        int id = BaseId + _callbacks.Count;
+        int id = BaseId;
+        while (_popup.GetItemIndex(id) >= 0)
+            id++;
         _popup.AddItem(text, id);
         _callbacks[id] = callback;
     }
@@ -87,10 +103,11 @@ public partial class SpatialMenuHook : RefCounted
         }
     }
 
+    /// <summary>Asks for the fallback button to show. It shows while any hook sharing it asks.</summary>
     public void SetFallbackVisible(bool visible)
     {
-        if (_fallback != null)
-            _fallback.Visible = visible;
+        if (_fallback != null && IsInstanceValid(_fallback))
+            SetUser(visible);
     }
 
     /// <summary>Removes everything this hook added.</summary>
@@ -106,8 +123,24 @@ public partial class SpatialMenuHook : RefCounted
         }
         if (_fallback != null)
         {
-            _plugin.RemoveControlFromContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _fallback);
-            _fallback.QueueFree();
+            if (IsInstanceValid(_fallback))
+            {
+                foreach (var id in _callbacks.Keys)
+                    RemoveById(id);
+                var users = Users();
+                users.Remove((long)GetInstanceId());
+                if (users.Count == 0)
+                {
+                    // Whoever added the button, any plugin can take it out of the shared container.
+                    _plugin.RemoveControlFromContainer(EditorPlugin.CustomControlContainer.SpatialEditorMenu, _fallback);
+                    _fallback.QueueFree();
+                }
+                else
+                {
+                    _fallback.SetMeta(UsersMeta, users);
+                    UpdateFallbackVisibility(users);
+                }
+            }
         }
         else if (IsInstanceValid(_popup))
         {
@@ -129,6 +162,33 @@ public partial class SpatialMenuHook : RefCounted
         _plugin = null;
         _callbacks.Clear();
         _originalTexts.Clear();
+    }
+
+    /// <summary>The users of the shared fallback button, without hooks that were freed without Remove.</summary>
+    private Dictionary Users()
+    {
+        var users = new Dictionary();
+        if (_fallback.HasMeta(UsersMeta))
+            foreach (var (key, wanted) in _fallback.GetMeta(UsersMeta).AsGodotDictionary())
+                if (InstanceFromId((ulong)key.AsInt64()) != null)
+                    users[key] = wanted;
+        return users;
+    }
+
+    private void SetUser(bool visible)
+    {
+        var users = Users();
+        users[(long)GetInstanceId()] = visible;
+        _fallback.SetMeta(UsersMeta, users);
+        UpdateFallbackVisibility(users);
+    }
+
+    private void UpdateFallbackVisibility(Dictionary users)
+    {
+        bool visible = false;
+        foreach (var wanted in users.Values)
+            visible |= wanted.AsBool();
+        _fallback.Visible = visible;
     }
 
     private void RemoveById(int id)

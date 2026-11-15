@@ -1,8 +1,8 @@
 using Godot;
 using Godot.Collections;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator;
+namespace Godoodads.Common.Wfc;
 
 /// <summary>One module and the sockets on its six faces.</summary>
 [Tool, GlobalClass]

@@ -2,7 +2,7 @@
 
 [ext_resource type="MeshLibrary" uid="uid://c8j63ilpby2ff" path="res://demo/wfc_generator/hills_library.tres" id="1"]
 [ext_resource type="Resource" uid="uid://cj3uifuabjxmy" path="res://demo/wfc_generator/hills_tileset.tres" id="2_vkkbo"]
-[ext_resource type="Script" uid="uid://xrobwlr825xt" path="res://addons/wfc_generator/Resources/WfcSettings.cs" id="3_hqfy1"]
+[ext_resource type="Script" uid="uid://xrobwlr825xt" path="res://addons/editor_tools_common/Wfc/Resources/WfcSettings.cs" id="3_hqfy1"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_material"]
 

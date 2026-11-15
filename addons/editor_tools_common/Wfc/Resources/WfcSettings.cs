@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Godot;
 using Godot.Collections;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator;
+namespace Godoodads.Common.Wfc;
 
 /// <summary>All options of one generation. Shown in the dialog and stored on the GridMap afterwards.</summary>
 [Tool, GlobalClass]

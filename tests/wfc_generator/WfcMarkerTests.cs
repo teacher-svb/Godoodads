@@ -4,9 +4,9 @@ using System.Linq;
 using Godot;
 using Godot.Collections;
 using GdUnit4;
-using Godoodads.WfcGenerator;
-using Godoodads.WfcGenerator.Adapters;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Adapters;
+using Godoodads.Common.Wfc.Core;
 using static GdUnit4.Assertions;
 
 // Brief §12.4: marker scenes placed at generated cells, replaced on the next generation.

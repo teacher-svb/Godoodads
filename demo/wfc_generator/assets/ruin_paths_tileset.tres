@@ -1,9 +1,9 @@
 [gd_resource type="Resource" script_class="WfcTileSet" format=3]
 
 [ext_resource type="MeshLibrary" path="res://demo/wfc_generator/assets/ruin_library.tres" id="1_o3eja"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="2_a5cjl"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_a5cjl"]
 [ext_resource type="PackedScene" path="res://demo/wfc_generator/assets/tower_light.tscn" id="3_58w75"]
-[ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTileSet.cs" id="4_od1a0"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="4_od1a0"]
 
 [sub_resource type="Resource" id="Resource_y1ggg"]
 resource_name = "Rock"

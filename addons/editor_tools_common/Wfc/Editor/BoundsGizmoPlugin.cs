@@ -1,15 +1,27 @@
 #if TOOLS
 using System.Collections.Generic;
 using Godot;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator.Editor;
+namespace Godoodads.Common.Wfc.Editor;
+
+/// <summary>The boxes a plugin edits with <see cref="BoundsGizmoPlugin"/> handles.</summary>
+public interface IBoundsBoxes
+{
+    /// <summary>The GridMap whose boxes have handles now, or null.</summary>
+    GridMap HandleTarget { get; }
+    int BoxCount { get; }
+    bool BoxVisible(int box);
+    Vector3I BoxOrigin(int box);
+    Vector3I BoxSize(int box);
+}
 
 /// <summary>
-/// Draws face handles for the boxes of the WFC dialog (bounds, then the pin box) on the GridMap
-/// the dialog edits. Handle id = box × 6 + direction (see <see cref="Directions"/>). Dragging is
-/// done by the plugin in _Forward3DGuiInput, because the GridMap editor takes mouse input before
-/// gizmo handles see it. The outlines are drawn by the plugin's overlay.
+/// Draws face handles for the boxes of a dialog (for WFC Generator the bounds, then the pin box) on
+/// the GridMap the dialog edits. Handle id = box × 6 + direction (see <see cref="Directions"/>).
+/// Dragging is done by the owning plugin in _Forward3DGuiInput, because the GridMap editor takes
+/// mouse input before gizmo handles see it. The outlines are drawn by the plugin's overlay. Each
+/// plugin registers its own instance; it only draws on its own <see cref="IBoundsBoxes.HandleTarget"/>.
 /// </summary>
 [Tool]
 public partial class BoundsGizmoPlugin : EditorNode3DGizmoPlugin
@@ -18,15 +30,20 @@ public partial class BoundsGizmoPlugin : EditorNode3DGizmoPlugin
 
     public BoundsGizmoPlugin() => CreateHandleMaterial(HandleMaterial);
 
-    /// <summary>The plugin that owns the boxes. Cleared when the plugin is removed.</summary>
-    public WfcGeneratorPlugin Owner { get; set; }
+    /// <summary>The plugin that owns the boxes and implements <see cref="IBoundsBoxes"/>. Cleared when the plugin is removed.</summary>
+    public EditorPlugin Owner { get; set; }
 
-    public override string _GetGizmoName() => "WFC Generator bounds";
+    /// <summary>The name in the viewport's gizmo menu. Set it before registering the plugin.</summary>
+    public string GizmoName { get; set; } = "Bounds";
+
+    public override string _GetGizmoName() => GizmoName;
 
     public override bool _HasGizmo(Node3D forNode3D) => forNode3D is GridMap;
 
+    private IBoundsBoxes Boxes => Owner != null && IsInstanceValid(Owner) ? Owner as IBoundsBoxes : null;
+
     private GridMap ActiveMap(EditorNode3DGizmo gizmo) =>
-        Owner != null && IsInstanceValid(Owner) && gizmo.GetNode3D() is GridMap map && Owner.HandleTarget == map ? map : null;
+        Boxes is { } boxes && gizmo.GetNode3D() is GridMap map && boxes.HandleTarget == map ? map : null;
 
     public override void _Redraw(EditorNode3DGizmo gizmo)
     {
@@ -34,14 +51,15 @@ public partial class BoundsGizmoPlugin : EditorNode3DGizmoPlugin
         var map = ActiveMap(gizmo);
         if (map == null)
             return;
+        var owner = Boxes;
 
         var points = new List<Vector3>();
         var ids = new List<int>();
-        for (int box = 0; box < Owner.BoxCount; box++)
+        for (int box = 0; box < owner.BoxCount; box++)
         {
-            if (!Owner.BoxVisible(box))
+            if (!owner.BoxVisible(box))
                 continue;
-            var positions = HandlePositions(map, Owner.BoxOrigin(box), Owner.BoxSize(box));
+            var positions = HandlePositions(map, owner.BoxOrigin(box), owner.BoxSize(box));
             for (int direction = 0; direction < Directions.Count; direction++)
             {
                 points.Add(positions[direction]);

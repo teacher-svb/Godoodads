@@ -1,7 +1,7 @@
 namespace Godoodads.Tests.WfcGenerator;
 
-using Godoodads.WfcGenerator;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Core;
 using GdUnit4;
 using static GdUnit4.Assertions;
 

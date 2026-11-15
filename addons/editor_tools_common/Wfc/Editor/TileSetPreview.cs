@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Godot;
-using Godoodads.WfcGenerator.Adapters;
-using Godoodads.WfcGenerator.Core;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Adapters;
+using Godoodads.Common.Wfc.Core;
 
-namespace Godoodads.WfcGenerator.Editor;
+namespace Godoodads.Common.Wfc.Editor;
 
 /// <summary>
 /// Shows one tile in 3D with its socket labels, the tiles allowed next to each face, and the tile
