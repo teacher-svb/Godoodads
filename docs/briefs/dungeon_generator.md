@@ -194,6 +194,8 @@ Automated unless noted:
 
 Note further ideas as idea cards in the epic `godoodungeon` with the labels `v2.0.0` and `idea` or in the repo's `README.md` backlog rather than building them.
 
+**Decided at the M4 review (2026-11-15):** none of the idea cards (multiple floors, room stamps, room roles and progression) moves into a 1.x release yet. godoodungeon 1.0.0 ships first, and the board decides after feedback.
+
 ---
 
 ### 10. Assumptions to verify in M0
