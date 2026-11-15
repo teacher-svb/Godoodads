@@ -84,8 +84,25 @@ public sealed record DungeonResult
     /// <summary>The routed path faces per layout cell (see <see cref="CorridorPlan.Faces"/>), when solved.</summary>
     public int[] CorridorFaces { get; init; }
 
+    /// <summary>Milliseconds per stage over all layout attempts: layout, rooms, routing, corridors (solve), check.</summary>
+    public StageTimes Times { get; init; } = new();
+
     /// <summary>The rooms the connectivity check could not reach, with <see cref="DungeonStatus.InternalError"/>.</summary>
     public IReadOnlyList<int> UnreachableRooms { get; init; } = Array.Empty<int>();
+}
+
+/// <summary>Time spent per stage of a dungeon run, in milliseconds, summed over the layout attempts.</summary>
+public sealed class StageTimes
+{
+    public double Layout { get; set; }
+    public double Rooms { get; set; }
+    public double Routing { get; set; }
+    public double Corridors { get; set; }
+    public double Check { get; set; }
+    public double Total => Layout + Rooms + Routing + Corridors + Check;
+
+    public override string ToString() =>
+        $"layout {Layout:F0} ms, rooms {Rooms:F0} ms, routing {Routing:F0} ms, corridors {Corridors:F0} ms, check {Check:F0} ms";
 }
 
 /// <summary>
@@ -163,6 +180,14 @@ public sealed class DungeonJob
             return new DungeonResult { Status = DungeonStatus.Invalid, Errors = errors };
 
         var occupied = OccupiedGrid(request);
+        var times = new StageTimes();
+        var clock = System.Diagnostics.Stopwatch.StartNew();
+        double Lap()
+        {
+            double ms = clock.Elapsed.TotalMilliseconds;
+            clock.Restart();
+            return ms;
+        }
         var failures = new List<AttemptFailure>();
         DungeonLayout layout = null;
         for (int attempt = 0; attempt < Math.Max(1, request.LayoutAttempts); attempt++)
@@ -170,7 +195,9 @@ public sealed class DungeonJob
             if (_cancellation.IsCancellationRequested)
                 return Cancelled(layout, failures);
             Volatile.Write(ref _stage, $"Layout {attempt + 1}: placing rooms");
+            clock.Restart();
             layout = LayoutGenerator.Generate(settings, request.Seed, attempt, request.Origin, occupied);
+            times.Layout += Lap();
             if (!layout.IsValid)
             {
                 failures.Add(new AttemptFailure(attempt, string.Join(" ", layout.Errors)));
@@ -201,6 +228,7 @@ public sealed class DungeonJob
                     failedCell = job.Result?.Failure is { } report ? input.Origin + report.Cell : null;
                 }
             }
+            times.Rooms += Lap();
             if (failed != null)
             {
                 failures.Add(new AttemptFailure(attempt, failed, failedCell));
@@ -210,6 +238,7 @@ public sealed class DungeonJob
             Volatile.Write(ref _stage, $"Layout {attempt + 1}: routing corridors");
             long corridorSeed = LayoutSeeds.Corridors(request.Seed, attempt);
             var plan = CorridorRouter.Route(layout, settings, occupied, request.PathWander, corridorSeed);
+            times.Routing += Lap();
             if (!plan.IsValid)
             {
                 failures.Add(new AttemptFailure(attempt, $"Corridors: {plan.Error}", plan.ErrorCell is { } at ? layout.GridCell(at) : null));
@@ -226,6 +255,7 @@ public sealed class DungeonJob
                 return Cancelled(layout, failures);
             backtracks += corridors.Result?.Backtracks ?? 0;
             restarts += corridors.Result?.Restarts ?? 0;
+            times.Corridors += Lap();
             if (corridors.Result?.Status != SolveStatus.Solved)
             {
                 failures.Add(new AttemptFailure(attempt, $"The corridors could not be solved ({Describe(corridors)}).",
@@ -236,6 +266,7 @@ public sealed class DungeonJob
 
             Volatile.Write(ref _stage, $"Layout {attempt + 1}: checking connections");
             var unreachable = DungeonConnectivity.UnreachableRooms(layout, corridorInput, corridors.Result.Cells, request.CorridorTiles, request.PathSocket);
+            times.Check += Lap();
             return new DungeonResult
             {
                 Status = unreachable.Count == 0 ? DungeonStatus.Solved : DungeonStatus.InternalError,
@@ -243,7 +274,7 @@ public sealed class DungeonJob
                 UnreachableRooms = unreachable,
                 Layout = layout, Solves = solves, Attempts = failures, LayoutAttempt = attempt,
                 Backtracks = backtracks, Restarts = restarts,
-                RouteCount = plan.RouteCount, RouteCells = plan.RouteCells, CorridorFaces = plan.Faces,
+                RouteCount = plan.RouteCount, RouteCells = plan.RouteCells, CorridorFaces = plan.Faces, Times = times,
             };
         }
         return new DungeonResult { Status = DungeonStatus.Failed, Layout = layout, Attempts = failures };

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using Godot;
 using GdUnit4;
+using Godoodads.Common.Wfc.Adapters;
 using Godoodads.Dungeon;
 using Godoodads.Dungeon.Adapters;
 using Godoodads.Dungeon.Core;
@@ -51,6 +52,44 @@ public class DungeonDemoTests
         GD.Print($"{name}: {solved} of {Seeds} seeds solved, {rooms / (double)System.Math.Max(solved, 1):F1} rooms on average, "
             + $"{attempts - solved} extra layout attempts, {clock.ElapsedMilliseconds / Seeds} ms per dungeon.");
         AssertThat(solved >= 19).IsTrue();
+        root.Free();
+    }
+
+    /// <summary>Brief §8 performance, with the GridMap write (card dgn-m5-performance).</summary>
+    [TestCase(64, 20)]
+    [TestCase(128, 60)]
+    [RequireGodotRuntime]
+    public void Generate_and_write_timings(int size, int rooms)
+    {
+        var root = ResourceLoader.Load<PackedScene>("res://demo/godoodungeon/dungeon_free.tscn").Instantiate();
+        var map = root.GetNode<GridMap>("GridMap");
+        var settings = (DungeonSettings)DungeonSettings.StoredOn(map).Duplicate();
+        settings.BoundsSize = new Vector3I(size, 1, size);
+        settings.RoomCount = rooms;
+        var check = DungeonTileSets.Check(settings, map);
+        double generate = 0, write = 0;
+        int cells = 0;
+        const int Runs = 5;
+        for (long seed = 1; seed <= Runs; seed++)
+        {
+            settings.Seed = seed;
+            var clock = Stopwatch.StartNew();
+            var record = DungeonGridMap.ReadRecord(map);
+            var handPlaced = DungeonGridMap.ReadHandPlaced(map, settings.BoundsOrigin, settings.BoundsSize, record);
+            var result = new DungeonJob(DungeonGridMap.Request(settings, check, handPlaced)).RunNow();
+            generate += clock.Elapsed.TotalMilliseconds;
+            AssertThat(result.Status).IsEqual(DungeonStatus.Solved);
+            clock.Restart();
+            var (changes, newRecord) = DungeonGridMap.Write(map, record, DungeonGridMap.Cells(result, check.Room, check.Corridor));
+            GridMapCells.Apply(map, changes.Do);
+            DungeonGridMap.WriteRecord(map, newRecord.Encode());
+            write += clock.Elapsed.TotalMilliseconds;
+            cells = newRecord.Count;
+        }
+        GD.Print($"{size}×{size}, {rooms} rooms (demo tile sets): generate {generate / Runs:F0} ms, write {write / Runs:F0} ms per dungeon "
+            + $"(last one {cells} cells; each run replaces the previous dungeon).");
+        if (size == 64)
+            AssertThat(generate / Runs + write / Runs < 10_000).IsTrue();
         root.Free();
     }
 }
