@@ -6,7 +6,7 @@ assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:26:37.000Z"
+modified: "2026-11-15T19:28:33.000Z"
 completedAt: null
 labels: ["v1.0.0", "m5", "performance"]
 order: "f2"
@@ -45,3 +45,9 @@ On your machine, open `demo/godoodungeon/dungeon_free.tscn`, set Bounds Size to 
 ## Board check (2026-11-15), in progress
 - On the board's machine there is a noticeable pause: "Generated … in 1.2 s" at both 64×64 and 128×128, with the pause about as long. Headless, the same run takes 0.1 s (frame timeline through the real dialog, with and without Randomise Seed), plus one 391–404 ms frame after the commit while the GridMap and marker nodes are taken in. Ruled out headless: markers alone (about 1 s longest frame with or without them at 128×128), storing settings and the record on the selected GridMap (10–42 ms), and the cell writes (1 ms) and diff (19 ms).
 - To find the GUI-only cost, the status line now splits the time: "generated in x s, written in y s" (the write covers the cells, markers and the undo action).
+- **Board timings with the split status** (64×64, 20 rooms, demo tile sets):
+  - First Generate: "in 0.1 s, written in 0.0 s".
+  - A later Generate that replaces the previous dungeon and its 66 markers: "in 0.0 s, written in 0.4 s".
+  - The earlier "1.2 s" for every size was the first Generate after a rebuild. .NET compiles the dungeon code on first use after an assembly reload. Later runs do not pay it.
+  - The remaining cost is the GUI editor swapping cells and marker nodes, and redrawing.
+  - The target (64×64 under 10 s) is met.
