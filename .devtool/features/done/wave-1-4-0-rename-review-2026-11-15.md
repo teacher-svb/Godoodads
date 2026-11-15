@@ -13,7 +13,7 @@ order: "fG"
 ---
 # godoowave 1.4.0: Release review
 
-Rename from WFC Generator (`addons/wfc_generator/`) to godoowave, plus External Sockets (brief §15). Work in card `gdd-rename-godoowave-godooscatter-2026-11-15`. The board moves this card to *Done* when approved, after which the release is tagged `godoowave-v1.4.0`.
+Rename from WFC Generator (`addons/wfc_generator/`) to godoowave (brief §15); External Sockets already shipped in 1.3.4. Work in card `gdd-rename-godoowave-godooscatter-2026-11-15`. The board moves this card to *Done* when approved, after which the release is tagged `godoowave-v1.4.0`.
 
 ## Review checklist for the board
 1. Focus Godot so it reloads the C# assembly. *Project Settings → Plugins* lists **godoowave**, enabled. The GridMap menu shows one **Generate WFC (GDDS)**.

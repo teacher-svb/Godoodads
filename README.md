@@ -22,7 +22,7 @@ The addons need Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](htt
 
 If the addon is missing from the plugin list, the zip was extracted one folder too deep: the file must be at `addons/<addon>/plugin.cfg`. If enabling it reports "Unable to load addon script", build first and check the MSBuild panel for errors. The [godoowave README](addons/godoowave/README.md#install) has more fixes and how to update an addon.
 
-The addons were renamed in godoowave 1.4.0 and godooscatter 1.3.0. Up to WFC Generator 1.3.3 and MultiMesh Scatter 1.2.0 they lived in `addons/wfc_generator/` and `addons/multimesh_scatter/`, with releases named after those folders. Each addon README explains how to update from the old folder.
+The addons were renamed in godoowave 1.4.0 and godooscatter 1.3.0. Up to WFC Generator 1.3.4 and MultiMesh Scatter 1.2.0 they lived in `addons/wfc_generator/` and `addons/multimesh_scatter/`, with releases named after those folders. Each addon README explains how to update from the old folder.
 
 ## Working on this repository
 

@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to godoowave (called WFC Generator up to 1.3.3) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
+All notable changes to godoowave (called WFC Generator up to 1.3.4) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
 ## [1.4.0] - 2026-11-15
 
@@ -8,12 +8,14 @@ All notable changes to godoowave (called WFC Generator up to 1.3.3) are document
 - **Renamed to godoowave.** The addon lives in `addons/godoowave/`, the plugin is called **godoowave** and releases are named `godoowave-<version>`, to match the other Godoodads addons. Generation is unchanged: the same settings and seed give the same cells.
 - Tile sets, settings and scenes from earlier versions keep loading. `addons/wfc_generator/Resources/` still holds the small legacy classes for files that name the old script paths, and ships in the zip.
 
-### Added
-- **External Sockets** on a tile set: sockets that something outside the tiles supplies, such as a boundary socket or the `outside-` of a godoodungeon room's bounds. The tile set check and the preview count them as partners, so faces that only ever meet them are no longer reported or drawn in red. Generation ignores them; an empty list changes nothing.
-
 ### Updating
 - Delete `addons/wfc_generator/` before you extract this version, then build and enable **godoowave** in the plugin list. Godot drops the old **WFC Generator** entry because its folder is gone. If both are left installed, the GridMap menu shows two **Generate WFC (GDDS)** items.
 - The dialog opens at its default size once, because its saved size is stored under the new name.
+
+## [1.3.4] - 2026-11-15
+
+### Added
+- **External Sockets** on a tile set: sockets that something outside the tiles supplies, such as a boundary socket or the `outside-` of a godoodungeon room's bounds. The tile set check and the preview count them as partners, so faces that only ever meet them are no longer reported or drawn in red. Generation ignores them; an empty list changes nothing.
 
 ## [1.3.3] - 2026-11-15
 

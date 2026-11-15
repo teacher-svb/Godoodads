@@ -2,7 +2,7 @@
 
 ## Sub-project 2: godoowave (WFC Generator)
 
-*Called WFC Generator up to 1.3.3, in `addons/wfc_generator/`; renamed to godoowave in 1.4.0 (§15). Sections before §15 use the old name where they record history.*
+*Called WFC Generator up to 1.3.4, in `addons/wfc_generator/`; renamed to godoowave in 1.4.0 (§15). Sections before §15 use the old name where they record history.*
 
 **Decisions by:** the board (Syndias)
 **Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2.0 (§12) adds boundary sockets, height curves, viewport handles, pinning and marker tiles. 1.4.0 (§15) is the rename to godoowave; the 2D adapter (§14) follows in 1.5.
@@ -154,7 +154,7 @@ Read tile set and fixed cells
 
 ### 7. Milestones
 
-Each milestone ends with a board review. Cards use the epic `godoowave` (`WFC Generator` until 1.3.3) with the labels `v1.0.0` and the milestone, for example `m1`.
+Each milestone ends with a board review. Cards use the epic `godoowave` (`WFC Generator` until 1.3.4) with the labels `v1.0.0` and the milestone, for example `m1`.
 
 | # | Milestone | Content |
 |---|---|---|
@@ -339,6 +339,13 @@ Requested on 2026-11-14, tracked under the label `v1.3.2`.
 - **Failed seed:** with Randomise Seed on, a Generate that does not succeed (no solution, out of attempts, path errors, solver error, stopped or cancelled) puts Seed back to the seed before it, since the GridMap was not changed. Seeds that failed are not picked again while the dialog stays open.
 - **Clear Bounds** button: clears the bounds by the rules of Clear Bounds First and Keep Placed Cells, without solving, as one undo step with the regenerate record (entries in the bounds go, pins too) and the tagged markers on cleared cells. Needs no tile set. Keep Placed Cells is therefore always shown.
 
+#### 13.8 Patches 1.3.3 and 1.3.4
+
+Both came with godoodungeon (dungeon brief) on 2026-11-15, tracked under the labels `v1.3.3` and `v1.3.4`.
+
+- **1.3.3:** the solver, resources, adapters, the tile set preview and the bounds gizmo moved to `addons/editor_tools_common/Wfc/`, with legacy classes at the old resource paths. The GridMap menu and the tile set preview are shared with godoodungeon. Generation is unchanged.
+- **1.3.4: External Sockets** on `WfcTileSet`: sockets that something outside the tiles supplies (a boundary socket, or the `outside-` of a godoodungeon room's bounds). The tile set check, its edge-only analysis and the preview's red faces count them as partners. Generation ignores them, and an empty list changes nothing.
+
 ---
 
 ### 14. Release 1.5
@@ -366,7 +373,7 @@ Suggesting sockets from Godot terrain sets stays in the README backlog. Region w
 
 ### 15. Release 1.4: rename to godoowave
 
-Requested on 2026-11-15, to match the `godoo<name>` scheme of godoodungeon. Tracked under the label `v1.4.0`, together with External Sockets from the godoodungeon work (dungeon brief §4). Generation does not change: the same settings and seed give the same cells.
+Requested on 2026-11-15, to match the `godoo<name>` scheme of godoodungeon. Tracked under the label `v1.4.0`. Nothing else changes: External Sockets already shipped in 1.3.4 (§13.8). Generation does not change: the same settings and seed give the same cells.
 
 - The addon moves from `addons/wfc_generator/` to `addons/godoowave/`, `demo/` and `tests/` likewise. The plugin is called **godoowave**, release tags are `godoowave-v<version>`, and namespaces are `Godoodads.Wave` (was `Godoodads.WfcGenerator`). Class names stay, because saved files name them as `script_class`.
 - `addons/wfc_generator/Resources/` stays with the legacy classes added in 1.3.3 (dungeon brief §4.1), now in `Godoodads.Wave.Legacy`, and ships in the godoowave zip (`tools/package_addon.sh`), so files that name the old script paths still load. The `wfc_1_3_2` test fixture keeps checking this.

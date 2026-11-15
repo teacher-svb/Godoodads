@@ -803,7 +803,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
     /// <summary>
     /// A warning when WFC Generator older than 1.3.3 is installed (brief godoodungeon §4.1), else empty.
-    /// Versions up to 1.3.3 live in addons/wfc_generator; from 1.4.0 on it is godoowave, which is never too old.
+    /// Versions up to 1.3.4 live in addons/wfc_generator; from 1.4.0 on it is godoowave, which is never too old.
     /// </summary>
     private static string WfcGeneratorWarning()
     {
