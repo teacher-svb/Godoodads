@@ -35,11 +35,17 @@ public sealed record Door(int Room, Vector2I Cell, DoorSide Side)
 /// <summary>A connection in the room graph. Tree edges come from the minimum spanning tree; the others are extra connections (loops).</summary>
 public sealed record RoomEdge(int A, int B, bool IsTreeEdge);
 
-/// <summary>The result of the layout stage: rooms, the room graph and the doors, plus warnings such as a room shortfall.</summary>
+/// <summary>
+/// The result of the layout stage: rooms, the room graph and the doors. Warnings (such as a room
+/// shortfall) still give a usable layout; errors (such as a room without a door) do not.
+/// </summary>
 public sealed class DungeonLayout
 {
     public List<RoomRect> Rooms { get; } = new();
     public List<RoomEdge> Edges { get; } = new();
     public List<Door> Doors { get; } = new();
     public List<string> Warnings { get; } = new();
+    public List<string> Errors { get; } = new();
+
+    public bool IsValid => Errors.Count == 0;
 }

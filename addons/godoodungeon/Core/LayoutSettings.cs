@@ -22,7 +22,7 @@ public sealed record LayoutSettings
     /// <summary>Cells around each room that corridors may not use, except the lane outside each door. 0 lets corridors run along walls.</summary>
     public int WallClearance { get; init; } = 1;
 
-    /// <summary>Free cells between two rooms. At least 2 × <see cref="WallClearance"/> + 1, so a corridor fits between their clearance rings.</summary>
+    /// <summary>Free cells between two rooms. At least <see cref="MinimumGap"/>, so a corridor fits between their clearance rings.</summary>
     public int Gap { get; init; } = 3;
 
     /// <summary>Free cells between a room and the edge of the bounds.</summary>
@@ -36,8 +36,12 @@ public sealed record LayoutSettings
     /// <summary>Random positions tried per room before the layout gives up on it.</summary>
     public int AttemptsPerRoom { get; init; } = 50;
 
-    /// <summary>The smallest gap that keeps a corridor between the clearance rings of two rooms.</summary>
-    public int MinimumGap => 2 * WallClearance + 1;
+    /// <summary>
+    /// The smallest gap that keeps a corridor between the clearance rings of two rooms: 2 × Wall
+    /// Clearance + 1, and at least 2, because a door needs its lane plus one free cell straight out
+    /// (a corridor piece facing a room wall would count as connected to it).
+    /// </summary>
+    public int MinimumGap => System.Math.Max(2 * WallClearance + 1, 2);
 }
 
 /// <summary>

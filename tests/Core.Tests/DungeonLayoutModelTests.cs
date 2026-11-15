@@ -125,5 +125,6 @@ public class DungeonLayoutModelTests
         Assert.Equal(3, settings.MinimumGap);
         Assert.True(settings.Gap >= settings.MinimumGap);
         Assert.Equal(5, (settings with { WallClearance = 2 }).MinimumGap);
+        Assert.Equal(2, (settings with { WallClearance = 0 }).MinimumGap);
     }
 }
