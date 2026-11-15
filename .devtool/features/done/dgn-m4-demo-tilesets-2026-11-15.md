@@ -1,13 +1,13 @@
 ---
 id: "dgn-m4-demo-tilesets-2026-11-15"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:04:49.000Z"
-completedAt: null
+modified: "2026-11-15T19:15:47.000Z"
+completedAt: "2026-11-15T19:15:47.000Z"
 labels: ["v1.0.0", "m4", "demo"]
 order: "e2"
 ---
@@ -30,3 +30,6 @@ Branch `godoodungeon-m1`.
 
 ## Manual check (board)
 Open `dungeon_room_tileset.tres` and `dungeon_corridor_tileset.tres` in the inspector and browse the tiles in the preview: no red face labels.
+
+## Board check passed (2026-11-15)
+The tile set preview shows the pieces as intended with no red face labels. Both demo scenes generate good, dungeon-like layouts over several seeds, and the statues and pool stay untouched.

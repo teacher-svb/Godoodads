@@ -1,13 +1,13 @@
 ---
 id: "dgn-m4-demo-scenes-2026-11-15"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:12:51.000Z"
-completedAt: null
+modified: "2026-11-15T19:15:47.000Z"
+completedAt: "2026-11-15T19:15:47.000Z"
 labels: ["v1.0.0", "m4", "demo"]
 order: "e3"
 ---
@@ -40,3 +40,6 @@ Core tests 360 passed. Engine tests 101 passed.
 
 ## Manual check (board)
 Open both scenes and Generate with a few seeds (Randomise Seed helps). In `dungeon_obstacles`, the statues and the pool stay untouched, and rooms and corridors keep clear of them.
+
+## Board check passed (2026-11-15)
+The tile set preview shows the pieces as intended with no red face labels. Both demo scenes generate good, dungeon-like layouts over several seeds, and the statues and pool stay untouched.

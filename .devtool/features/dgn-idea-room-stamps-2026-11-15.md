@@ -6,7 +6,7 @@ assignee: null
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T12:32:30.000Z"
+modified: "2026-11-15T19:15:47.000Z"
 completedAt: null
 labels: ["v2.0.0", "idea"]
 order: "c2"
@@ -19,3 +19,6 @@ Hand-built rooms (a GridMap scene or a cell box in another GridMap) placed by th
 - A stamp declares its footprint and door cells.
 - The layout places stamps first, then generated rooms.
 - Rotation of stamps uses the GridMap orientations (rotations only).
+
+## Decision (2026-11-15, M4 review)
+Not in 1.x for now: ship godoodungeon 1.0.0 first and decide after feedback. Stays in `v2.0.0`.
