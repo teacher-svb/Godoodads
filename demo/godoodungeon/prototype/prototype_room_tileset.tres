@@ -1,0 +1,71 @@
+[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/prototype/prototype_library.tres" id="1_6cq7r"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_bv7a6"]
+[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="3_3jlod"]
+
+[sub_resource type="Resource" id="Resource_700w8"]
+resource_name = "Floor"
+script = ExtResource("2_bv7a6")
+Item = 0
+Weight = 12.0
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_kgjth"]
+resource_name = "Crate"
+script = ExtResource("2_bv7a6")
+Item = 1
+Weight = 1.5
+SocketPosX = "in"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "in"
+SocketNegZ = "in"
+
+[sub_resource type="Resource" id="Resource_intu4"]
+resource_name = "Wall"
+script = ExtResource("2_bv7a6")
+Item = 2
+Rotation = 2
+SocketPosX = "outside+"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "edge"
+SocketNegZ = "edge"
+
+[sub_resource type="Resource" id="Resource_bqnv2"]
+resource_name = "Corner"
+script = ExtResource("2_bv7a6")
+Item = 3
+Rotation = 2
+SocketPosX = "outside+"
+SocketNegX = "edge"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "outside+"
+SocketNegZ = "edge"
+
+[sub_resource type="Resource" id="Resource_30g2k"]
+resource_name = "Door"
+script = ExtResource("2_bv7a6")
+Item = 4
+Rotation = 2
+Weight = 0.0
+SocketPosX = "outside+"
+SocketNegX = "in"
+SocketPosY = "v"
+SocketNegY = "v"
+SocketPosZ = "edge"
+SocketNegZ = "edge"
+
+[resource]
+script = ExtResource("3_3jlod")
+Library = ExtResource("1_6cq7r")
+Tiles = Array[ExtResource("2_bv7a6")]([SubResource("Resource_700w8"), SubResource("Resource_kgjth"), SubResource("Resource_intu4"), SubResource("Resource_bqnv2"), SubResource("Resource_30g2k")])
