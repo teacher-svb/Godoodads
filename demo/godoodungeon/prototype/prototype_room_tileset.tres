@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+[gd_resource type="Resource" script_class="WfcTileSet" format=3 uid="uid://nro7ki0xmlf5"]
 
-[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/prototype/prototype_library.tres" id="1_6cq7r"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_bv7a6"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="3_3jlod"]
+[ext_resource type="MeshLibrary" uid="uid://pjh4x0n77pij" path="res://demo/godoodungeon/prototype/prototype_library.tres" id="1_6cq7r"]
+[ext_resource type="Script" uid="uid://rb5vled2paii" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_bv7a6"]
+[ext_resource type="Script" uid="uid://bp15dtwmw2ped" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="3_3jlod"]
 
 [sub_resource type="Resource" id="Resource_700w8"]
 resource_name = "Floor"

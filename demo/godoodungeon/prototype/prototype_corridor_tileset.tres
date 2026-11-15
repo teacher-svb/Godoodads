@@ -1,8 +1,8 @@
-[gd_resource type="Resource" script_class="WfcTileSet" format=3]
+[gd_resource type="Resource" script_class="WfcTileSet" format=3 uid="uid://cy0lw4qle26y6"]
 
-[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/prototype/prototype_library.tres" id="1_md2b0"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_7x1xc"]
-[ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="3_2njke"]
+[ext_resource type="MeshLibrary" uid="uid://pjh4x0n77pij" path="res://demo/godoodungeon/prototype/prototype_library.tres" id="1_md2b0"]
+[ext_resource type="Script" uid="uid://rb5vled2paii" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="2_7x1xc"]
+[ext_resource type="Script" uid="uid://bp15dtwmw2ped" path="res://addons/editor_tools_common/Wfc/Resources/WfcTileSet.cs" id="3_2njke"]
 
 [sub_resource type="Resource" id="Resource_xgtg2"]
 resource_name = "Corridor End"
