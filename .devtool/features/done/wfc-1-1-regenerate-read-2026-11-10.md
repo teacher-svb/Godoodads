@@ -3,12 +3,12 @@ id: "wfc-1-1-regenerate-read-2026-11-10"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC 1.1"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T23:03:56.000Z"
-modified: "2026-11-10T09:01:43.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:01:43.000Z"
-labels: ["engine"]
+labels: ["v1.1.0", "adapters"]
 order: "c4"
 ---
 # WFC 1.1: Free previously generated cells on Generate

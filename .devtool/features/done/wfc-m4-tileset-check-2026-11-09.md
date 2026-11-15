@@ -3,12 +3,12 @@ id: "wfc-m4-tileset-check-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M4 Authoring tools"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T22:35:10.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T22:35:10.000Z"
-labels: ["core", "editor"]
+labels: ["v1.0.0", "m4", "core", "editor"]
 order: "aP"
 ---
 # WFC M4: Tile set check

@@ -3,12 +3,12 @@ id: "m0-project-scaffold-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M0 Foundations"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-10-31T23:56:34.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-10-31T23:56:34.000Z"
-labels: ["infra"]
+labels: ["v1.0.0", "m0", "infra"]
 order: "a0"
 ---
 # M0: Godot 4.7 C# project scaffold

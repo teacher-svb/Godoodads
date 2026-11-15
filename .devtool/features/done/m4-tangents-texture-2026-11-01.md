@@ -3,12 +3,12 @@ id: "m4-tangents-texture-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M4 Normal map"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:22:52.000Z"
-modified: "2026-11-01T01:27:30.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:27:30.000Z"
-labels: ["adapters"]
+labels: ["v1.0.0", "m4", "adapters"]
 order: "a1"
 ---
 # M4: Tangent generation and normal map texture reading

@@ -3,12 +3,12 @@ id: "wfc-1-3-1-seed-and-clear-2026-11-14"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC 1.3.1"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-14T18:00:00.000Z"
-modified: "2026-11-14T19:10:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-14T19:10:00.000Z"
-labels: ["resources", "adapters", "editor"]
+labels: ["v1.3.1", "resources", "adapters", "editor", "ui"]
 order: "e0"
 ---
 # WFC 1.3.1: Randomise Seed checkbox and Keep Placed Cells

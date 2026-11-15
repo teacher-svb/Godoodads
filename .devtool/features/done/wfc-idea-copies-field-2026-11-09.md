@@ -3,12 +3,12 @@ id: "wfc-idea-copies-field-2026-11-09"
 status: "done"
 priority: "low"
 assignee: null
-epic: "WFC 1.1"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-10T09:02:19.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:02:19.000Z"
-labels: ["idea", "authoring"]
+labels: ["v1.1.0", "idea", "resources"]
 order: "b1"
 ---
 # WFC 1.1: Copies field on tiles

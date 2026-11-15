@@ -3,12 +3,12 @@ id: "wfc-m5-review-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC M5 Animation and release"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T22:59:06.221Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T22:59:06.221Z"
-labels: ["review"]
+labels: ["v1.0.0", "m5", "review"]
 order: "Zu"
 ---
 # WFC M5: Milestone review

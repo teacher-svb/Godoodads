@@ -3,12 +3,12 @@ id: "wfc-m3-review-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC M3 Demo tileset"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T18:57:28.643Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T18:57:28.643Z"
-labels: ["review"]
+labels: ["v1.0.0", "m3", "review"]
 order: "Zw"
 ---
 # WFC M3: Milestone review

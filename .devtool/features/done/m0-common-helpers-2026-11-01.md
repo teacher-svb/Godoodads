@@ -3,12 +3,12 @@ id: "m0-common-helpers-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M0 Foundations"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T00:12:36.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:12:36.000Z"
-labels: ["editor", "common"]
+labels: ["v1.0.0", "m0", "editor", "common"]
 order: "a5"
 ---
 # M0: Node picker row, toast and undo helpers

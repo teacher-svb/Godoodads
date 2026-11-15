@@ -3,12 +3,12 @@ id: "m3-demo-masks-2026-11-01"
 status: "done"
 priority: "low"
 assignee: "claude"
-epic: "M3 Mask texture"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:07:27.000Z"
-modified: "2026-11-01T01:11:54.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:11:54.000Z"
-labels: ["demo"]
+labels: ["v1.0.0", "m3", "demo"]
 order: "a3"
 ---
 # M3: Demo mask textures

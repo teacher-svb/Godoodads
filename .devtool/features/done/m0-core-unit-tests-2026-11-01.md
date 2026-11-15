@@ -3,12 +3,12 @@ id: "m0-core-unit-tests-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M0 Foundations"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-10-31T23:56:59.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-10-31T23:56:59.000Z"
-labels: ["infra", "test"]
+labels: ["v1.0.0", "m0", "infra", "test"]
 order: "a1"
 ---
 # M0: Fast unit tests for Core (dotnet test)

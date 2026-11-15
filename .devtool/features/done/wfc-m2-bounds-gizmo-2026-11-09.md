@@ -3,12 +3,12 @@ id: "wfc-m2-bounds-gizmo-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC M2 GridMap pipeline"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T18:39:21.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T18:39:21.000Z"
-labels: ["editor"]
+labels: ["v1.0.0", "m2", "editor"]
 order: "aG"
 ---
 # WFC M2: Bounds drawn in viewport

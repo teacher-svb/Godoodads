@@ -3,12 +3,12 @@ id: "m4-normal-map-core-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M4 Normal map"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:22:52.000Z"
-modified: "2026-11-01T01:24:41.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:24:41.000Z"
-labels: ["core"]
+labels: ["v1.0.0", "m4", "core"]
 order: "a0"
 ---
 # M4: Normal map normal source (Core)

@@ -3,12 +3,12 @@ id: "m3-mask-source-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M3 Mask texture"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:07:27.000Z"
-modified: "2026-11-01T01:09:04.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:09:04.000Z"
-labels: ["adapters"]
+labels: ["v1.0.0", "m3", "adapters"]
 order: "a1"
 ---
 # M3: Texture to MaskImage (channel, compressed textures)

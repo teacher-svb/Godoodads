@@ -3,12 +3,12 @@ id: "m0-common-dialog-shell-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M0 Foundations"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T00:12:36.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:12:36.000Z"
-labels: ["editor", "ui", "common"]
+labels: ["v1.0.0", "m0", "editor", "ui", "common"]
 order: "a3"
 ---
 # M0: Common scatter dialog shell with embedded inspector

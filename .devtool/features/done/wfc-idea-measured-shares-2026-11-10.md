@@ -3,12 +3,12 @@ id: "wfc-idea-measured-shares-2026-11-10"
 status: "done"
 priority: "low"
 assignee: null
-epic: "WFC 1.3"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T09:19:39.000Z"
-modified: "2026-11-10T13:00:00.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T13:00:00.000Z"
-labels: ["idea", "editor"]
+labels: ["v1.3.0", "idea", "editor"]
 order: "b11"
 ---
 # WFC 2.0: Measured tile shares in the preview

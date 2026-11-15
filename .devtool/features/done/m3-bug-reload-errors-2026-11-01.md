@@ -3,12 +3,12 @@ id: "m3-bug-reload-errors-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M3 Mask texture"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:10:57.000Z"
-modified: "2026-11-01T01:19:03.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:19:03.000Z"
-labels: ["bug", "editor", "common"]
+labels: ["v1.0.0", "m3", "bug", "editor", "common"]
 order: "a5"
 ---
 # Bug: errors in the editor log on assembly reload

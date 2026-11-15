@@ -3,12 +3,12 @@ id: "m1-bug-assembly-reload-2026-11-01"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "M1 Parity port"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T12:00:00.000Z"
-modified: "2026-11-01T00:37:36.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:37:36.000Z"
-labels: ["bug", "editor", "common"]
+labels: ["v1.0.0", "m1", "bug", "editor", "common"]
 order: "a0"
 ---
 # Bug: "Scatter Surface…" fails after a C# assembly reload

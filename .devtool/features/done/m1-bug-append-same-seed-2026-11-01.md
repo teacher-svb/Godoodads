@@ -3,12 +3,12 @@ id: "m1-bug-append-same-seed-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M1 Parity port"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T14:00:00.000Z"
-modified: "2026-11-01T00:52:25.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:52:25.000Z"
-labels: ["bug", "core", "editor"]
+labels: ["v1.0.0", "m1", "bug", "core", "editor"]
 order: "a2"
 ---
 # Bug: Append only works after changing the seed

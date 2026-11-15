@@ -3,12 +3,12 @@ id: "wfc-m0-review-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC M0 Foundations"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:33:56.376Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T16:33:53.832Z"
-labels: ["review"]
+labels: ["v1.0.0", "m0", "review"]
 order: "a4"
 ---
 # WFC M0: Milestone review

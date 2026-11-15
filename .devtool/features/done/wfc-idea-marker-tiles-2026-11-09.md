@@ -3,12 +3,12 @@ id: "wfc-idea-marker-tiles-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: null
-epic: "WFC 1.2"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T22:55:00.000Z"
-modified: "2026-11-10T09:29:58.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:29:58.000Z"
-labels: ["idea", "editor"]
+labels: ["v1.2.0", "idea", "editor"]
 order: "b2"
 ---
 # WFC 2.0: Marker tiles that place scenes

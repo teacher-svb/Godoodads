@@ -3,12 +3,12 @@ id: "wfc-idea-perf-regression-2026-11-10"
 status: "done"
 priority: "low"
 assignee: null
-epic: "WFC 1.2"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T09:19:39.000Z"
-modified: "2026-11-10T09:29:58.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:29:58.000Z"
-labels: ["core", "performance"]
+labels: ["v1.2.0", "core", "performance", "idea"]
 order: "b10"
 ---
 # WFC 1.2: Recover synthetic performance

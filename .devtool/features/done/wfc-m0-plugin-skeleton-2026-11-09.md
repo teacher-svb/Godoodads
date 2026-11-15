@@ -3,12 +3,12 @@ id: "wfc-m0-plugin-skeleton-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M0 Foundations"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:27:25.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T16:27:25.000Z"
-labels: ["setup"]
+labels: ["v1.0.0", "m0", "editor"]
 order: "a0"
 ---
 # WFC M0: Addon skeleton

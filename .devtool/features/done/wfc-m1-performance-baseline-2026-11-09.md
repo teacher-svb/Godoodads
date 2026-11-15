@@ -3,12 +3,12 @@ id: "wfc-m1-performance-baseline-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC M1 Core solver"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T16:45:45.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T16:45:45.000Z"
-labels: ["core", "performance"]
+labels: ["v1.0.0", "m1", "core", "performance"]
 order: "a8"
 ---
 # WFC M1: Performance baseline

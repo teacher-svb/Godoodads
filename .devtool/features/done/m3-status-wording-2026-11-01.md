@@ -3,12 +3,12 @@ id: "m3-status-wording-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M3 Mask texture"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:18:44.000Z"
-modified: "2026-11-01T01:21:12.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:21:12.000Z"
-labels: ["ui", "core"]
+labels: ["v1.0.0", "m3", "ui", "core"]
 order: "a6"
 ---
 # Status line mixes instances and attempts

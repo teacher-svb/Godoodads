@@ -3,12 +3,12 @@ id: "m5-legacy-builtin-item-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M5 Polish"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T02:04:49.000Z"
-modified: "2026-11-01T02:10:16.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T02:10:16.000Z"
-labels: ["ui", "common"]
+labels: ["v1.0.0", "m5", "ui", "common"]
 order: "a8"
 ---
 # Rename the built-in item to "Populate Surface (Godot)"

@@ -3,12 +3,12 @@ id: "wfc-solver-sandbox-2026-11-09"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "WFC M1 Core solver"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:50:59.000Z"
-modified: "2026-11-09T16:52:15.884Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T16:52:15.884Z"
-labels: ["demo"]
+labels: ["v1.0.0", "m1", "demo"]
 order: "Zy"
 ---
 # WFC: Solver sandbox scene

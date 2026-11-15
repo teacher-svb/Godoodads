@@ -3,12 +3,12 @@ id: "m4-normal-map-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M4 Normal map"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T01:22:52.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T01:22:52.000Z"
-labels: ["core", "planning"]
+labels: ["v1.0.0", "m4", "core", "planning"]
 order: "a4"
 ---
 # M4: Normal map (scope; split up at milestone start)

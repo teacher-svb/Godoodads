@@ -3,12 +3,12 @@ id: "wfc-1-2-height-weights-2026-11-10"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC 1.2"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T09:29:58.000Z"
-modified: "2026-11-10T09:38:50.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T09:38:50.000Z"
-labels: ["core", "editor"]
+labels: ["v1.2.0", "core", "editor"]
 order: "d3"
 ---
 # WFC 1.2: Per-height weights

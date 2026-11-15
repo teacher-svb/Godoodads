@@ -3,12 +3,12 @@ id: "m1-multimesh-writer-2026-11-01"
 status: "done"
 priority: "medium"
 assignee: "claude"
-epic: "M1 Parity port"
+epic: "MultiMesh Scatter"
 dueDate: null
 created: "2026-11-01T01:00:00.000Z"
-modified: "2026-11-01T00:17:46.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-01T00:17:46.000Z"
-labels: ["core", "editor"]
+labels: ["v1.0.0", "m1", "adapters"]
 order: "aG"
 ---
 # M1: MultiMesh writer (buffer, preserve flags, append/replace)

@@ -3,12 +3,12 @@ id: "wfc-m5-animated-solve-2026-11-09"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC M5 Animation and release"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-09T16:23:51.000Z"
-modified: "2026-11-09T22:44:10.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-09T22:44:10.000Z"
-labels: ["editor"]
+labels: ["v1.0.0", "m5", "editor"]
 order: "aR"
 ---
 # WFC M5: Animated solve

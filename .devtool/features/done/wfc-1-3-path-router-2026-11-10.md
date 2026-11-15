@@ -3,12 +3,12 @@ id: "wfc-1-3-path-router-2026-11-10"
 status: "done"
 priority: "high"
 assignee: "claude"
-epic: "WFC 1.3"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T13:00:00.000Z"
-modified: "2026-11-10T13:52:17.000Z"
+modified: "2026-11-15T12:32:30.000Z"
 completedAt: "2026-11-10T13:52:17.000Z"
-labels: ["core"]
+labels: ["v1.3.0", "core"]
 order: "e2"
 ---
 # WFC 1.3: Guided paths: router and solver restrictions

@@ -3,12 +3,12 @@ id: "wfc-1-4-acceptance-2026-11-10"
 status: "todo"
 priority: "medium"
 assignee: "claude"
-epic: "WFC 1.4"
+epic: "WFC Generator"
 dueDate: null
 created: "2026-11-10T15:00:00.000Z"
-modified: "2026-11-10T15:00:00.000Z"
+modified: "2026-11-15T12:39:43.000Z"
 completedAt: null
-labels: ["acceptance"]
+labels: ["v1.4.0", "acceptance"]
 order: "fB"
 ---
 # WFC 1.4: 1.4 acceptance pass
