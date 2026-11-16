@@ -104,7 +104,7 @@ public partial class CurveSettings : Resource
         [ShapeKind.BankedTurn] = new[] { nameof(Radius), nameof(Angle), nameof(Bank), nameof(Bend) },
         [ShapeKind.RoundedRectangle] = new[] { nameof(Width), nameof(Depth), nameof(CornerRadius), nameof(Bend) },
         [ShapeKind.Polygon] = new[] { nameof(Sides), nameof(Radius), nameof(CornerRadius), nameof(Bend) },
-        [ShapeKind.FigureEight] = new[] { nameof(Length), nameof(Width), nameof(Bend) },
+        [ShapeKind.FigureEight] = new[] { nameof(Radius), nameof(Bend) },
     };
 
     private static readonly HashSet<string> ShapeSettings = UsedSettings.Values.SelectMany(n => n).ToHashSet();

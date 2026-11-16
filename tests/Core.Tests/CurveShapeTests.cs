@@ -87,11 +87,27 @@ public class CurveShapeTests
             case ShapeKind.BankedTurn:
                 return Exact(ShapeKind.Arc, p);
             case ShapeKind.FigureEight:
+            {
+                // By arc length: 135° round the first lobe, a straight, 270° round the second, a straight, 135°.
+                double r = p.Radius, arc1 = 0.75 * Math.PI * r, line = 2 * r, arc2 = 1.5 * Math.PI * r, total = 2 * arc1 + 2 * line + arc2;
+                var axis = Vector3.Right.Cross(b);
+                Vector3 L(double u, double w) => new Vector3((float)u, 0, 0) + b * (float)w;
+                var c1 = L(0, r); var c2 = L(0, r * (1 + 2 * Math.Sqrt(2)));
+                double d = r / Math.Sqrt(2);
                 return t =>
                 {
-                    double a = t * Math.Tau;
-                    return new Vector3(p.Width * (float)(Math.Sin(a) * Math.Cos(a)), 0, 0) + b * (p.Length / 2 * (float)(1 - Math.Cos(a)));
+                    double s = t * total;
+                    if (s <= arc1) return c1 + L(0, -r).Rotated(axis, (float)(s / r));
+                    s -= arc1;
+                    if (s <= line) return (c1 + L(d, d)).Lerp(c2 + L(-d, -d), (float)(s / line));
+                    s -= line;
+                    if (s <= arc2) return c2 + L(-d, -d).Rotated(axis, (float)(-s / r));
+                    s -= arc2;
+                    if (s <= line) return (c2 + L(d, -d)).Lerp(c1 + L(-d, d), (float)(s / line));
+                    s -= line;
+                    return c1 + L(-d, d).Rotated(axis, (float)(s / r));
                 };
+            }
             case ShapeKind.Spiral:
             case ShapeKind.Corkscrew:
             {
@@ -178,7 +194,8 @@ public class CurveShapeTests
             (ShapeKind.BankedTurn, new()),
             (ShapeKind.BankedTurn, new() { Radius = 20, AngleDegrees = 180, BankDegrees = -45, Bend = Bend.Left }),
             (ShapeKind.FigureEight, new()),
-            (ShapeKind.FigureEight, new() { Length = 20, Width = 4, Bend = Bend.Up }),
+            (ShapeKind.FigureEight, new() { Radius = 1.5f, Bend = Bend.Up }),
+            (ShapeKind.FigureEight, new() { Radius = 30, Bend = Bend.Left }),
         };
         return cases.Select((c, i) => new object[] { i, c.Kind, c.P });
     }
@@ -462,5 +479,22 @@ public class CurveShapeTests
         var centre = new Vector3(0, 0, p.CornerRadius);
         foreach (var sample in CurveSamples(curve))
             Assert.InRange(sample.DistanceTo(centre), p.CornerRadius * (1 - 3e-4f), p.CornerRadius * (1 + 3e-4f));
+    }
+
+    [Fact]
+    public void A_figure_eight_has_round_lobes_crossing_at_right_angles()
+    {
+        var curve = Build(ShapeKind.FigureEight, new() { Radius = 4 });
+        Assert.True(curve.Closed);
+        Assert.InRange(curve.Length, (3 * Math.PI + 4) * 4 * 0.999, (3 * Math.PI + 4) * 4 * 1.001);
+        // The two straights cross in the middle, at 90°.
+        var straights = Enumerable.Range(0, curve.SegmentCount).Where(s => curve.Points[s].Out == Vector3.Zero && curve.Points[(s + 1) % curve.Points.Count].In == Vector3.Zero).ToList();
+        Assert.Equal(2, straights.Count);
+        var one = curve.Sample(straights[0], 1) - curve.Sample(straights[0], 0);
+        var two = curve.Sample(straights[1], 1) - curve.Sample(straights[1], 0);
+        Assert.Equal(90f, Mathf.RadToDeg(one.AngleTo(two)), 2);
+        Assert.True(curve.Sample(straights[0], 0.5f).IsEqualApprox(new Vector3(0, 0, 4 * (1 + Mathf.Sqrt2))));
+        Assert.True(curve.Points.All(q => q.Up.IsEqualApprox(Vector3.Up)));
+        Assert.Equal(2 * 4 * (1 + Mathf.Sqrt2), Shapes.Size(ShapeKind.FigureEight, new() { Radius = 4 }), 4);
     }
 }

@@ -118,7 +118,9 @@ public partial class BuildCurvesReview : Node
         root.AddChild(track);
         track.AddChild(ChannelAlong(TrackColour));
 
-        var cart = new PathFollow3D { Name = "Cart", RotationMode = PathFollow3D.RotationModeEnum.Oriented, TiltEnabled = true, Loop = true };
+        var cart = new PathFollow3D { Name = "Cart", RotationMode = PathFollow3D.RotationModeEnum.Xyz, TiltEnabled = true, Loop = true };
+        // XYZ, not Oriented: Oriented builds its rotation from world up (looking_at) and only adds tilt, so it
+        // flips in loops; XYZ keeps the curve's own up vectors and adds tilt, as CurveWriter computes it.
         track.AddChild(cart);
         var body = new MeshInstance3D
         {

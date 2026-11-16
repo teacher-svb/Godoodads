@@ -224,10 +224,10 @@ albedo_color = Color(0.25, 0.55, 0.85, 1)
 [sub_resource type="Curve3D" id="Curve3D_17ooe"]
 closed = true
 _data = {
-"points": PackedVector3Array(-1.3089969, 0, 1.603059e-16, 1.3089969, 0, 0, 0, 0, 0, -0.92560065, 0, -0.25046572, 0.92560065, 0, 0.25046572, 3.535534, 0, 0.38060233, -8.015295e-17, 0, -0.46280032, 8.015295e-17, 0, 0.46280032, 5, 0, 1.4644661, 0.92560065, 0, -0.60467774, -0.92560065, 0, 0.60467774, 3.535534, 0, 3.0865827, 1.3089969, 0, -0.65449846, -1.3089969, 0, 0.65449846, 6.123234e-16, 0, 5, 0.92560065, 0, -0.60467774, -0.92560065, 0, 0.60467774, -3.535534, 0, 6.913417, 2.4045884e-16, 0, -0.46280032, -2.4045884e-16, 0, 0.46280032, -5, 0, 8.535534, -0.92560065, 0, -0.25046572, 0.92560065, 0, 0.25046572, -3.535534, 0, 9.619397, -1.3089969, 0, -8.015295e-17, 1.3089969, 0, 8.015295e-17, -1.2246468e-15, 0, 10, -0.92560065, 0, 0.25046572, 0.92560065, 0, -0.25046572, 3.535534, 0, 9.619397, -4.0076475e-16, 0, 0.46280032, 4.0076475e-16, 0, -0.46280032, 5, 0, 8.535534, 0.92560065, 0, 0.60467774, -0.92560065, 0, -0.60467774, 3.535534, 0, 6.913417, 1.3089969, 0, 0.65449846, -1.3089969, 0, -0.65449846, 1.83697e-15, 0, 5, 0.92560065, 0, 0.60467774, -0.92560065, 0, -0.60467774, -3.535534, 0, 3.0865827, 5.610706e-16, 0, 0.46280032, -5.610706e-16, 0, -0.46280032, -5, 0, 1.4644661, -0.92560065, 0, 0.25046572, 0.92560065, 0, -0.25046572, -3.535534, 0, 0.38060233),
-"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07)
+"points": PackedVector3Array(-2.0223114, 0, 0, 2.0223114, 0, 0, 0, 0, 0, -0.7739051, 0, -1.8683721, 0.7739051, 0, 1.8683721, 4.6193976, 0, 3.086583, 1.4299902, 0, -1.4299902, 0, 0, 0, 3.535534, 0, 8.535534, 0, 0, 0, -1.9526215, 0, 1.9526215, -3.535534, 0, 15.606602, -1.9526217, 0, -1.9526213, 1.9526217, 0, 1.9526213, -3.5355337, 0, 22.67767, -1.9526213, 0, 1.9526217, 1.9526213, 0, -1.9526217, 3.5355341, 0, 22.67767, 1.9526215, 0, 1.9526215, 0, 0, 0, 3.535534, 0, 15.606602, 0, 0, 0, -1.4299902, 0, -1.4299902, -3.535534, 0, 8.535534, -0.77390504, 0, 1.8683721, 0.77390504, 0, -1.8683721, -4.6193976, 0, 3.0865831),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
 }
-point_count = 16
+point_count = 9
 
 [sub_resource type="Resource" id="Resource_rnjib"]
 script = ExtResource("1_csetu")
@@ -281,26 +281,26 @@ _data = {
 &"run": SubResource("Animation_d0vu4")
 }
 
-[node name="M2Review" type="Node3D" unique_id=1614618296]
+[node name="M2Review" type="Node3D" unique_id=1238326320]
 
-[node name="Sun" type="DirectionalLight3D" parent="." unique_id=903659719]
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1390954774]
 transform = Transform3D(0.8660254, 0.38302222, -0.32139382, 0, 0.64278764, 0.76604444, 0.5, -0.66341394, 0.5566704, 0, 0, 0)
 shadow_enabled = true
 
-[node name="Environment" type="WorldEnvironment" parent="." unique_id=899714596]
+[node name="Environment" type="WorldEnvironment" parent="." unique_id=1577067932]
 environment = SubResource("Environment_2ihdn")
 
-[node name="Camera" type="Camera3D" parent="." unique_id=2000142473]
+[node name="Camera" type="Camera3D" parent="." unique_id=8407266]
 transform = Transform3D(1, 0, 0, 0, 0.81915206, 0.57357645, 0, -0.57357645, 0.81915206, 60, 90, 150)
 current = true
 
-[node name="Shapes" type="Node3D" parent="." unique_id=1266737336]
+[node name="Shapes" type="Node3D" parent="." unique_id=229465549]
 
-[node name="Straight" type="Path3D" parent="Shapes" unique_id=1642353569]
+[node name="Straight" type="Path3D" parent="Shapes" unique_id=2008919041]
 curve = SubResource("Curve3D_170xb")
 metadata/godoodads_curve_settings = SubResource("Resource_tkdx6")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Straight" unique_id=1483977921]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Straight" unique_id=599374294]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -315,18 +315,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_h5bhs")
 
-[node name="Name" type="Label3D" parent="Shapes/Straight" unique_id=368731763]
+[node name="Name" type="Label3D" parent="Shapes/Straight" unique_id=1024332268]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Straight"
 font_size = 96
 
-[node name="Parabolic" type="Path3D" parent="Shapes" unique_id=1963387036]
+[node name="Parabolic" type="Path3D" parent="Shapes" unique_id=449990303]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 0)
 curve = SubResource("Curve3D_cubix")
 metadata/godoodads_curve_settings = SubResource("Resource_tooop")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Parabolic" unique_id=1696123324]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Parabolic" unique_id=1710118636]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -341,18 +341,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_kpu82")
 
-[node name="Name" type="Label3D" parent="Shapes/Parabolic" unique_id=2120695395]
+[node name="Name" type="Label3D" parent="Shapes/Parabolic" unique_id=1863957258]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Parabolic"
 font_size = 96
 
-[node name="Circle" type="Path3D" parent="Shapes" unique_id=1029641580]
+[node name="Circle" type="Path3D" parent="Shapes" unique_id=832983743]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 0)
 curve = SubResource("Curve3D_njofb")
 metadata/godoodads_curve_settings = SubResource("Resource_eqb1i")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Circle" unique_id=761512494]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Circle" unique_id=1033355876]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -367,18 +367,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_78oj6")
 
-[node name="Name" type="Label3D" parent="Shapes/Circle" unique_id=133908985]
+[node name="Name" type="Label3D" parent="Shapes/Circle" unique_id=405239833]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Circle"
 font_size = 96
 
-[node name="Semicircle" type="Path3D" parent="Shapes" unique_id=947061340]
+[node name="Semicircle" type="Path3D" parent="Shapes" unique_id=827520321]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 0)
 curve = SubResource("Curve3D_3ckx8")
 metadata/godoodads_curve_settings = SubResource("Resource_5pd7y")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Semicircle" unique_id=751004555]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Semicircle" unique_id=886438637]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -393,18 +393,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_1k273")
 
-[node name="Name" type="Label3D" parent="Shapes/Semicircle" unique_id=1880894628]
+[node name="Name" type="Label3D" parent="Shapes/Semicircle" unique_id=42056310]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Semicircle"
 font_size = 96
 
-[node name="Loop" type="Path3D" parent="Shapes" unique_id=957899985]
+[node name="Loop" type="Path3D" parent="Shapes" unique_id=1237062598]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 40)
 curve = SubResource("Curve3D_fw1o6")
 metadata/godoodads_curve_settings = SubResource("Resource_tsysu")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Loop" unique_id=1041443034]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Loop" unique_id=2141371248]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -419,18 +419,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_1s1e3")
 
-[node name="Name" type="Label3D" parent="Shapes/Loop" unique_id=997063554]
+[node name="Name" type="Label3D" parent="Shapes/Loop" unique_id=2026408627]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Loop"
 font_size = 96
 
-[node name="Wave" type="Path3D" parent="Shapes" unique_id=1230039417]
+[node name="Wave" type="Path3D" parent="Shapes" unique_id=1754359607]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 40)
 curve = SubResource("Curve3D_6d5ms")
 metadata/godoodads_curve_settings = SubResource("Resource_obodp")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Wave" unique_id=1824863087]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Wave" unique_id=1030031849]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -445,18 +445,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_qahxx")
 
-[node name="Name" type="Label3D" parent="Shapes/Wave" unique_id=250764782]
+[node name="Name" type="Label3D" parent="Shapes/Wave" unique_id=1716378011]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Wave"
 font_size = 96
 
-[node name="Spiral" type="Path3D" parent="Shapes" unique_id=1519148995]
+[node name="Spiral" type="Path3D" parent="Shapes" unique_id=317731273]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 40)
 curve = SubResource("Curve3D_q6shh")
 metadata/godoodads_curve_settings = SubResource("Resource_4ekgj")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Spiral" unique_id=1543123057]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Spiral" unique_id=962848299]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -471,18 +471,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_3cvf1")
 
-[node name="Name" type="Label3D" parent="Shapes/Spiral" unique_id=1706182433]
+[node name="Name" type="Label3D" parent="Shapes/Spiral" unique_id=1049768382]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Spiral"
 font_size = 96
 
-[node name="Arc" type="Path3D" parent="Shapes" unique_id=2082478667]
+[node name="Arc" type="Path3D" parent="Shapes" unique_id=1201815782]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 40)
 curve = SubResource("Curve3D_5fxv0")
 metadata/godoodads_curve_settings = SubResource("Resource_tx80g")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Arc" unique_id=1559878707]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Arc" unique_id=595381941]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -497,18 +497,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_528u1")
 
-[node name="Name" type="Label3D" parent="Shapes/Arc" unique_id=231734854]
+[node name="Name" type="Label3D" parent="Shapes/Arc" unique_id=689973388]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Arc"
 font_size = 96
 
-[node name="Sbend" type="Path3D" parent="Shapes" unique_id=1687030746]
+[node name="Sbend" type="Path3D" parent="Shapes" unique_id=1810683016]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 80)
 curve = SubResource("Curve3D_20jkr")
 metadata/godoodads_curve_settings = SubResource("Resource_7dh47")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Sbend" unique_id=70794767]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Sbend" unique_id=1033980064]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -523,18 +523,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_avrh6")
 
-[node name="Name" type="Label3D" parent="Shapes/Sbend" unique_id=1490380444]
+[node name="Name" type="Label3D" parent="Shapes/Sbend" unique_id=1362843863]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "S-bend"
 font_size = 96
 
-[node name="Ellipse" type="Path3D" parent="Shapes" unique_id=585702390]
+[node name="Ellipse" type="Path3D" parent="Shapes" unique_id=2085229463]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 80)
 curve = SubResource("Curve3D_ftdsy")
 metadata/godoodads_curve_settings = SubResource("Resource_5rwch")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Ellipse" unique_id=936329395]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Ellipse" unique_id=465426362]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -549,18 +549,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_s7jeg")
 
-[node name="Name" type="Label3D" parent="Shapes/Ellipse" unique_id=686020853]
+[node name="Name" type="Label3D" parent="Shapes/Ellipse" unique_id=1890745682]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Ellipse"
 font_size = 96
 
-[node name="Helix" type="Path3D" parent="Shapes" unique_id=680379230]
+[node name="Helix" type="Path3D" parent="Shapes" unique_id=952308409]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 80)
 curve = SubResource("Curve3D_dnjas")
 metadata/godoodads_curve_settings = SubResource("Resource_eiom1")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Helix" unique_id=283338579]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Helix" unique_id=1530575960]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -575,18 +575,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_oharb")
 
-[node name="Name" type="Label3D" parent="Shapes/Helix" unique_id=2117497428]
+[node name="Name" type="Label3D" parent="Shapes/Helix" unique_id=271301337]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Helix"
 font_size = 96
 
-[node name="Corkscrew" type="Path3D" parent="Shapes" unique_id=1250825438]
+[node name="Corkscrew" type="Path3D" parent="Shapes" unique_id=1270958303]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 80)
 curve = SubResource("Curve3D_qgrih")
 metadata/godoodads_curve_settings = SubResource("Resource_ot834")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Corkscrew" unique_id=410978693]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Corkscrew" unique_id=1212508376]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -601,18 +601,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_r1gc0")
 
-[node name="Name" type="Label3D" parent="Shapes/Corkscrew" unique_id=440929367]
+[node name="Name" type="Label3D" parent="Shapes/Corkscrew" unique_id=1605605572]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Corkscrew"
 font_size = 96
 
-[node name="BankedTurn" type="Path3D" parent="Shapes" unique_id=1998923349]
+[node name="BankedTurn" type="Path3D" parent="Shapes" unique_id=672272367]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 120)
 curve = SubResource("Curve3D_3myf5")
 metadata/godoodads_curve_settings = SubResource("Resource_dhbq3")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/BankedTurn" unique_id=1857638642]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/BankedTurn" unique_id=707389818]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -627,18 +627,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_6x2ki")
 
-[node name="Name" type="Label3D" parent="Shapes/BankedTurn" unique_id=257561749]
+[node name="Name" type="Label3D" parent="Shapes/BankedTurn" unique_id=1125681427]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Banked Turn"
 font_size = 96
 
-[node name="RoundedRectangle" type="Path3D" parent="Shapes" unique_id=2015793842]
+[node name="RoundedRectangle" type="Path3D" parent="Shapes" unique_id=1134104129]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 120)
 curve = SubResource("Curve3D_6hyyg")
 metadata/godoodads_curve_settings = SubResource("Resource_whgc3")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/RoundedRectangle" unique_id=1890401200]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/RoundedRectangle" unique_id=964647591]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -653,18 +653,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_8f6kv")
 
-[node name="Name" type="Label3D" parent="Shapes/RoundedRectangle" unique_id=1617580975]
+[node name="Name" type="Label3D" parent="Shapes/RoundedRectangle" unique_id=77348284]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Rounded Rectangle"
 font_size = 96
 
-[node name="Polygon" type="Path3D" parent="Shapes" unique_id=656812595]
+[node name="Polygon" type="Path3D" parent="Shapes" unique_id=1424309461]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 120)
 curve = SubResource("Curve3D_0i4ha")
 metadata/godoodads_curve_settings = SubResource("Resource_e4i0q")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/Polygon" unique_id=667661885]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/Polygon" unique_id=1774506756]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -679,18 +679,18 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_42cuk")
 
-[node name="Name" type="Label3D" parent="Shapes/Polygon" unique_id=697259118]
+[node name="Name" type="Label3D" parent="Shapes/Polygon" unique_id=489024972]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Polygon"
 font_size = 96
 
-[node name="FigureEight" type="Path3D" parent="Shapes" unique_id=1446989657]
+[node name="FigureEight" type="Path3D" parent="Shapes" unique_id=557093765]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 120)
 curve = SubResource("Curve3D_17ooe")
 metadata/godoodads_curve_settings = SubResource("Resource_rnjib")
 
-[node name="Channel" type="CSGPolygon3D" parent="Shapes/FigureEight" unique_id=637013268]
+[node name="Channel" type="CSGPolygon3D" parent="Shapes/FigureEight" unique_id=341272199]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -705,17 +705,17 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_oj2yt")
 
-[node name="Name" type="Label3D" parent="Shapes/FigureEight" unique_id=1506853825]
+[node name="Name" type="Label3D" parent="Shapes/FigureEight" unique_id=118121795]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8, 0)
 billboard = 1
 text = "Figure Eight"
 font_size = 96
 
-[node name="Track" type="Path3D" parent="." unique_id=473131352]
+[node name="Track" type="Path3D" parent="." unique_id=170025487]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -90)
 curve = SubResource("Curve3D_qsjgr")
 
-[node name="Channel" type="CSGPolygon3D" parent="Track" unique_id=613557553]
+[node name="Channel" type="CSGPolygon3D" parent="Track" unique_id=1345340046]
 polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
 mode = 2
 path_node = NodePath("..")
@@ -730,17 +730,16 @@ path_u_distance = 1.0
 path_joined = false
 material = SubResource("StandardMaterial3D_72hf6")
 
-[node name="Cart" type="PathFollow3D" parent="Track" unique_id=966422186]
-rotation_mode = 4
+[node name="Cart" type="PathFollow3D" parent="Track" unique_id=33448396]
 
-[node name="Body" type="MeshInstance3D" parent="Track/Cart" unique_id=1334486897]
+[node name="Body" type="MeshInstance3D" parent="Track/Cart" unique_id=6298127]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
 mesh = SubResource("BoxMesh_icx00")
 
-[node name="UpFin" type="MeshInstance3D" parent="Track/Cart/Body" unique_id=1372909242]
+[node name="UpFin" type="MeshInstance3D" parent="Track/Cart/Body" unique_id=479824324]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
 mesh = SubResource("BoxMesh_0j1gn")
 
-[node name="CartPlayer" type="AnimationPlayer" parent="." unique_id=364278237]
+[node name="CartPlayer" type="AnimationPlayer" parent="." unique_id=1260186961]
 libraries/ = SubResource("AnimationLibrary_0j0pc")
 autoplay = &"run"

@@ -92,7 +92,7 @@ public static class Shapes
             ShapeKind.BankedTurn => BankedTurn(p),
             ShapeKind.RoundedRectangle => RoundedRectangle(p),
             ShapeKind.Polygon => Polygon(p),
-            ShapeKind.FigureEight => FigureEight(p, Tolerance(kind, p)),
+            ShapeKind.FigureEight => FigureEight(p),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
         return new ShapeResult(curve, null);
@@ -114,7 +114,7 @@ public static class Shapes
         ShapeKind.BankedTurn => 2 * p.Radius,
         ShapeKind.RoundedRectangle => Math.Max(p.Width, p.Depth),
         ShapeKind.Polygon => 2 * p.Radius,
-        ShapeKind.FigureEight => Math.Max(p.Length, p.Width),
+        ShapeKind.FigureEight => 2 * p.Radius * (1 + MathF.Sqrt(2)),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
@@ -161,8 +161,7 @@ public static class Shapes
             ShapeKind.Polygon when Bad(p.Radius) => "Radius must be above 0.",
             ShapeKind.Polygon when !float.IsFinite(p.CornerRadius) || p.CornerRadius < 0 || p.CornerRadius > p.Radius * MathF.Cos(MathF.PI / p.Sides) * (1 + 1e-6f) =>
                 "Corner Radius must be from 0 up to the polygon's inner radius (Radius × cos(180° / Sides)).",
-            ShapeKind.FigureEight when Bad(p.Length) => "Length must be above 0.",
-            ShapeKind.FigureEight when Bad(p.Width) => "Width must be above 0.",
+            ShapeKind.FigureEight when Bad(p.Radius) => "Radius must be above 0.",
             _ => null,
         };
     }
@@ -402,27 +401,29 @@ public static class Shapes
     }
 
     /// <summary>
-    /// A flat figure eight (lemniscate of Gerono): Length toward Bend, Width along +X, crossing itself
-    /// at its middle. It starts at the tip of one lobe heading +X:
-    /// (W·sin t·cos t, L/2·(1 − cos t)). The wanted up is the frame's up, or across the tangent in a
-    /// vertical plane.
+    /// A flat figure eight, like a track: two round lobes of Radius joined by straights that cross
+    /// at 90° in the middle (board decision at the M2 review). It starts at the tip of the first
+    /// lobe heading +X, goes 135° round it toward Bend, straight across, 270° round the second lobe
+    /// the other way, straight back and 135° home. Its length toward Bend is 2R·(1 + √2). The wanted
+    /// up turns with the heading, so a figure eight in a vertical plane keeps it across the track.
     /// </summary>
-    private static ShapeCurve FigureEight(ShapeParameters p, float tolerance)
+    private static ShapeCurve FigureEight(ShapeParameters p)
     {
         var b = p.Bend.Local();
         var axis = Vector3.Right.Cross(b);
-        float w = p.Width, l = p.Length / 2;
-        Vector3 Position(double t) => new Vector3(w * (float)(Math.Sin(t) * Math.Cos(t)), 0, 0) + b * (l * (float)(1 - Math.Cos(t)));
-        Vector3 Derivative(double t) => new Vector3(w * (float)Math.Cos(2 * t), 0, 0) + b * (l * (float)Math.Sin(t));
-        Vector3 Up(double t)
-        {
-            if (p.Bend is Bend.Left or Bend.Right)
-                return LocalUp;
-            var across = axis.Cross(Derivative(t)).Normalized();
-            return b.Y > 0 ? across : -across;
-        }
+        float r = p.Radius, diagonal = r / Mathf.Sqrt2;
+        Vector3 Local(float u, float w) => new Vector3(u, 0, 0) + b * w;
+        var first = Local(0, r);
+        var second = Local(0, r * (1 + 2 * Mathf.Sqrt2));
         var builder = new CurveBuilder();
-        Fitter.Add(builder, Position, Derivative, 0, Math.Tau, tolerance, Up, minSegments: 8);
+        Vector3 Up(float heading) => LocalUp.Rotated(axis, heading);
+        float quarterAndHalf = 3 * Mathf.Pi / 4;
+        Arcs.Add(builder, first, Local(0, -r), axis, quarterAndHalf, Vector3.Zero, (_, f) => Up(quarterAndHalf * f));
+        builder.LineTo(second + Local(-diagonal, -diagonal), Up(quarterAndHalf));
+        Arcs.Add(builder, second, Local(-diagonal, -diagonal), axis, -3 * Mathf.Pi / 2, Vector3.Zero,
+            (_, f) => Up(quarterAndHalf - 3 * Mathf.Pi / 2 * f));
+        builder.LineTo(first + Local(-diagonal, diagonal), Up(-quarterAndHalf));
+        Arcs.Add(builder, first, Local(-diagonal, diagonal), axis, quarterAndHalf, Vector3.Zero, (_, f) => Up(-quarterAndHalf * (1 - f)));
         return builder.Build(true);
     }
 
