@@ -68,14 +68,14 @@ Every shape is built in a local frame: **forward** (the direction the path start
 | Arcs and bends | Arc | Radius, Angle, Bend | Angle above 0 and up to 360° (Bend picks the side); 360° is closed. Circle and Semicircle are its presets |
 | Arcs and bends | S-bend | Length, Offset, Bend | Two equal opposite arcs, angle 2·atan(Offset/Length) each; ends Offset to the side, parallel to the start |
 | Arcs and bends | Ellipse | Radius Forward, Radius Side, Bend | Closed |
-| Track pieces | Helix | Radius, Turns, Rise, Bend | Turns around the up axis while climbing (Rise may be negative) |
+| Track pieces | Helix | Radius, Turns, Rise, Bend | Turns around the up axis (Bend Left or Right) while climbing Rise at a constant slope (decided 2026-11-16); a negative Rise descends |
 | Track pieces | Corkscrew | Length, Radius, Turns | Spiral path (with its eased ends) plus tilt, so the track rolls with the turn (§4.4) |
-| Track pieces | Banked Turn | Radius, Angle, Bank, Bend | Horizontal arc with tilt that eases from 0 to Bank and back (§4.4) |
+| Track pieces | Banked Turn | Radius, Angle, Bank, Bend | Horizontal arc whose bank eases in over the first quarter of the turn, holds at Bank and eases out over the last quarter (decided 2026-11-16, §4.4) |
 | Closed outlines | Rounded Rectangle | Width, Depth, Corner Radius, Bend | Closed; Corner Radius 0 gives sharp corners |
 | Closed outlines | Polygon | Sides, Radius, Corner Radius, Bend | Closed regular polygon |
-| Closed outlines | Figure Eight | Length, Width, Bend | Closed, crossing at its middle |
+| Closed outlines | Figure Eight | Length, Width, Bend | Closed and flat, crossing itself at its middle (decided 2026-11-16). Starts at the tip of one lobe heading along Direction; Length runs toward Bend, Width along Direction |
 
-- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. The exception is Parabolic, a true jump arc that leaves at the slope its Height gives (decided 2026-11-16; Wave with 1 cycle gives a smooth hump). Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
+- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. The exceptions are Parabolic, a true jump arc that leaves at the slope its Height gives (decided 2026-11-16; Wave with 1 cycle gives a smooth hump), and Helix, which climbs at a constant slope from its first point (decided 2026-11-16). Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
 - Arcs are split into pieces of at most 90°, with handle length 4/3·tan(θ/4)·r. Other shapes use the fewest cubic segments that keep the curve within **0.1 % of the shape's size** of the exact shape (§8).
 - Ranges in the inspector stop impossible values (radius > 0, sides ≥ 3, cycles ≥ 1, corner radius ≤ half the shorter side).
 
@@ -177,4 +177,4 @@ Results from card `crv-m0-verify-engine` (2026-11-16), checked headless with God
 
 ### 11. Board decisions (2026-11-16)
 
-Planning: Path3D only; curve math written fresh; dialog with settings stored on the node; Replace or Append; the seven existing shapes plus arcs and bends, track pieces and closed outlines; Start, Direction and Up placement; tilt written per point; `BezierPathGenerator/` kept out of the build and deleted in M5. After the draft: the preview overlay is in v1 (§5), and the menu item is "Generate Curve (GDDS)". The brief was approved for M0, and M0 was approved the same day. Before M1: Wave starts and ends level, Spiral and Corkscrew ease in and out, and Loop's Length runs from start to end (§4.1).
+Planning: Path3D only; curve math written fresh; dialog with settings stored on the node; Replace or Append; the seven existing shapes plus arcs and bends, track pieces and closed outlines; Start, Direction and Up placement; tilt written per point; `BezierPathGenerator/` kept out of the build and deleted in M5. After the draft: the preview overlay is in v1 (§5), and the menu item is "Generate Curve (GDDS)". The brief was approved for M0, and M0 was approved the same day. Before M1: Wave starts and ends level, Spiral and Corkscrew ease in and out, and Loop's Length runs from start to end (§4.1). During M1: Parabolic leaves at its slope. M1 approved the same day. Before M2: Helix climbs at a constant slope, Banked Turn ramps, holds and ramps its bank, and Figure Eight is always flat.
