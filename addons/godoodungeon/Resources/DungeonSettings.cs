@@ -65,7 +65,8 @@ public partial class DungeonSettings : Resource
         set
         {
             _roomTileSet = value;
-            NotifyPropertyListChanged(); // the Door Tile list follows the room tile set
+            MigrateDoorTile();
+            NotifyPropertyListChanged(); // the Door list follows the room tile set
         }
     }
 
@@ -75,8 +76,53 @@ public partial class DungeonSettings : Resource
     /// <summary>Socket name of the faces that point out of a room: tiles use name+, the room bounds name- (brief §4.2).</summary>
     [Export] public string RoomEdgeSocket { get; set; } = "outside";
 
-    /// <summary>The room tile placed at every door. Its one face with the edge socket is the door's outside.</summary>
-    [Export] public int DoorTile { get; set; } = -1;
+    /// <summary>The value of <see cref="Door"/> when no door tile is chosen. Empty tiles cannot be doors.</summary>
+    public const int NoDoor = WfcTile.EmptyItem;
+
+    private int _door = NoDoor;
+
+    /// <summary>
+    /// The room tile placed at every door, by its MeshLibrary item, so it stays the same tile when
+    /// tiles are added, removed or reordered. Its one face with the edge socket is the door's outside.
+    /// </summary>
+    [Export]
+    public int Door
+    {
+        get => _door;
+        set
+        {
+            _door = value;
+            _legacyDoorTile = -1;   // a Door set after a 1.0.0 DoorTile wins
+        }
+    }
+
+    private int _legacyDoorTile = -1;
+
+    /// <summary>
+    /// 1.0.0's door: a position in the room tile set's Tiles. Not exported, so it is never saved, but
+    /// Godot sets it by name both when it reads a 1.0.0 file and when an assembly reload restores an
+    /// instance that the 1.0.0 class loaded. Declared after <see cref="Door"/>: a reload restores in
+    /// declaration order, and the -1 it saves for a 1.0.1 instance then leaves Door alone.
+    /// </summary>
+    private int DoorTile
+    {
+        get => -1;
+        set
+        {
+            _legacyDoorTile = value;
+            MigrateDoorTile();
+        }
+    }
+
+    /// <summary>Turns a 1.0.0 tile position into the tile's item, once the room tile set is known.</summary>
+    private void MigrateDoorTile()
+    {
+        if (_legacyDoorTile < 0 || _roomTileSet?.Tiles == null)
+            return;
+        var tiles = _roomTileSet.Tiles;
+        _door = _legacyDoorTile < tiles.Count && tiles[_legacyDoorTile] is { } tile ? tile.Item : NoDoor;
+        _legacyDoorTile = -1;
+    }
 
     /// <summary>Socket name of the corridor tiles' open faces.</summary>
     [Export] public string PathSocket { get; set; } = "path";
@@ -91,6 +137,17 @@ public partial class DungeonSettings : Resource
 
     /// <summary>X and Z hold the dungeon; Y holds the room layers, from the bottom. Corridors use the bottom layer.</summary>
     [Export] public Vector3I BoundsSize { get; set; } = new(48, 1, 48);
+
+    /// <summary>
+    /// Sets the bounds. The do and undo target of a handle drag, so undo changes these settings and
+    /// not the ones the dialog has open by then.
+    /// </summary>
+    public void SetBounds(Vector3I origin, Vector3I size)
+    {
+        BoundsOrigin = origin;
+        BoundsSize = size;
+        NotifyPropertyListChanged();
+    }
 
     // ---- Layout --------------------------------------------------------------------------
 
@@ -206,13 +263,15 @@ public partial class DungeonSettings : Resource
     {
         string name = property["name"].AsString();
         var usage = (PropertyUsageFlags)property["usage"].AsInt64();
-        if (name == PropertyName.DoorTile)
+        if (name == PropertyName.Door)
         {
-            // A drop-down of the room tile set's tiles, stored as the tile's index.
+            // A drop-down of the room tile set's tiles, stored as the tile's MeshLibrary item.
             var names = TileNames(_roomTileSet);
+            var choices = names.Select((n, i) => (Name: n, Item: _roomTileSet.Tiles[i]?.Item ?? NoDoor))
+                .Where(c => c.Item != NoDoor).Select(c => $"{c.Name.Replace(",", " ").Replace(":", " ")}:{c.Item}").ToList();
             property["hint"] = (long)PropertyHint.Enum;
-            property["hint_string"] = names.Length == 0 ? "Choose a Room Tile Set first:-1"
-                : "(none):-1," + string.Join(",", names.Select((n, i) => $"{n.Replace(",", " ").Replace(":", " ")}:{i}"));
+            property["hint_string"] = names.Length == 0 ? $"Choose a Room Tile Set first:{NoDoor}"
+                : $"(none):{NoDoor}" + string.Concat(choices.Select(c => "," + c));
         }
         else if (name == PropertyName.Seed && RandomiseSeed)
             property["usage"] = (long)(usage | PropertyUsageFlags.ReadOnly);

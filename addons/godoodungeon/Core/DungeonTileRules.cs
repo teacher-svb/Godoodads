@@ -44,15 +44,15 @@ public static class DungeonTileRules
 
         // Door tile: exactly one horizontal face with the edge socket.
         if (doorTile < 0 || doorTile >= roomNames.Count)
-            errors.Add("Choose the Door Tile from the room tile set.");
+            errors.Add("Choose the Door tile from the room tile set.");
         else if (edge.Length > 0)
         {
             int variant = room.FindVariant(doorTile, 0);
             int outward = variant < 0 ? 0 : HorizontalDirections.Count(d => IsEdgeOut(room.Variants[variant].Sockets[d], edge));
             if (outward != 1)
-                errors.Add($"The Door Tile '{roomNames[doorTile]}' needs exactly one horizontal face with '{edge}+' (its outside), but has {outward}.");
+                errors.Add($"The Door tile '{roomNames[doorTile]}' needs exactly one horizontal face with '{edge}+' (its outside), but has {outward}.");
             else if (variant >= 0 && room.VariantWeights[variant] > 0)
-                warnings.Add($"The Door Tile '{roomNames[doorTile]}' has a weight above 0, so the solver may also put doors in walls by itself. Weight 0 leaves doors to the layout.");
+                warnings.Add($"The Door tile '{roomNames[doorTile]}' has a weight above 0, so the solver may also put doors in walls by itself. Weight 0 leaves doors to the layout.");
         }
 
         // Corridor tile set: path socket, straights both ways, and an empty variant.
@@ -81,7 +81,8 @@ public static class DungeonTileRules
             }
             int empty = EmptyVariant(corridor, path);
             if (empty < 0)
-                errors.Add($"The corridor tile set has no tile without '{path}' faces and with a weight above 0, so the space between corridors cannot be filled. Add an empty tile.");
+                errors.Add($"The corridor tile set has no tile without '{path}' faces and with a weight above 0, so the space between corridors cannot be filled. Add an empty tile. "
+                    + "Corridors are one layer high, so a height curve counts at its bottom.");
         }
         return (errors, warnings);
     }
@@ -115,13 +116,16 @@ public static class DungeonTileRules
         return -1;
     }
 
-    /// <summary>The corridor variant without path faces and with the highest weight (the empty tile), or -1.</summary>
+    /// <summary>
+    /// The corridor variant without path faces and with the highest weight (the empty tile), or -1.
+    /// The corridor grid has one layer, so a height curve counts at its bottom (height 0), as in the solver.
+    /// </summary>
     public static int EmptyVariant(CompiledTileSet corridor, string pathSocket)
     {
         int best = -1;
         for (int variant = 0; variant < corridor.Variants.Count; variant++)
-            if (PathFaces(corridor.Variants[variant], pathSocket.Trim()) == 0 && corridor.VariantWeights[variant] > 0
-                && (best < 0 || corridor.VariantWeights[variant] > corridor.VariantWeights[best]))
+            if (PathFaces(corridor.Variants[variant], pathSocket.Trim()) == 0 && corridor.WeightAt(variant, 0) > 0
+                && (best < 0 || corridor.WeightAt(variant, 0) > corridor.WeightAt(best, 0)))
                 best = variant;
         return best;
     }

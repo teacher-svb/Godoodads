@@ -10,7 +10,7 @@ script = ExtResource("4_rpg6t")
 Seed = 2026
 RoomTileSet = ExtResource("3_x2i2j")
 CorridorTileSet = ExtResource("2_0yflc")
-DoorTile = 4
+Door = 4
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_wgak3"]
 

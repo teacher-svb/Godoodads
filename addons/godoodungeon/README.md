@@ -49,7 +49,7 @@ Close Godot, delete `addons/godoodungeon/`, then extract the new zip as above, a
 1. Make a **room tile set** and a **corridor tile set**: two `WfcTileSet` resources that use the GridMap's `MeshLibrary` (see [Tile sets](#tile-sets)). The demo tile sets in `demo/godoodungeon/assets/` are a good start.
 2. Select the `GridMap`.
 3. In the 3D viewport toolbar, open **GridMap → Generate Dungeon (GDDS)**. GDDS is short for Godoodads, the suite this addon belongs to.
-4. Choose the **Room Tile Set**, the **Corridor Tile Set** and the **Door Tile**, and set the **Bounds**, which are drawn in violet in the viewport. Drag the handles on its faces to resize it.
+4. Choose the **Room Tile Set**, the **Corridor Tile Set** and the **Door**, and set the **Bounds**, which are drawn in violet in the viewport. Drag the handles on its faces to resize it.
 5. Tick **Preview Layout** to see the rooms (cyan), doors (yellow) and corridors (green) that Generate will make, and tune the numbers or the seed until you like the layout.
 6. Press **Generate**.
 
@@ -85,7 +85,7 @@ A tile can carry a **Marker** scene (a light, a spawn point), as in godoowave. A
 | Room Tile Set | | Floors, walls, corners, doors and props. |
 | Corridor Tile Set | | Corridor pieces and an empty tile. |
 | Room Edge Socket | `outside` | The socket name of faces that point out of a room. Tiles use `outside+`; the room bounds supply `outside-`. |
-| Door Tile | | The room tile placed at every door. |
+| Door | | The room tile placed at every door. It is stored by its MeshLibrary item, so it stays the same tile when you add, remove or reorder tiles. |
 | Path Socket | `path` | The socket of the corridor tiles' open faces. |
 | Path Wander | 0.3 | 0 gives the most direct corridors, 1 the most meandering. |
 | **Bounds** | | |
@@ -119,7 +119,7 @@ Both tile sets are ordinary `WfcTileSet` resources ([godoowave](../godoowave/REA
 
 - The room edge socket must be **one-sided**: tiles use `outside+`, and the room bounds supply `outside-`. A plain `outside` would let two walls meet inside a room.
 - Add `outside-` to the room tile set's **External Sockets**. The room bounds supply it, so the tile set check and the preview then count it as a partner instead of marking every wall face red.
-- The **Door Tile** has exactly one `outside+` face, its outside. Give it weight 0, so only the layout places doors.
+- The **Door** tile has exactly one `outside+` face, its outside. Give it weight 0, so only the layout places doors.
 - Walls, corners and doors need four rotations.
 
 ### Corridor tile set

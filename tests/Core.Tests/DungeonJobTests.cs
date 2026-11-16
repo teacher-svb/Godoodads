@@ -104,7 +104,7 @@ public class DungeonJobTests
 
         var cornerDoor = new DungeonJob(Request(1) with { DoorTile = DungeonTestTiles.Corner }).RunNow();
         Assert.Equal(DungeonStatus.Invalid, cornerDoor.Status);
-        Assert.StartsWith("The Door Tile has no rotation", Assert.Single(cornerDoor.Errors));
+        Assert.StartsWith("The Door tile has no rotation", Assert.Single(cornerDoor.Errors));
     }
 
     [Fact]

@@ -25,7 +25,7 @@ public partial class BuildM2Dungeon : Node
         {
             RoomTileSet = room,
             CorridorTileSet = corridor,
-            DoorTile = room.Tiles.Select((t, i) => (t, i)).Single(p => p.t.ResourceName == "Door").i,
+            Door = room.Tiles.Single(t => t.ResourceName == "Door").Item,
             BoundsSize = new Vector3I(48, 1, 48),
             RoomCount = 12,
             Seed = 2026,

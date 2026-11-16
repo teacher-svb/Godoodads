@@ -46,6 +46,6 @@ public static class DungeonEngineTiles
         corridor.Tiles.Add(Tile("T", 8, new[] { "path", "path", "v", "v", "path", "x" }, TileRotation.FourWay));
         corridor.Tiles.Add(Tile("Cross", 9, new[] { "path", "path", "v", "v", "path", "path" }));
         corridor.Tiles.Add(Tile("Empty", WfcTile.EmptyItem, new[] { "x", "x", "v", "v", "x", "x" }, TileRotation.None, 20));
-        return new DungeonSettings { RoomTileSet = room, CorridorTileSet = corridor, DoorTile = Door };
+        return new DungeonSettings { RoomTileSet = room, CorridorTileSet = corridor, Door = room.Tiles[Door].Item };
     }
 }

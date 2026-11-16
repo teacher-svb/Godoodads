@@ -103,7 +103,7 @@ public class DungeonRoomInputTests
     {
         var input = SolveInputs.Room(OneRoom(East), 0, 1, DungeonTestTiles.Room(), DungeonTestTiles.Corner, DungeonTestTiles.Edge);
         Assert.False(input.IsValid);
-        Assert.Equal("The Door Tile has no rotation whose 'outside+' face points +X, so the door at (110, 3, -12) cannot be placed.", input.Error);
+        Assert.Equal("The Door tile has no rotation whose 'outside+' face points +X, so the door at (110, 3, -12) cannot be placed.", input.Error);
         Assert.Equal(-1, DungeonTileRules.DoorVariant(DungeonTestTiles.Room(), DungeonTestTiles.Corner, DungeonTestTiles.Edge, Directions.PosX));
     }
 

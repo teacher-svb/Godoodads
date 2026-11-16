@@ -216,4 +216,66 @@ public class DungeonGridMapTests
         AssertThat(replaced.Contains(untagged)).IsFalse();
         map.Free();
     }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Deleting_a_tile_before_the_door_tile_keeps_the_door()
+    {
+        // 1.0.0 stored the door's position, so deleting an earlier tile pointed it at the next tile.
+        var settings = Settings(3);
+        var tiles = settings.RoomTileSet.Tiles;
+        tiles.Insert(1, DungeonEngineTiles.Tile("Rubble", HandItem, new[] { "in", "in", "v", "v", "in", "in" }));
+        settings.Door = DungeonEngineTiles.Door;   // as chosen in the drop-down
+        AssertThat(DungeonTileSets.Check(settings).DoorTile).IsEqual(4);
+
+        tiles.RemoveAt(1);
+        AssertThat(DungeonTileSets.Check(settings).DoorTile).IsEqual(3);
+        var map = Map(settings);
+        var generated = Generate(map, settings);
+        AssertThat(generated.Result.Layout.Doors.Count > 0).IsTrue();
+        foreach (var door in generated.Result.Layout.Doors)
+            AssertThat(map.GetCellItem(generated.Result.Layout.GridCell(door.Cell))).IsEqual(DungeonEngineTiles.Door);
+        map.Free();
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void The_fingerprint_changes_when_cells_or_the_record_change()
+    {
+        // Preview Layout recomputes when the fingerprint changes (1.0.1).
+        var map = new GridMap();
+        map.SetCellItem(new Vector3I(1, 0, 1), HandItem, 0);
+        map.SetCellItem(new Vector3I(5, 0, 2), HandItem, 0);
+        long start = DungeonGridMap.Fingerprint(map);
+        AssertThat(DungeonGridMap.Fingerprint(map)).IsEqual(start);
+
+        var fingerprints = new HashSet<long> { start };
+        void Changed()
+        {
+            long now = DungeonGridMap.Fingerprint(map);
+            AssertThat(fingerprints.Contains(now)).IsFalse();
+            fingerprints.Add(now);
+        }
+        map.SetCellItem(new Vector3I(3, 0, 3), HandItem, 0);   // painted
+        Changed();
+        map.SetCellItem(new Vector3I(3, 0, 3), HandItem, 10);  // rotated
+        Changed();
+        map.SetCellItem(new Vector3I(3, 0, 3), HandItem + 1, 10);   // another item
+        Changed();
+        map.SetCellItem(new Vector3I(1, 0, 1), (int)GridMap.InvalidCellItem);   // erased
+        Changed();
+        var record = new GeneratedRecord();
+        record.Set(new Vector3I(5, 0, 2), HandItem, 0);
+        DungeonGridMap.WriteRecord(map, record.Encode());   // the cell now counts as generated
+        Changed();
+
+        // The same cells painted in another order give the same fingerprint.
+        var other = new GridMap();
+        other.SetCellItem(new Vector3I(5, 0, 2), HandItem, 0);
+        other.SetCellItem(new Vector3I(3, 0, 3), HandItem + 1, 10);
+        DungeonGridMap.WriteRecord(other, record.Encode());
+        AssertThat(DungeonGridMap.Fingerprint(other)).IsEqual(DungeonGridMap.Fingerprint(map));
+        map.Free();
+        other.Free();
+    }
 }
