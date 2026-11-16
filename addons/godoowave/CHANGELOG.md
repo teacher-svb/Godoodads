@@ -2,6 +2,12 @@
 
 All notable changes to godoowave (called WFC Generator up to 1.3.4) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.1] - 2026-11-16
+
+### Fixed
+- **The GridMap stores the settings a generation started with.** The dialog stays editable while a solve runs, and a Seed typed or a box handle dragged during the animation ended up in the stored settings, so reopening the dialog no longer reproduced the result. Changes made during a solve now only apply to the next Generate. While a solve runs, the box outlines show the bounds being solved and the handles are hidden.
+- **Undoing a box resize changes the settings that were resized.** After dragging the bounds or pin box of one GridMap and opening the dialog for another, Ctrl+Z moved the second GridMap's box to the first one's old position.
+
 ## [1.4.0] - 2026-11-15
 
 ### Changed

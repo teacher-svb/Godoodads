@@ -30,10 +30,12 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     /// One running solve. Never survives an assembly reload, which cancels it first. While the solve
     /// is shown, Preview holds the original item and orientation of every cell written so far.
     /// PreviousSeed is the seed before Randomise Seed picked this run's, or null when it was not on.
+    /// Settings is a copy taken at Generate: the dialog stays editable while the solve runs, and
+    /// the GridMap stores the settings that made the result.
     /// </summary>
     private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin,
         long Seed, int CellsPerFrame, Stopwatch Clock, List<string> Warnings, Dictionary<int, (int Item, int Orientation)> Preview,
-        GeneratedRecord Record, long? PreviousSeed);
+        GeneratedRecord Record, long? PreviousSeed, WfcSettings Settings);
 
     private SpatialMenuHook _menu;
     private DialogInspectorFilterPlugin _dialogFilter;
@@ -292,7 +294,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         var paths = _settings.HasPaths ? new PathRequest(_settings.PathSocket, _settings.PathWander, origin) : null;
         var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0, paths);
         _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, cellsPerFrame, Stopwatch.StartNew(),
-            binding.Warnings(), new Dictionary<int, (int, int)>(), record, previousSeed);
+            binding.Warnings(), new Dictionary<int, (int, int)>(), record, previousSeed, (WfcSettings)_settings.Duplicate());
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         job.Start();
@@ -470,7 +472,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     private void Commit(ActiveRun run, SolveResult result, double seconds)
     {
         var changes = GridMapCells.Diff(_target, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells);
-        var stored = (WfcSettings)_settings.Duplicate();
+        var stored = run.Settings;
         byte[] written = GridMapCells.RecordAfter(run.Record, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells).Encode();
 
         var undoRedo = GetUndoRedo();
@@ -746,12 +748,14 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             return;
         }
 
-        var origin = _settings.BoundsOrigin;
-        var size = _settings.BoundsSize;
+        var shown = Shown;
+        var origin = shown.BoundsOrigin;
+        var size = shown.BoundsSize;
         var half = _target.CellSize * 0.5f;
         var min = _target.MapToLocal(origin) - half;
         var max = _target.MapToLocal(origin + size - Vector3I.One) + half;
-        string state = $"{min}|{max}|{_settings.PinOrigin}|{_settings.PinSize}|{string.Join(";", _failedCells)}";
+        // The run flag is part of the state, so the handles hide when a solve starts and come back after.
+        string state = $"{min}|{max}|{shown.PinOrigin}|{shown.PinSize}|{_run != null}|{string.Join(";", _failedCells)}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -781,9 +785,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         mesh.ClearSurfaces();
         mesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
         AddBox(mesh, min, max, BoundsColour);
-        if (_settings.HasPinBox)
+        if (shown.HasPinBox)
         {
-            var pin = BoundsGizmoPlugin.Extents(_target, _settings.PinOrigin, _settings.PinSize);
+            var pin = BoundsGizmoPlugin.Extents(_target, shown.PinOrigin, shown.PinSize);
             AddBox(mesh, pin.Min, pin.Max, PinColour);
         }
         foreach (var cell in _failedCells)
@@ -819,6 +823,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         var map = HandleTarget;
         if (map == null || !EditorInterface.Singleton.GetSelection().GetSelectedNodes().Contains(map))
         {
+            // A drag that loses its target (deselected, dialog closed, solve started) is cancelled.
+            if (_dragHandle >= 0)
+                CommitBox(_dragHandle / Directions.Count, _dragOrigin, _dragSize, true);
             _dragHandle = -1;
             return pass;
         }
@@ -885,37 +892,37 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         return best;
     }
 
-    /// <summary>The GridMap whose boxes have handles: the dialog's target while the dialog is open.</summary>
-    public GridMap HandleTarget => _dialog != null && _dialog.Visible && TargetIsAlive ? _target : null;
+    /// <summary>
+    /// The GridMap whose boxes have handles: the dialog's target while the dialog is open and no
+    /// solve runs. During a solve the boxes cannot be dragged, as Pin and Clear Bounds cannot run.
+    /// </summary>
+    public GridMap HandleTarget => _dialog != null && _dialog.Visible && _run == null && TargetIsAlive ? _target : null;
 
     public int BoxCount => 2;
 
-    public bool BoxVisible(int box) => box == 0 || _settings.HasPinBox;
+    public bool BoxVisible(int box) => box == 0 || Shown.HasPinBox;
 
-    public Vector3I BoxOrigin(int box) => box == 0 ? _settings.BoundsOrigin : _settings.PinOrigin;
+    public Vector3I BoxOrigin(int box) => Shown.BoxOrigin(box);
 
-    public Vector3I BoxSize(int box) => box == 0 ? _settings.BoundsSize : _settings.PinSize;
+    public Vector3I BoxSize(int box) => Shown.BoxSize(box);
+
+    /// <summary>The settings the overlay and handles show: the running solve's copy, otherwise the dialog's.</summary>
+    private WfcSettings Shown => _run?.Settings ?? _settings;
 
     /// <summary>Changes a box while its handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
-    public void SetBox(int box, Vector3I origin, Vector3I size)
+    private void SetBox(int box, Vector3I origin, Vector3I size)
     {
-        if (box == 0)
-        {
-            _settings.BoundsOrigin = origin;
-            _settings.BoundsSize = size;
-        }
-        else
-        {
-            _settings.PinOrigin = origin;
-            _settings.PinSize = size;
-        }
-        _settings.NotifyPropertyListChanged();
+        _settings.SetBox(box, origin, size);
         if (TargetIsAlive)
             _target.UpdateGizmos();
     }
 
-    /// <summary>Ends a handle drag: puts the box back when cancelled, otherwise adds one undo step.</summary>
-    public void CommitBox(int box, Vector3I origin, Vector3I size, bool cancel)
+    /// <summary>
+    /// Ends a handle drag: puts the box back when cancelled, otherwise adds one undo step. The step
+    /// targets the settings resource that was dragged, so undoing it after the dialog was opened for
+    /// another GridMap leaves that GridMap's settings alone.
+    /// </summary>
+    private void CommitBox(int box, Vector3I origin, Vector3I size, bool cancel)
     {
         if (cancel)
         {
@@ -924,8 +931,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         }
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(box == 0 ? "Resize WFC Bounds" : "Resize WFC Pin Box");
-        undoRedo.AddDoMethod(this, MethodName.SetBox, box, BoxOrigin(box), BoxSize(box));
-        undoRedo.AddUndoMethod(this, MethodName.SetBox, box, origin, size);
+        undoRedo.AddDoMethod(_settings, WfcSettings.MethodName.SetBox, box, _settings.BoxOrigin(box), _settings.BoxSize(box));
+        undoRedo.AddUndoMethod(_settings, WfcSettings.MethodName.SetBox, box, origin, size);
         undoRedo.CommitAction(false);
     }
 

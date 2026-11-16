@@ -83,6 +83,31 @@ public partial class WfcSettings : Resource
         NotifyPropertyListChanged();
     }
 
+    /// <summary>The origin of a box as the viewport handles number them: 0 is the bounds, 1 the pin box.</summary>
+    public Vector3I BoxOrigin(int box) => box == 0 ? BoundsOrigin : PinOrigin;
+
+    /// <summary>The size of a box: 0 is the bounds, 1 the pin box.</summary>
+    public Vector3I BoxSize(int box) => box == 0 ? BoundsSize : PinSize;
+
+    /// <summary>
+    /// Sets a box: 0 is the bounds, 1 the pin box. The do and undo target of a handle drag, so
+    /// undo changes these settings and not the ones the dialog has open by then.
+    /// </summary>
+    public void SetBox(int box, Vector3I origin, Vector3I size)
+    {
+        if (box == 0)
+        {
+            BoundsOrigin = origin;
+            BoundsSize = size;
+        }
+        else
+        {
+            PinOrigin = origin;
+            PinSize = size;
+        }
+        NotifyPropertyListChanged();
+    }
+
     private void RequestPin() => EmitSignal(SignalName.PinRequested, true);
 
     private void RequestUnpin() => EmitSignal(SignalName.PinRequested, false);
