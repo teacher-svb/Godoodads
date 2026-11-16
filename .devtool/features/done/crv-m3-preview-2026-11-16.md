@@ -1,13 +1,13 @@
 ---
 id: "crv-m3-preview-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T14:30:17.000Z"
-modified: "2026-11-16T14:33:18.000Z"
-completedAt: null
+modified: "2026-11-16T14:38:18.000Z"
+completedAt: "2026-11-16T14:38:18.000Z"
 labels: ["v1.0.0", "m3", "editor", "ui"]
 order: "d2"
 ---
@@ -35,3 +35,6 @@ While the dialog is open, draw the shape where Generate would put it (brief §5,
 2. In Append mode the preview starts at the curve's end. After Generate it shows the next piece from the new end.
 3. Invalid settings (for example Direction = Up) clear the preview, and the status says why.
 4. Close the dialog: the preview disappears. Save the scene: it is not saved.
+
+## Board check (2026-11-16)
+All manual checks passed.

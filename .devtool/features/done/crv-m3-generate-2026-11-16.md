@@ -1,13 +1,13 @@
 ---
 id: "crv-m3-generate-2026-11-16"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T14:30:17.000Z"
-modified: "2026-11-16T14:33:18.000Z"
-completedAt: null
+modified: "2026-11-16T14:38:18.000Z"
+completedAt: "2026-11-16T14:38:18.000Z"
 labels: ["v1.0.0", "m3", "editor", "ui"]
 order: "d1"
 ---
@@ -43,3 +43,6 @@ The dialog's Generate (brief §4.3, §5).
 4. Choose Circle in Append mode: Generate reports that closed shapes cannot be appended, and nothing changes.
 5. Close and reopen the dialog on the path: it shows the last settings used.
 6. Give two Path3Ds the same Curve3D resource, Generate on one: the other keeps its curve.
+
+## Board check (2026-11-16)
+All manual checks passed.
