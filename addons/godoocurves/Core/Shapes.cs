@@ -13,6 +13,9 @@ public enum ShapeKind
     Loop,
     Wave,
     Spiral,
+    Arc,
+    SBend,
+    Ellipse,
 }
 
 /// <summary>
@@ -29,6 +32,10 @@ public sealed class ShapeParameters
     public float Amplitude { get; init; } = 3;
     public int Cycles { get; init; } = 2;
     public float Turns { get; init; } = 2;
+    public float AngleDegrees { get; init; } = 90;
+    public float Offset { get; init; } = 3;
+    public float RadiusForward { get; init; } = 6;
+    public float RadiusSide { get; init; } = 3;
     public Bend Bend { get; init; } = Bend.Right;
 }
 
@@ -65,6 +72,9 @@ public static class Shapes
             ShapeKind.Loop => Loop(p),
             ShapeKind.Wave => Wave(p, Tolerance(kind, p)),
             ShapeKind.Spiral => Spiral(p, Tolerance(kind, p)),
+            ShapeKind.Arc => Arc(p.Radius, Mathf.DegToRad(p.AngleDegrees), p.Bend, closed: p.AngleDegrees >= 360),
+            ShapeKind.SBend => SBend(p),
+            ShapeKind.Ellipse => Ellipse(p, Tolerance(kind, p)),
             _ => throw new ArgumentOutOfRangeException(nameof(kind)),
         };
         return new ShapeResult(curve, null);
@@ -79,6 +89,9 @@ public static class Shapes
         ShapeKind.Loop => Math.Max(Math.Max(p.Length, p.Diameter), Math.Abs(p.SideShift)),
         ShapeKind.Wave => Math.Max(p.Length, p.Amplitude),
         ShapeKind.Spiral => Math.Max(p.Length, 2 * p.Radius),
+        ShapeKind.Arc => 2 * p.Radius,
+        ShapeKind.SBend => Math.Max(p.Length, p.Offset),
+        ShapeKind.Ellipse => 2 * Math.Max(p.RadiusForward, p.RadiusSide),
         _ => throw new ArgumentOutOfRangeException(nameof(kind)),
     };
 
@@ -101,6 +114,12 @@ public static class Shapes
             ShapeKind.Spiral when Bad(p.Length) => "Length must be above 0.",
             ShapeKind.Spiral when Bad(p.Radius) => "Radius must be above 0.",
             ShapeKind.Spiral when Bad(p.Turns) => "Turns must be above 0.",
+            ShapeKind.Arc when Bad(p.Radius) => "Radius must be above 0.",
+            ShapeKind.Arc when !float.IsFinite(p.AngleDegrees) || p.AngleDegrees <= 0 || p.AngleDegrees > 360 => "Angle must be above 0 and at most 360 degrees. Use Bend for the side.",
+            ShapeKind.SBend when Bad(p.Length) => "Length must be above 0.",
+            ShapeKind.SBend when Bad(p.Offset) => "Offset must be above 0. Use Bend for the side.",
+            ShapeKind.Ellipse when Bad(p.RadiusForward) => "Radius Forward must be above 0.",
+            ShapeKind.Ellipse when Bad(p.RadiusSide) => "Radius Side must be above 0.",
             _ => null,
         };
     }
@@ -196,5 +215,47 @@ public static class Shapes
         var builder = new CurveBuilder();
         Fitter.Add(builder, Position, Derivative, 0, total, tolerance, _ => LocalUp, minSegments: (int)Math.Ceiling(4 * p.Turns));
         return builder.Build(false);
+    }
+
+    /// <summary>
+    /// Two equal arcs that turn toward Bend and back: the end is Length along and Offset to the
+    /// side, heading +X again. Angle θ = 2·atan(Offset/Length), radius Length/(2·sin θ).
+    /// </summary>
+    private static ShapeCurve SBend(ShapeParameters p)
+    {
+        var b = p.Bend.Local();
+        var axis = Vector3.Right.Cross(b);
+        float angle = 2 * Mathf.Atan(p.Offset / p.Length), radius = p.Length / (2 * Mathf.Sin(angle));
+        var middle = new Vector3(p.Length / 2, 0, 0) + b * (p.Offset / 2);
+        var end = new Vector3(p.Length, 0, 0) + b * p.Offset;
+        var builder = new CurveBuilder();
+        Arcs.Add(builder, b * radius, -b * radius, axis, angle, Vector3.Zero, (_, f) => LocalUp.Rotated(axis, angle * f));
+        var second = end - b * radius;
+        Arcs.Add(builder, second, middle - second, axis, -angle, Vector3.Zero, (_, f) => LocalUp.Rotated(axis, angle * (1 - f)));
+        return builder.Build(false);
+    }
+
+    /// <summary>
+    /// A closed ellipse with semi-axes Radius Forward (along +X) and Radius Side (toward Bend),
+    /// starting at its point nearest the origin side: (a·sin φ, c·(1 − cos φ)). The wanted up turns
+    /// with the tangent, as on a circle.
+    /// </summary>
+    private static ShapeCurve Ellipse(ShapeParameters p, float tolerance)
+    {
+        var b = p.Bend.Local();
+        var axis = Vector3.Right.Cross(b);
+        float a = p.RadiusForward, c = p.RadiusSide;
+        Vector3 Position(double phi) => new Vector3(a * (float)Math.Sin(phi), 0, 0) + b * (c * (float)(1 - Math.Cos(phi)));
+        Vector3 Derivative(double phi) => new Vector3(a * (float)Math.Cos(phi), 0, 0) + b * (c * (float)Math.Sin(phi));
+        Vector3 Up(double phi)
+        {
+            // The tangent's angle from +X, unwrapped: it stays within 90° of phi for positive radii.
+            double raw = Math.Atan2(c * Math.Sin(phi), a * Math.Cos(phi));
+            double turned = raw + Math.Tau * Math.Round((phi - raw) / Math.Tau);
+            return LocalUp.Rotated(axis, (float)turned);
+        }
+        var builder = new CurveBuilder();
+        Fitter.Add(builder, Position, Derivative, 0, Math.Tau, tolerance, Up, minSegments: 4);
+        return builder.Build(true);
     }
 }

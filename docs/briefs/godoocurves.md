@@ -65,8 +65,8 @@ Every shape is built in a local frame: **forward** (the direction the path start
 | Existing | Loop | Length, Diameter, Side Shift | Length is the distance along Direction from start to end (decided 2026-11-16), with the vertical loop in the middle and straight run-in and run-out. Side Shift moves the exit sideways, so the track does not cross itself (0 allowed) |
 | Existing | Wave | Length, Amplitude, Cycles, Bend | Crests of height Amplitude above the start line (a 1 − cos wave), starting and ending level along Direction (decided 2026-11-16). Bend Up gives hills, Left or Right a slalom to one side |
 | Existing | Spiral | Length, Radius, Turns | Helix around the forward axis. The radius grows from 0 over the first half turn and shrinks back over the last, so it starts and ends on the axis heading along Direction (decided 2026-11-16) |
-| Arcs and bends | Arc | Radius, Angle, Bend | Any angle; Circle and Semicircle are its presets |
-| Arcs and bends | S-bend | Length, Offset, Bend | Two opposite arcs; ends parallel to the start |
+| Arcs and bends | Arc | Radius, Angle, Bend | Angle above 0 and up to 360° (Bend picks the side); 360° is closed. Circle and Semicircle are its presets |
+| Arcs and bends | S-bend | Length, Offset, Bend | Two equal opposite arcs, angle 2·atan(Offset/Length) each; ends Offset to the side, parallel to the start |
 | Arcs and bends | Ellipse | Radius Forward, Radius Side, Bend | Closed |
 | Track pieces | Helix | Radius, Turns, Rise, Bend | Turns around the up axis while climbing (Rise may be negative) |
 | Track pieces | Corkscrew | Length, Radius, Turns | Spiral path (with its eased ends) plus tilt, so the track rolls with the turn (§4.4) |

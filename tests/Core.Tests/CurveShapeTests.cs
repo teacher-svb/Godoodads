@@ -60,6 +60,24 @@ public class CurveShapeTests
                     double x = t * p.Length;
                     return new Vector3((float)x, 0, 0) + b * (float)(p.Amplitude / 2 * (1 - Math.Cos(Math.Tau * p.Cycles * x / p.Length)));
                 };
+            case ShapeKind.Arc:
+            {
+                var axis = Vector3.Right.Cross(b);
+                double angle = Mathf.DegToRad(p.AngleDegrees);
+                return t => b * p.Radius + (-b * p.Radius).Rotated(axis, (float)(t * angle));
+            }
+            case ShapeKind.SBend:
+            {
+                var axis = Vector3.Right.Cross(b);
+                double angle = 2 * Math.Atan(p.Offset / p.Length), r = p.Length / (2 * Math.Sin(angle));
+                var end = new Vector3(p.Length, 0, 0) + b * p.Offset;
+                return t => t <= 0.5
+                    ? b * (float)r + (-b * (float)r).Rotated(axis, (float)(2 * t * angle))
+                    : end - b * (float)r + (b * (float)r).Rotated(axis, (float)((2 - 2 * t) * angle));
+            }
+            case ShapeKind.Ellipse:
+                return t => new Vector3(p.RadiusForward * (float)Math.Sin(t * Math.Tau), 0, 0)
+                    + b * (p.RadiusSide * (float)(1 - Math.Cos(t * Math.Tau)));
             case ShapeKind.Spiral:
             {
                 double total = Math.Tau * p.Turns, ease = Math.Min(Math.PI, total / 2);
@@ -128,6 +146,16 @@ public class CurveShapeTests
             (ShapeKind.Spiral, new()),
             (ShapeKind.Spiral, new() { Length = 30, Radius = 4, Turns = 5 }),
             (ShapeKind.Spiral, new() { Length = 5, Radius = 1, Turns = 0.75f }),
+            (ShapeKind.Arc, new()),
+            (ShapeKind.Arc, new() { Radius = 12, AngleDegrees = 30, Bend = Bend.Up }),
+            (ShapeKind.Arc, new() { Radius = 2, AngleDegrees = 250, Bend = Bend.Left }),
+            (ShapeKind.Arc, new() { Radius = 3, AngleDegrees = 360 }),
+            (ShapeKind.SBend, new()),
+            (ShapeKind.SBend, new() { Length = 40, Offset = 1, Bend = Bend.Left }),
+            (ShapeKind.SBend, new() { Length = 4, Offset = 10, Bend = Bend.Up }),
+            (ShapeKind.Ellipse, new()),
+            (ShapeKind.Ellipse, new() { RadiusForward = 1, RadiusSide = 9, Bend = Bend.Down }),
+            (ShapeKind.Ellipse, new() { RadiusForward = 20, RadiusSide = 0.5f, Bend = Bend.Left }),
         };
         return cases.Select((c, i) => new object[] { i, c.Kind, c.P });
     }
@@ -153,7 +181,7 @@ public class CurveShapeTests
         var expected = kind == ShapeKind.Parabolic ? new Vector3(p.Length, 4 * p.Height, 0).Normalized() : Vector3.Right;
         Assert.True(AngleDegrees(curve.StartTangent, expected) < 0.01f, $"case {index}: starts {curve.StartTangent}");
         Assert.True(curve.Points[0].Position.IsEqualApprox(Vector3.Zero));
-        if (kind is ShapeKind.Loop or ShapeKind.Wave or ShapeKind.Spiral or ShapeKind.Straight)
+        if (kind is ShapeKind.Loop or ShapeKind.Wave or ShapeKind.Spiral or ShapeKind.Straight or ShapeKind.SBend)
             Assert.True(AngleDegrees(curve.EndTangent, Vector3.Right) < 0.01f, $"case {index}: ends {curve.EndTangent}");
     }
 
@@ -176,8 +204,34 @@ public class CurveShapeTests
         Assert.True(circle.Closed);
         Assert.Equal(4, circle.Points.Count);
         Assert.True(circle.Sample(circle.SegmentCount - 1, 1).IsEqualApprox(circle.Points[0].Position));
-        foreach (var kind in Enum.GetValues<ShapeKind>().Where(k => k != ShapeKind.Circle))
+        foreach (var kind in Enum.GetValues<ShapeKind>().Where(k => k is not (ShapeKind.Circle or ShapeKind.Ellipse)))
             Assert.False(Build(kind, new()).Closed);
+        Assert.True(Build(ShapeKind.Ellipse, new()).Closed);
+        Assert.True(Build(ShapeKind.Arc, new() { AngleDegrees = 360 }).Closed);
+    }
+
+    [Theory]
+    [InlineData(10f, 3f, Bend.Right)]
+    [InlineData(40f, 1f, Bend.Left)]
+    [InlineData(4f, 10f, Bend.Up)]
+    public void An_s_bend_ends_parallel_to_its_start_offset_to_the_side(float length, float offset, Bend bend)
+    {
+        var curve = Build(ShapeKind.SBend, new() { Length = length, Offset = offset, Bend = bend });
+        Assert.True(curve.Points[^1].Position.DistanceTo(new Vector3(length, 0, 0) + bend.Local() * offset) < 1e-4f * length);
+        Assert.True(AngleDegrees(curve.EndTangent, Vector3.Right) < 0.01f);
+        Assert.True(curve.Points[^1].Up.IsEqualApprox(Vector3.Up));
+    }
+
+    [Fact]
+    public void An_ellipse_with_equal_radii_is_the_circle()
+    {
+        var ellipse = Build(ShapeKind.Ellipse, new() { RadiusForward = 4, RadiusSide = 4, Bend = Bend.Up });
+        var circle = new ShapeParameters { Radius = 4, Bend = Bend.Up };
+        Assert.True(Deviation(ellipse, Exact(ShapeKind.Circle, circle)) <= Shapes.Accuracy * 8);
+        Assert.True(ellipse.Sample(ellipse.SegmentCount - 1, 1).IsEqualApprox(ellipse.Points[0].Position));
+        // Its wanted up turns with it, as the circle's does: at the top it points down, to the centre.
+        var top = ellipse.Points.OrderByDescending(q => q.Position.Y).First();
+        Assert.True(top.Up.IsEqualApprox(Vector3.Down));
     }
 
     [Theory]
@@ -211,6 +265,9 @@ public class CurveShapeTests
     [InlineData(ShapeKind.Loop, "Diameter")]
     [InlineData(ShapeKind.Wave, "Cycles")]
     [InlineData(ShapeKind.Spiral, "Turns")]
+    [InlineData(ShapeKind.Arc, "Angle")]
+    [InlineData(ShapeKind.SBend, "Offset")]
+    [InlineData(ShapeKind.Ellipse, "Radius Side")]
     public void Impossible_settings_are_errors(ShapeKind kind, string setting)
     {
         var p = setting switch
@@ -219,6 +276,9 @@ public class CurveShapeTests
             "Radius" => new ShapeParameters { Radius = -1 },
             "Diameter" => new ShapeParameters { Diameter = 0 },
             "Cycles" => new ShapeParameters { Cycles = 0 },
+            "Angle" => new ShapeParameters { AngleDegrees = -90 },
+            "Offset" => new ShapeParameters { Offset = 0 },
+            "Radius Side" => new ShapeParameters { RadiusSide = 0 },
             _ => new ShapeParameters { Turns = float.NaN },
         };
         var result = Shapes.Build(kind, p);
