@@ -25,6 +25,8 @@ $GODOT --headless --path . res://demo/godoowave/tools/build_demo.tscn       # re
 $GODOT --headless --path . res://demo/godoocurves/tools/build_demo.tscn    # rebuild the godoocurves demo scenes (shapes, coaster, outlines)
 ```
 
+**Releasing:** merge to main, then push the tag `<addon>-v<version>` on the merge commit, and nothing else. The *Release addon* workflow (`.github/workflows/release-addon.yml`) runs the Core tests (without `Category=Performance`), packages the zip, smoke-tests it in a clean project and publishes the GitHub Release. Do not run `gh release create` yourself: the workflow's publish then fails with "a release with the same tag name already exists". Wait for the run (`gh run watch`) and report its result.
+
 gdUnit4 versions are pinned as a pair (`gdUnit4.api` 5.1.0-rc5 with `gdUnit4.test.adapter` 3.1.1). Newer adapters need a newer api, so upgrade both together.
 
 ## Architecture
