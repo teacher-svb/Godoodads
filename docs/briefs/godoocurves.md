@@ -59,7 +59,7 @@ Every shape is built in a local frame: **forward** (the direction the path start
 | Group | Shape | Settings | Notes |
 |---|---|---|---|
 | Existing | Straight | Length | Two points, no handles |
-| Existing | Parabolic | Length, Height | Exact: a quadratic Bezier raised to a cubic |
+| Existing | Parabolic | Length, Height | Exact: a quadratic Bezier raised to a cubic, in the frame's up plane, ending level with the start. Leaves at its slope (see below); a negative Height dips |
 | Existing | Circle | Radius, Bend | Closed. Starts at the start point, tangent to forward |
 | Existing | Semicircle | Radius, Bend | Open, ends facing back |
 | Existing | Loop | Length, Diameter, Side Shift | Length is the distance along Direction from start to end (decided 2026-11-16), with the vertical loop in the middle and straight run-in and run-out. Side Shift moves the exit sideways, so the track does not cross itself (0 allowed) |
@@ -75,7 +75,7 @@ Every shape is built in a local frame: **forward** (the direction the path start
 | Closed outlines | Polygon | Sides, Radius, Corner Radius, Bend | Closed regular polygon |
 | Closed outlines | Figure Eight | Length, Width, Bend | Closed, crossing at its middle |
 
-- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
+- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. The exception is Parabolic, a true jump arc that leaves at the slope its Height gives (decided 2026-11-16; Wave with 1 cycle gives a smooth hump). Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
 - Arcs are split into pieces of at most 90°, with handle length 4/3·tan(θ/4)·r. Other shapes use the fewest cubic segments that keep the curve within **0.1 % of the shape's size** of the exact shape (§8).
 - Ranges in the inspector stop impossible values (radius > 0, sides ≥ 3, cycles ≥ 1, corner radius ≤ half the shorter side).
 
