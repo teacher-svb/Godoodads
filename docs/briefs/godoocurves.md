@@ -62,19 +62,20 @@ Every shape is built in a local frame: **forward** (the direction the path start
 | Existing | Parabolic | Length, Height | Exact: a quadratic Bezier raised to a cubic |
 | Existing | Circle | Radius, Bend | Closed. Starts at the start point, tangent to forward |
 | Existing | Semicircle | Radius, Bend | Open, ends facing back |
-| Existing | Loop | Length, Diameter, Side Shift | Vertical loop between a straight run-in and run-out. Side Shift moves the exit sideways, so the track does not cross itself (0 allowed) |
-| Existing | Wave | Length, Amplitude, Cycles, Bend | Sine wave |
-| Existing | Spiral | Length, Radius, Turns | Helix around the forward axis |
+| Existing | Loop | Length, Diameter, Side Shift | Length is the distance along Direction from start to end (decided 2026-11-16), with the vertical loop in the middle and straight run-in and run-out. Side Shift moves the exit sideways, so the track does not cross itself (0 allowed) |
+| Existing | Wave | Length, Amplitude, Cycles, Bend | Crests of height Amplitude above the start line (a 1 − cos wave), starting and ending level along Direction (decided 2026-11-16). Bend Up gives hills, Left or Right a slalom to one side |
+| Existing | Spiral | Length, Radius, Turns | Helix around the forward axis. The radius grows from 0 over the first half turn and shrinks back over the last, so it starts and ends on the axis heading along Direction (decided 2026-11-16) |
 | Arcs and bends | Arc | Radius, Angle, Bend | Any angle; Circle and Semicircle are its presets |
 | Arcs and bends | S-bend | Length, Offset, Bend | Two opposite arcs; ends parallel to the start |
 | Arcs and bends | Ellipse | Radius Forward, Radius Side, Bend | Closed |
 | Track pieces | Helix | Radius, Turns, Rise, Bend | Turns around the up axis while climbing (Rise may be negative) |
-| Track pieces | Corkscrew | Length, Radius, Turns | Spiral path plus tilt, so the track rolls with the turn (§4.4) |
+| Track pieces | Corkscrew | Length, Radius, Turns | Spiral path (with its eased ends) plus tilt, so the track rolls with the turn (§4.4) |
 | Track pieces | Banked Turn | Radius, Angle, Bank, Bend | Horizontal arc with tilt that eases from 0 to Bank and back (§4.4) |
 | Closed outlines | Rounded Rectangle | Width, Depth, Corner Radius, Bend | Closed; Corner Radius 0 gives sharp corners |
 | Closed outlines | Polygon | Sides, Radius, Corner Radius, Bend | Closed regular polygon |
 | Closed outlines | Figure Eight | Length, Width, Bend | Closed, crossing at its middle |
 
+- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
 - Arcs are split into pieces of at most 90°, with handle length 4/3·tan(θ/4)·r. Other shapes use the fewest cubic segments that keep the curve within **0.1 % of the shape's size** of the exact shape (§8).
 - Ranges in the inspector stop impossible values (radius > 0, sides ≥ 3, cycles ≥ 1, corner radius ≤ half the shorter side).
 
@@ -176,4 +177,4 @@ Results from card `crv-m0-verify-engine` (2026-11-16), checked headless with God
 
 ### 11. Board decisions (2026-11-16)
 
-Planning: Path3D only; curve math written fresh; dialog with settings stored on the node; Replace or Append; the seven existing shapes plus arcs and bends, track pieces and closed outlines; Start, Direction and Up placement; tilt written per point; `BezierPathGenerator/` kept out of the build and deleted in M5. After the draft: the preview overlay is in v1 (§5), and the menu item is "Generate Curve (GDDS)". The brief was approved for M0.
+Planning: Path3D only; curve math written fresh; dialog with settings stored on the node; Replace or Append; the seven existing shapes plus arcs and bends, track pieces and closed outlines; Start, Direction and Up placement; tilt written per point; `BezierPathGenerator/` kept out of the build and deleted in M5. After the draft: the preview overlay is in v1 (§5), and the menu item is "Generate Curve (GDDS)". The brief was approved for M0, and M0 was approved the same day. Before M1: Wave starts and ends level, Spiral and Corkscrew ease in and out, and Loop's Length runs from start to end (§4.1).
