@@ -1,13 +1,13 @@
 ---
 id: "crv-m2-review-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T13:23:07.000Z"
-modified: "2026-11-16T14:26:54.000Z"
-completedAt: null
+modified: "2026-11-16T14:30:17.000Z"
+completedAt: "2026-11-16T14:30:17.000Z"
 labels: ["v1.0.0", "m2", "review"]
 order: "c5"
 ---
@@ -33,3 +33,6 @@ The board moves this card to *Done* when approved. Do not start M3 before that. 
 - **Cart flips in the loop and stays level on the banks.** The curve and its tilts were right: `sample_baked_with_rotation` and the channel follow them. The cause is `PathFollow3D` in rotation mode **Oriented**. In Godot 4.7, `correct_posture` sets `Basis.looking_at(tangent)` from world up and only adds the tilt, so it ignores the curve's up vectors. It flips at the loop's vertical points and is off by the twist compensation (28.5° after the loop). Measured with the real node: rotation mode **XYZ** keeps the curve's up vectors and adds tilt, and matched the curve's up within 0.0° at 40 places round the lap.
 - The cart now uses XYZ, which is Godot's default mode. Brief §10.2 is corrected and §6 has a new pitfall. The README (M3/M5) must tell users to use XYZ with tilt enabled.
 - 498 Core and 127 engine tests pass; the review scene is rebuilt.
+
+## Board decision (2026-11-16, round 2)
+Figure Eight looks right; the cart follows the track in rotation mode XYZ. M2 approved. M3 may start.
