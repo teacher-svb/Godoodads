@@ -215,4 +215,5 @@ The solver runs on a background thread and touches no engine objects, so the edi
 - Edges without a boundary socket are unconstrained.
 - Markers are placed when a generation is committed, not during the animated preview.
 - While a solve is being shown, the GridMap holds a preview. Saving the scene at that moment saves the preview.
+- While a solve runs, the box handles are hidden. Settings you change in the dialog meanwhile apply to the next Generate; the GridMap stores the settings the solve started with.
 - 3D `GridMap` only. The solver also supports 2D; `TileMapLayer` support is planned for 1.4.
