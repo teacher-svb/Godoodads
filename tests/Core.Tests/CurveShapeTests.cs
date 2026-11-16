@@ -50,8 +50,8 @@ public class CurveShapeTests
                         return new Vector3((float)d, 0, 0);
                     if (d >= m + loop)
                         return new Vector3((float)(d - loop), 0, p.SideShift);
-                    double a = (d - m) / r;
-                    return new Vector3(m + r * (float)Math.Sin(a), r - r * (float)Math.Cos(a), (float)(p.SideShift * a / Math.Tau));
+                    double a = (d - m) / r, u = a / Math.Tau;
+                    return new Vector3(m + r * (float)Math.Sin(a), r - r * (float)Math.Cos(a), (float)(p.SideShift * u * u * (3 - 2 * u)));
                 };
             }
             case ShapeKind.Wave:
@@ -496,5 +496,20 @@ public class CurveShapeTests
         Assert.True(curve.Sample(straights[0], 0.5f).IsEqualApprox(new Vector3(0, 0, 4 * (1 + Mathf.Sqrt2))));
         Assert.True(curve.Points.All(q => q.Up.IsEqualApprox(Vector3.Up)));
         Assert.Equal(2 * 4 * (1 + Mathf.Sqrt2), Shapes.Size(ShapeKind.FigureEight, new() { Radius = 4 }), 4);
+    }
+
+    [Theory]
+    [InlineData(1f)]
+    [InlineData(3f)]
+    [InlineData(-2f)]
+    public void A_shifted_loop_enters_and_leaves_along_the_direction(float shift)
+    {
+        // Board, M4 review: a linear Side Shift left the straight about 4° sideways, a jolt to the side.
+        var curve = Build(ShapeKind.Loop, new() { Length = 30, Diameter = 14, SideShift = shift });
+        int entry = 1, exit = curve.Points.Count - 2;
+        Assert.True(curve.Points[entry].Out.Z == 0 && curve.Points[exit].In.Z == 0);
+        Assert.True(AngleDegrees(curve.Points[entry].Out, Vector3.Right) < 0.01f);
+        Assert.True(AngleDegrees(-curve.Points[exit].In, Vector3.Right) < 0.01f);
+        Assert.Equal(shift, curve.Points[^1].Position.Z, 4);
     }
 }

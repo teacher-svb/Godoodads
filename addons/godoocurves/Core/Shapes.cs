@@ -201,7 +201,7 @@ public static class Shapes
 
     /// <summary>
     /// A straight run-in to Length/2, a vertical loop of Diameter that drifts Side Shift to the
-    /// side, and a straight run-out to Length (brief §4.1). Inside the loop the wanted up faces its
+    /// side (eased in and out), and a straight run-out to Length (brief §4.1). Inside the loop the wanted up faces its
     /// centre; on the straights it is the frame's up.
     /// </summary>
     private static ShapeCurve Loop(ShapeParameters p)
@@ -210,8 +210,10 @@ public static class Shapes
         var builder = new CurveBuilder();
         builder.Add(new CurvePoint(Vector3.Zero, Vector3.Zero, Vector3.Zero, LocalUp));
         builder.LineTo(new Vector3(middle, 0, 0), LocalUp);
+        // Side Shift eases in and out, so the loop leaves and rejoins the straights without a sideways
+        // kink (board, M4 review). More points keep the eased drift within the accuracy.
         Arcs.Add(builder, new Vector3(middle, r, 0), new Vector3(0, -r, 0), Vector3.Back, Mathf.Tau, new Vector3(0, 0, p.SideShift),
-            (radial, _) => -radial);
+            (radial, _) => -radial, minSegments: p.SideShift == 0 ? 1 : 8, easeDrift: true);
         builder.LineTo(new Vector3(p.Length, 0, p.SideShift), LocalUp);
         return builder.Build(false);
     }

@@ -115,7 +115,8 @@ public class CurveWriterTests
         var before = Enumerable.Range(0, original.PointCount).Select(i => (original.GetPointPosition(i), original.GetPointIn(i), original.GetPointOut(i))).ToArray();
         CurveWriter.TryEndFrame(original, out var end);
 
-        var result = CurveWriter.Append(original, Local(ShapeKind.Loop, new ShapeParameters { SideShift = 1 }));
+        var loop = Local(ShapeKind.Loop, new ShapeParameters { SideShift = 1 });
+        var result = CurveWriter.Append(original, loop);
         AssertThat(result.Error).IsNull();
         var curve = result.Curve;
         AssertThat(curve == original).IsFalse();
@@ -129,7 +130,7 @@ public class CurveWriterTests
         AssertThat(curve.GetPointIn(join)).IsEqual(original.GetPointIn(join));
         AssertThat(Degrees(-curve.GetPointIn(join), curve.GetPointOut(join)) < 0.01f).IsTrue();
         AssertThat(Degrees(curve.GetPointOut(join), end.Forward) < 0.01f).IsTrue();
-        AssertThat(curve.PointCount).IsEqual(before.Length + 7 - 1);
+        AssertThat(curve.PointCount).IsEqual(before.Length + loop.Points.Count - 1);
     }
 
     [TestCase]
