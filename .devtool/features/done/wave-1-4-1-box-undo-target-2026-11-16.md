@@ -1,13 +1,13 @@
 ---
 id: "wave-1-4-1-box-undo-target-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-16T08:43:23.000Z"
-modified: "2026-11-16T09:14:38.000Z"
-completedAt: null
+modified: "2026-11-16T09:18:50.000Z"
+completedAt: "2026-11-16T09:18:50.000Z"
 labels: ["v1.4.1", "editor", "bug"]
 order: "d2"
 ---
@@ -31,3 +31,6 @@ Review finding 2 (MINOR). `CommitBox` (`WfcGeneratorPlugin.cs:918-930`) creates 
 1. Open the dialog for GridMap A, drag a bounds handle, close the dialog.
 2. Open the dialog for GridMap B (with stored settings), Ctrl+Z: B's bounds do not change. Reopen A: its dialog shows A's stored settings (the dragged values were never stored, as before).
 3. With the dialog open on A, drag the bounds and the pin box, Ctrl+Z twice, Ctrl+Shift+Z: the boxes step back and forward as in 1.4.0.
+
+## Released
+In godoowave 1.4.1 (tag `godoowave-v1.4.1`, PR #19).
