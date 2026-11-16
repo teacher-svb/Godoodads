@@ -2,6 +2,13 @@
 
 All notable changes to godooscatter (called MultiMesh Scatter up to 1.2.0) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-11-16
+
+### Fixed
+- **A large Min Distance with a large Amount no longer freezes the editor.** When Min Distance is much wider than the spacing Amount needs, the spacing stage keeps a random subset of the candidates. Amount 100,000 at Min Distance 3 m on a 100 × 100 m plane took 80 s and 12 GB, and around 5 m the editor ran out of memory; it now takes under half a second. When Amount fits at the chosen Min Distance, the same settings and seed give the same result as in 1.3.0. When it doesn't fit, the instances can differ and their number stays about the same.
+- **Populate writes to the node the dialog was opened for.** The dialog does not block the editor, and selecting another node while it was open made Populate write to that node instead, or report "The target MultiMeshInstance3D is no longer in the scene." when the new selection was not a MultiMeshInstance3D.
+- **Errors during Populate show in the dialog.** Append on a MultiMesh with 2D transforms and instances, and an Amount too large to run, now report in the status area and as a toast instead of only in the Output panel. Nothing is changed.
+
 ## [1.3.0] - 2026-11-15
 
 ### Changed

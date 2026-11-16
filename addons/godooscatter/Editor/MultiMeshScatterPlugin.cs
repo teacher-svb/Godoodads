@@ -24,6 +24,9 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
     private ToolDialog _dialog;
     private NodePickerRow _surfacePicker;
     private PresetRow _presets;
+    /// <summary>The selected MultiMeshInstance3D; follows the editor selection.</summary>
+    private MultiMeshInstance3D _selected;
+    /// <summary>The node the open dialog populates, fixed when it opens. The dialog is not modal.</summary>
     private MultiMeshInstance3D _target;
     private ScatterSettings _settings = new();
 
@@ -76,19 +79,21 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
             _dialog.QueueFree();
             _dialog = null;
         }
+        _selected = null;
         _target = null;
     }
 
     public override bool _Handles(GodotObject @object) => @object is MultiMeshInstance3D;
 
-    public override void _Edit(GodotObject @object) => _target = @object as MultiMeshInstance3D;
+    public override void _Edit(GodotObject @object) => _selected = @object as MultiMeshInstance3D;
 
     public override void _MakeVisible(bool visible) => _menu?.SetFallbackVisible(visible);
 
     private void OpenDialog()
     {
-        if (_target == null)
+        if (_selected == null || !IsInstanceValid(_selected))
             return;
+        _target = _selected;
 
         // Restore the settings of this node's last populate; otherwise keep the last-used ones.
         if (_target.HasMeta(SettingsMeta) && _target.GetMeta(SettingsMeta).As<ScatterSettings>() is { } stored)
@@ -152,16 +157,39 @@ public partial class MultiMeshScatterPlugin : EditorPlugin
         }
 
         bool append = _settings.Mode == OutputMode.Append;
+        if (append && _target.Multimesh is { InstanceCount: > 0 } current
+            && current.TransformFormat != MultiMesh.TransformFormatEnum.Transform3D)
+        {
+            Notify.Report(_dialog, "Append cannot add 3D instances to a MultiMesh with 2D transforms. Use Replace, or a MultiMesh with Transform Format 3D.", ToolDialog.Severity.Error);
+            return;
+        }
+
         var options = _settings.ToOptions();
         options.NormalMap = normalMap;
         int existing = append ? _target.Multimesh?.InstanceCount ?? 0 : 0;
         options.SeedSalt = (ulong)existing;
         var clock = Stopwatch.StartNew();
-        var result = ScatterPipeline.Run(surface, options, filters, FixedPoints(surfaceNode, append, options.MinDistance > 0));
-
-        var toLocal = _target.GlobalTransform.AffineInverse();
-        var local = result.Transforms.Select(t => toLocal * t).ToArray();
-        var multimesh = MultiMeshWriter.Build(_target.Multimesh ?? new MultiMesh(), local, append);
+        ScatterResult result;
+        MultiMesh multimesh;
+        try
+        {
+            result = ScatterPipeline.Run(surface, options, filters, FixedPoints(surfaceNode, append, options.MinDistance > 0));
+            var toLocal = _target.GlobalTransform.AffineInverse();
+            var local = result.Transforms.Select(t => toLocal * t).ToArray();
+            multimesh = MultiMeshWriter.Build(_target.Multimesh ?? new MultiMesh(), local, append);
+        }
+        catch (System.Exception e) when (e is System.OverflowException or System.OutOfMemoryException)
+        {
+            string factor = options.MinDistance > 0 ? $" with Candidate Factor {options.CandidateFactor}" : "";
+            Notify.Report(_dialog, $"Amount {_settings.Amount:N0} is too large to run{factor}. Lower Amount.", ToolDialog.Severity.Error);
+            return;
+        }
+        catch (System.Exception e)
+        {
+            Notify.Report(_dialog, $"Populate failed, nothing was changed: {e.Message}", ToolDialog.Severity.Error);
+            GD.PushError($"godooscatter: {e}");
+            return;
+        }
         clock.Stop();
 
         var stored = (ScatterSettings)_settings.Duplicate();
