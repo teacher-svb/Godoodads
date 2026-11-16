@@ -50,7 +50,7 @@ demo/godoowave/
 tests/godoowave/
 ```
 
-Since 1.3.3, `Core/`, `Resources/` and `Adapters/` live in `addons/editor_tools_common/Wfc/`, shared with godoodungeon (dungeon brief §4.1). `addons/wfc_generator/Resources/` keeps empty legacy subclasses, so files that name the old script paths still load.
+Since 1.3.3, `Core/`, `Resources/` and `Adapters/` live in `addons/editor_tools_common/Wfc/`, shared with godoodungeon (dungeon brief §4.1). `addons/wfc_generator/Resources/` kept empty legacy subclasses for files that name the old script paths, until 1.4.3 (§15).
 
 ---
 
@@ -380,3 +380,4 @@ Requested on 2026-11-15, to match the `godoo<name>` scheme of godoodungeon. Trac
 - godoodungeon keeps checking `addons/wfc_generator/plugin.cfg` for versions before 1.3.3, and its warning names godoowave as the replacement.
 - The dialog size is stored under `godoowave_dialog_size`, so the dialog opens at its default size once.
 - Updating needs the old folder deleted and **godoowave** enabled in the plugin list (README, CHANGELOG).
+- **1.4.3** (2026-11-16): the legacy classes in `addons/wfc_generator/Resources/` are removed, with their folder in the zip. The only project using the addon had no file that needed them, and release downloads showed no other users. Files without a uid that name the old paths need their paths changed (README, CHANGELOG). The `wfc_1_3_2` fixture now names the moved scripts and keeps checking that 1.3.2 data generates the same cells.

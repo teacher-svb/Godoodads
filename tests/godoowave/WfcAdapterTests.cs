@@ -176,11 +176,11 @@ public class WfcAdapterTests
         AssertThat(map.GetCellItem(new Vector3I(2, 1, 2))).IsEqual(1);
     }
 
-    // A tile written by 1.0, before the Weight field existed.
+    // A tile written by 1.0, before the Weight field existed (script path updated to the moved script).
     private const string LegacyTile = """
         [gd_resource type="Resource" script_class="WfcTile" format=3]
 
-        [ext_resource type="Script" path="res://addons/wfc_generator/Resources/WfcTile.cs" id="1"]
+        [ext_resource type="Script" path="res://addons/editor_tools_common/Wfc/Resources/WfcTile.cs" id="1"]
 
         [resource]
         script = ExtResource("1")

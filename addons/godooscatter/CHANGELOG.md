@@ -2,6 +2,14 @@
 
 All notable changes to godooscatter (called MultiMesh Scatter up to 1.2.0) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.2] - 2026-11-16
+
+### Removed
+- **The legacy class in `addons/multimesh_scatter/Resources/`**, and the folder from the zip. It kept settings that name `ScatterSettings` by its path before the rename in 1.3.0 and carry no uid loading, such as presets your own scripts saved with `ResourceSaver.Save`. Settings saved in the editor carry a uid and are not affected.
+
+### Updating
+- Delete `addons/multimesh_scatter/` if it is still there. If a preset no longer loads, open it in a text editor and replace `res://addons/multimesh_scatter/Resources/` with `res://addons/godooscatter/Resources/`.
+
 ## [1.3.1] - 2026-11-16
 
 ### Fixed

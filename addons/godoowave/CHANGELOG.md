@@ -2,6 +2,14 @@
 
 All notable changes to godoowave (called WFC Generator up to 1.3.4) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.4.3] - 2026-11-16
+
+### Removed
+- **The legacy classes in `addons/wfc_generator/Resources/`**, and the folder from the zip. They kept files that name the scripts by their paths before 1.3.3 (or before the rename in 1.4.0) and carry no uid loading: tile sets from 1.3.2 or older, and files your own scripts saved with `ResourceSaver.Save`. Files saved in the editor carry a uid and are not affected.
+
+### Updating
+- Delete `addons/wfc_generator/` if it is still there. If a tile set, settings or scene no longer loads, open it in a text editor and replace `res://addons/wfc_generator/Resources/` with `res://addons/editor_tools_common/Wfc/Resources/`.
+
 ## [1.4.2] - 2026-11-16
 
 ### Fixed

@@ -9,10 +9,10 @@ using Godoodads.Common.Wfc.Core;
 using static GdUnit4.Assertions;
 
 /// <summary>
-/// WFC Generator 1.3.3 moved its resources to editor_tools_common/Wfc and left empty legacy
-/// subclasses at the old paths (brief godoodungeon §4.1). The fixtures are the 1.3.2 demo files,
-/// which name the scripts by their old paths only, as every file ResourceSaver writes outside the
-/// editor does.
+/// WFC Generator 1.3.3 moved its resources to editor_tools_common/Wfc (brief godoodungeon §4.1).
+/// The fixtures are the 1.3.2 demo files, with their script paths pointed at the moved scripts since
+/// the legacy classes at the old paths were removed in godoowave 1.4.3. They check that 1.3.2 data
+/// still loads and generates the same cells.
 /// </summary>
 [TestSuite]
 public class WfcSharedSolverMoveTests
@@ -25,13 +25,11 @@ public class WfcSharedSolverMoveTests
 
     [TestCase]
     [RequireGodotRuntime]
-    public void Tile_sets_saved_with_old_script_paths_load_through_the_legacy_classes()
+    public void A_1_3_2_tile_set_loads_and_binds()
     {
         var tileSet = ResourceLoader.Load<WfcTileSet>($"{Fixtures}/ruin_tileset.tres", null, ResourceLoader.CacheMode.Ignore);
         AssertThat(tileSet).IsNotNull();
-        AssertThat(tileSet.GetType().FullName).IsEqual("Godoodads.Wave.Legacy.WfcTileSet");
         AssertThat(tileSet.Tiles.Count).IsEqual(24);
-        AssertThat(tileSet.Tiles[0].GetType().FullName).IsEqual("Godoodads.Wave.Legacy.WfcTile");
 
         var binding = TileSetBinding.Create(tileSet, Directions.All3D);
         AssertThat(binding.IsValid).IsTrue();
@@ -44,7 +42,6 @@ public class WfcSharedSolverMoveTests
         var root = ResourceLoader.Load<PackedScene>($"{Fixtures}/hillside_ground.tscn", null, ResourceLoader.CacheMode.Ignore).Instantiate();
         var settings = WfcSettings.StoredOn(root.GetNode<GridMap>("GridMap"));
         AssertThat(settings).IsNotNull();
-        AssertThat(settings.GetType().FullName).IsEqual("Godoodads.Wave.Legacy.WfcSettings");
 
         var grid = GridTopology.Create3D(settings.BoundsSize);
         var binding = TileSetBinding.Create(settings.TileSet, grid.ActiveDirections);
