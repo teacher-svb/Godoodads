@@ -1,13 +1,13 @@
 ---
 id: "wave-1-4-1-run-settings-snapshot-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-16T08:43:23.000Z"
-modified: "2026-11-16T09:14:38.000Z"
-completedAt: null
+modified: "2026-11-16T09:18:50.000Z"
+completedAt: "2026-11-16T09:18:50.000Z"
 labels: ["v1.4.1", "editor", "bug"]
 order: "d1"
 ---
@@ -35,3 +35,6 @@ Review finding 1 (MINOR). The run does not take a copy of its settings. `Commit`
 1. Randomise Seed off, Seed 5, Cells Per Frame low enough to watch (e.g. 200), Generate. During the animation type Seed 6 in the dialog. On commit the status says "Seed 5". Close and reopen the dialog: Seed is 5.
 2. Generate again; during the animation try to drag a bounds handle: the handles are gone and the outline stays on the box being filled. Change Bounds Size in the inspector during the run: the outline does not move until the solve ends, and reopening the dialog shows the old size.
 3. After the solve the handles come back and drag as before.
+
+## Released
+In godoowave 1.4.1 (tag `godoowave-v1.4.1`, PR #19).

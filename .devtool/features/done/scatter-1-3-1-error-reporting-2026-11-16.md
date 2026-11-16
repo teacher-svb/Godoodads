@@ -1,13 +1,13 @@
 ---
 id: "scatter-1-3-1-error-reporting-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godooscatter"
 dueDate: null
 created: "2026-11-16T09:00:00.000Z"
-modified: "2026-11-16T10:00:00.000Z"
-completedAt: null
+modified: "2026-11-16T09:22:16.000Z"
+completedAt: "2026-11-16T09:22:16.000Z"
 labels: ["v1.3.1", "editor", "bug"]
 order: "b5"
 ---
