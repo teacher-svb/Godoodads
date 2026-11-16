@@ -1,13 +1,13 @@
 ---
 id: "crv-m0-skeleton-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T12:24:14.000Z"
-modified: "2026-11-16T12:33:11.000Z"
-completedAt: null
+modified: "2026-11-16T12:48:27.000Z"
+completedAt: "2026-11-16T12:48:27.000Z"
 labels: ["v1.0.0", "m0", "editor", "infra"]
 order: "a2"
 ---
@@ -37,3 +37,6 @@ Create `addons/godoocurves/` with the suite layout (brief §3) and an editor ent
 2. Select a Path3D: a **Path3D** button appears in the 3D toolbar with **Generate Curve (GDDS)**. Select a GridMap: that button hides, the GridMap menu is unchanged.
 3. Open the dialog: the title is "Generate Curve (GDDS)", the status names the Path3D, Generate is disabled.
 4. Rebuild with the dialog closed, focus Godot, open it again: it still works.
+
+## Manual check result (board, 2026-11-16)
+All passed: the Path3D button shows for a Path3D and hides otherwise, the GridMap menu is unchanged; the dialog opens titled "Generate Curve (GDDS)" with the Path3D named and Generate disabled; it still works after a rebuild and assembly reload.

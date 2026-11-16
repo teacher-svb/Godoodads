@@ -1,13 +1,13 @@
 ---
 id: "crv-m0-verify-engine-2026-11-16"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T12:24:14.000Z"
-modified: "2026-11-16T12:29:29.000Z"
-completedAt: null
+modified: "2026-11-16T12:48:27.000Z"
+completedAt: "2026-11-16T12:48:27.000Z"
 labels: ["v1.0.0", "m0", "adapters", "spike"]
 order: "a1"
 ---
