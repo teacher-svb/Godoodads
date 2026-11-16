@@ -1,12 +1,12 @@
 ---
 id: "crv-m3-review-2026-11-16"
-status: "todo"
+status: "review"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T14:30:17.000Z"
-modified: "2026-11-16T14:30:17.000Z"
+modified: "2026-11-16T14:33:18.000Z"
 completedAt: null
 labels: ["v1.0.0", "m3", "review"]
 order: "d4"

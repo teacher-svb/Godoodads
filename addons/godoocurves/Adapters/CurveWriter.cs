@@ -45,15 +45,9 @@ public static class CurveWriter
         if (existing != null && existing.Closed)
             return new WriteResult(null, "The path's curve is closed, so nothing can be appended to its end. Use Replace.", null);
 
+        var frame = AppendFrame(existing, out string note);
         if (existing == null || existing.PointCount == 0)
-            return new WriteResult(Create(localShape.ToPath(ShapeFrame.Default)), null, "The path had no curve, so the shape starts at the default place: the origin, heading +X.");
-
-        string note = null;
-        if (!TryEndFrame(existing, out var frame))
-        {
-            frame = ShapeFrame.Default with { Origin = existing.GetPointPosition(existing.PointCount - 1) };
-            note = "The curve's end has no direction, so the shape continues along +X.";
-        }
+            return new WriteResult(Create(localShape.ToPath(frame)), null, note);
 
         var shape = localShape.ToPath(frame);
         var curve = (Curve3D)existing.Duplicate();
@@ -64,6 +58,25 @@ public static class CurveWriter
             curve.AddPoint(shape.Points[i].Position, shape.Points[i].In, shape.Points[i].Out);
         SetTilts(curve, shape, firstPoint: join, startTilt: curve.GetPointTilt(join));
         return new WriteResult(curve, null, note);
+    }
+
+    /// <summary>
+    /// Where an appended shape starts: the curve's end frame, or the default frame (brief §4.3) when
+    /// the curve is empty, or at its only point when it has no direction. <paramref name="note"/>
+    /// says so for the status.
+    /// </summary>
+    public static ShapeFrame AppendFrame(Curve3D existing, out string note)
+    {
+        note = null;
+        if (existing == null || existing.PointCount == 0)
+        {
+            note = "The path had no curve, so the shape starts at the default place: the origin, heading +X.";
+            return ShapeFrame.Default;
+        }
+        if (TryEndFrame(existing, out var frame))
+            return frame;
+        note = "The curve's end has no direction, so the shape continues along +X.";
+        return ShapeFrame.Default with { Origin = existing.GetPointPosition(existing.PointCount - 1) };
     }
 
     /// <summary>
