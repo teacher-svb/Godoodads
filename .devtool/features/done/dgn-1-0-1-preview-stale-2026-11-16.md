@@ -1,15 +1,15 @@
 ---
 id: "dgn-1-0-1-preview-stale-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-16T08:53:11.000Z"
-modified: "2026-11-16T10:58:14.000Z"
-completedAt: null
+modified: "2026-11-16T11:01:38.007Z"
+completedAt: "2026-11-16T11:01:38.007Z"
 labels: ["v1.0.1", "editor", "ui", "bug"]
-order: "d5"
+order: "Zm"
 ---
 # godoodungeon 1.0.1: Preview Layout goes stale when GridMap cells change
 

@@ -1,15 +1,15 @@
 ---
 id: "dgn-1-0-1-box-undo-target-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-16T08:53:11.000Z"
-modified: "2026-11-16T10:34:32.000Z"
-completedAt: null
+modified: "2026-11-16T11:01:38.907Z"
+completedAt: "2026-11-16T11:01:38.907Z"
 labels: ["v1.0.1", "editor", "bug", "common"]
-order: "d6"
+order: "Zl"
 ---
 # godoodungeon 1.0.1: Undoing a bounds resize changes another GridMap's settings
 
