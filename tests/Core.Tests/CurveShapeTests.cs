@@ -78,7 +78,22 @@ public class CurveShapeTests
             case ShapeKind.Ellipse:
                 return t => new Vector3(p.RadiusForward * (float)Math.Sin(t * Math.Tau), 0, 0)
                     + b * (p.RadiusSide * (float)(1 - Math.Cos(t * Math.Tau)));
+            case ShapeKind.Helix:
+            {
+                var axis = Vector3.Right.Cross(b);
+                double total = Math.Tau * p.Turns;
+                return t => b * p.Radius + (-b * p.Radius).Rotated(axis, (float)(t * total)) + new Vector3(0, (float)(t * p.Rise), 0);
+            }
+            case ShapeKind.BankedTurn:
+                return Exact(ShapeKind.Arc, p);
+            case ShapeKind.FigureEight:
+                return t =>
+                {
+                    double a = t * Math.Tau;
+                    return new Vector3(p.Width * (float)(Math.Sin(a) * Math.Cos(a)), 0, 0) + b * (p.Length / 2 * (float)(1 - Math.Cos(a)));
+                };
             case ShapeKind.Spiral:
+            case ShapeKind.Corkscrew:
             {
                 double total = Math.Tau * p.Turns, ease = Math.Min(Math.PI, total / 2);
                 return t =>
@@ -156,6 +171,14 @@ public class CurveShapeTests
             (ShapeKind.Ellipse, new()),
             (ShapeKind.Ellipse, new() { RadiusForward = 1, RadiusSide = 9, Bend = Bend.Down }),
             (ShapeKind.Ellipse, new() { RadiusForward = 20, RadiusSide = 0.5f, Bend = Bend.Left }),
+            (ShapeKind.Helix, new()),
+            (ShapeKind.Helix, new() { Radius = 3, Turns = 3.5f, Rise = -6, Bend = Bend.Left }),
+            (ShapeKind.Corkscrew, new()),
+            (ShapeKind.Corkscrew, new() { Length = 16, Radius = 1.5f, Turns = 1 }),
+            (ShapeKind.BankedTurn, new()),
+            (ShapeKind.BankedTurn, new() { Radius = 20, AngleDegrees = 180, BankDegrees = -45, Bend = Bend.Left }),
+            (ShapeKind.FigureEight, new()),
+            (ShapeKind.FigureEight, new() { Length = 20, Width = 4, Bend = Bend.Up }),
         };
         return cases.Select((c, i) => new object[] { i, c.Kind, c.P });
     }
@@ -178,10 +201,15 @@ public class CurveShapeTests
     public void Every_shape_starts_along_the_direction(int index, ShapeKind kind, ShapeParameters p)
     {
         var curve = Build(kind, p);
-        var expected = kind == ShapeKind.Parabolic ? new Vector3(p.Length, 4 * p.Height, 0).Normalized() : Vector3.Right;
+        var expected = kind switch
+        {
+            ShapeKind.Parabolic => new Vector3(p.Length, 4 * p.Height, 0).Normalized(),
+            ShapeKind.Helix => (Vector3.Right * (Mathf.Tau * p.Turns * p.Radius) + Vector3.Up * p.Rise).Normalized(),
+            _ => Vector3.Right,
+        };
         Assert.True(AngleDegrees(curve.StartTangent, expected) < 0.01f, $"case {index}: starts {curve.StartTangent}");
         Assert.True(curve.Points[0].Position.IsEqualApprox(Vector3.Zero));
-        if (kind is ShapeKind.Loop or ShapeKind.Wave or ShapeKind.Spiral or ShapeKind.Straight or ShapeKind.SBend)
+        if (kind is ShapeKind.Loop or ShapeKind.Wave or ShapeKind.Spiral or ShapeKind.Straight or ShapeKind.SBend or ShapeKind.Corkscrew)
             Assert.True(AngleDegrees(curve.EndTangent, Vector3.Right) < 0.01f, $"case {index}: ends {curve.EndTangent}");
     }
 
@@ -204,9 +232,10 @@ public class CurveShapeTests
         Assert.True(circle.Closed);
         Assert.Equal(4, circle.Points.Count);
         Assert.True(circle.Sample(circle.SegmentCount - 1, 1).IsEqualApprox(circle.Points[0].Position));
-        foreach (var kind in Enum.GetValues<ShapeKind>().Where(k => k is not (ShapeKind.Circle or ShapeKind.Ellipse)))
-            Assert.False(Build(kind, new()).Closed);
-        Assert.True(Build(ShapeKind.Ellipse, new()).Closed);
+        foreach (var kind in Enum.GetValues<ShapeKind>())
+            Assert.Equal(Shapes.IsClosed(kind, new()), Build(kind, new()).Closed);
+        Assert.True(Shapes.IsClosed(ShapeKind.Ellipse, new()));
+        Assert.False(Shapes.IsClosed(ShapeKind.Arc, new()));
         Assert.True(Build(ShapeKind.Arc, new() { AngleDegrees = 360 }).Closed);
     }
 
@@ -268,6 +297,10 @@ public class CurveShapeTests
     [InlineData(ShapeKind.Arc, "Angle")]
     [InlineData(ShapeKind.SBend, "Offset")]
     [InlineData(ShapeKind.Ellipse, "Radius Side")]
+    [InlineData(ShapeKind.Helix, "Bend")]
+    [InlineData(ShapeKind.BankedTurn, "Bank")]
+    [InlineData(ShapeKind.RoundedRectangle, "Corner Radius")]
+    [InlineData(ShapeKind.Polygon, "Sides")]
     public void Impossible_settings_are_errors(ShapeKind kind, string setting)
     {
         var p = setting switch
@@ -279,10 +312,155 @@ public class CurveShapeTests
             "Angle" => new ShapeParameters { AngleDegrees = -90 },
             "Offset" => new ShapeParameters { Offset = 0 },
             "Radius Side" => new ShapeParameters { RadiusSide = 0 },
+            "Bend" => new ShapeParameters { Bend = Bend.Up },
+            "Bank" => new ShapeParameters { BankDegrees = 95 },
+            "Corner Radius" => new ShapeParameters { CornerRadius = 4 },
+            "Sides" => new ShapeParameters { Sides = 2 },
             _ => new ShapeParameters { Turns = float.NaN },
         };
         var result = Shapes.Build(kind, p);
         Assert.False(result.IsValid);
         Assert.StartsWith(setting, result.Error);
+    }
+
+    [Fact]
+    public void A_corkscrew_needs_whole_turns()
+    {
+        Assert.StartsWith("Turns must be a whole number", Shapes.Build(ShapeKind.Corkscrew, new() { Turns = 1.5f }).Error);
+        Assert.True(Shapes.Build(ShapeKind.Spiral, new() { Turns = 1.5f }).IsValid);
+    }
+
+    [Fact]
+    public void A_corkscrew_faces_its_axis_and_ends_upright()
+    {
+        var p = new ShapeParameters { Length = 12, Radius = 2, Turns = 2 };
+        var curve = Build(ShapeKind.Corkscrew, p);
+        Assert.True(curve.Points[0].Up.IsEqualApprox(Vector3.Up));
+        Assert.True(curve.Points[^1].Up.IsEqualApprox(Vector3.Up));
+        int checkedPoints = 0;
+        foreach (var point in curve.Points)
+        {
+            var toAxis = new Vector3(point.Position.X, 0, 0) - point.Position;
+            if (toAxis.Length() < 0.2f * p.Radius)
+                continue;   // near the eased ends the axis is too close to give a direction
+            Assert.True(point.Up.AngleTo(toAxis) < 1e-3f, $"{point.Position}: up {point.Up}");
+            checkedPoints++;
+        }
+        Assert.True(checkedPoints >= 8);
+    }
+
+    [Fact]
+    public void A_helix_climbs_its_rise_at_a_constant_slope()
+    {
+        var p = new ShapeParameters { Radius = 4, Turns = 2.25f, Rise = 9 };
+        var curve = Build(ShapeKind.Helix, p);
+        Assert.Equal(9f, curve.Points[^1].Position.Y, 4);
+        Assert.Equal(curve.StartTangent.Y, curve.EndTangent.Y, 4);
+    }
+
+    [Fact]
+    public void A_banked_turn_rolls_into_the_turn_and_back()
+    {
+        var p = new ShapeParameters { Radius = 10, AngleDegrees = 90, BankDegrees = 30, Bend = Bend.Right };
+        var curve = Build(ShapeKind.BankedTurn, p);
+        Assert.True(curve.Points.Count >= 17);
+        Assert.True(curve.Points[0].Up.IsEqualApprox(Vector3.Up));
+        Assert.True(curve.Points[^1].Up.IsEqualApprox(Vector3.Up));
+        var middle = curve.Points[curve.Points.Count / 2];
+        Assert.Equal(30f, Mathf.RadToDeg(middle.Up.AngleTo(Vector3.Up)), 2);
+        var toCentre = new Vector3(0, 0, 10) - middle.Position;
+        Assert.True(middle.Up.Dot(toCentre) > 0);   // leans into the turn
+        Assert.True(Mathf.Abs(middle.Up.Dot(curve.Derivative(curve.Points.Count / 2, 0).Normalized())) < 1e-4f);
+    }
+
+    /// <summary>
+    /// Signed distance from a point (x along +X, y toward Bend) to a convex polygon widened by
+    /// <paramref name="radius"/>: the ideal rounded outline.
+    /// </summary>
+    private static float OutlineDistance(Vector2 point, Vector2[] inner, float radius)
+    {
+        float edge = float.MaxValue;
+        bool inside = true;
+        for (int k = 0; k < inner.Length; k++)
+        {
+            var a = inner[k];
+            var ab = inner[(k + 1) % inner.Length] - a;
+            float t = ab.LengthSquared() < 1e-12f ? 0 : Math.Clamp((point - a).Dot(ab) / ab.LengthSquared(), 0, 1);
+            edge = Math.Min(edge, point.DistanceTo(a + ab * t));
+            if (ab.X * (point.Y - a.Y) - ab.Y * (point.X - a.X) <= 0)   // a flat inner polygon has no inside
+                inside = false;
+        }
+        return (inside ? -edge : edge) - radius;
+    }
+
+    private static Vector2[] Inset(Vector2[] corners, Vector2 centre, float inradiusRatio) =>
+        corners.Select(c => centre + (c - centre) * inradiusRatio).ToArray();
+
+    public static IEnumerable<object[]> OutlineCases() => new[]
+    {
+        new object[] { ShapeKind.RoundedRectangle, new ShapeParameters() },
+        new object[] { ShapeKind.RoundedRectangle, new ShapeParameters { Width = 4, Depth = 8, CornerRadius = 0, Bend = Bend.Left } },
+        new object[] { ShapeKind.RoundedRectangle, new ShapeParameters { Width = 30, Depth = 2, CornerRadius = 1, Bend = Bend.Up } },
+        new object[] { ShapeKind.Polygon, new ShapeParameters() },
+        new object[] { ShapeKind.Polygon, new ShapeParameters { Sides = 3, Radius = 8, CornerRadius = 0 } },
+        new object[] { ShapeKind.Polygon, new ShapeParameters { Sides = 12, Radius = 3, CornerRadius = 0.5f, Bend = Bend.Down } },
+    };
+
+    [Theory]
+    [MemberData(nameof(OutlineCases))]
+    public void Outlines_follow_their_rounded_polygon(ShapeKind kind, ShapeParameters p)
+    {
+        var curve = Build(kind, p);
+        var b = p.Bend.Local();
+        Vector2[] corners;
+        Vector2 centre;
+        float radius = p.CornerRadius;
+        if (kind == ShapeKind.RoundedRectangle)
+        {
+            float w = p.Width / 2, r = radius;
+            corners = new[] { new Vector2(w - r, r), new Vector2(w - r, p.Depth - r), new Vector2(-w + r, p.Depth - r), new Vector2(-w + r, r) };
+            centre = new Vector2(0, p.Depth / 2);
+        }
+        else
+        {
+            float half = Mathf.Pi / p.Sides, inner = p.Radius * Mathf.Cos(half);
+            centre = new Vector2(0, inner);
+            corners = Enumerable.Range(0, p.Sides).Select(k =>
+            {
+                float a = half + Mathf.Tau * k / p.Sides;
+                return new Vector2(p.Radius * Mathf.Sin(a), inner - p.Radius * Mathf.Cos(a));
+            }).ToArray();
+            corners = Inset(corners, centre, (inner - radius) / inner);
+        }
+        float size = Shapes.Size(kind, p);
+        foreach (var sample in CurveSamples(curve))
+        {
+            Assert.True(Mathf.Abs(sample.Y * (b.Y == 0 ? 1 : 0)) < 1e-4f || b.Y != 0);   // flat in its plane
+            var flat = new Vector2(sample.X, sample.Dot(b));
+            Assert.True(Mathf.Abs(OutlineDistance(flat, corners, radius)) <= Shapes.Accuracy * size, $"{kind} {flat}");
+        }
+        float perimeter = Enumerable.Range(0, corners.Length).Sum(k => corners[k].DistanceTo(corners[(k + 1) % corners.Length])) + Mathf.Tau * radius;
+        Assert.InRange(curve.Length, perimeter * (1 - Shapes.Accuracy), perimeter * (1 + Shapes.Accuracy));
+        Assert.True(curve.Closed);
+        Assert.True(Mathf.RadToDeg(curve.StartTangent.AngleTo(Vector3.Right)) < 0.01f);
+        Assert.True(curve.Points[0].Position.IsEqualApprox(Vector3.Zero));
+    }
+
+    [Fact]
+    public void A_square_without_corner_radius_has_sharp_corners()
+    {
+        var curve = Build(ShapeKind.RoundedRectangle, new() { Width = 4, Depth = 4, CornerRadius = 0 });
+        Assert.Equal(5, curve.Points.Count);   // the start and four corners
+        Assert.All(curve.Points, q => Assert.True(q.In == Vector3.Zero && q.Out == Vector3.Zero));
+    }
+
+    [Fact]
+    public void A_polygon_rounded_to_its_inner_radius_is_a_circle()
+    {
+        var p = new ShapeParameters { Sides = 6, Radius = 4, CornerRadius = 4 * Mathf.Cos(Mathf.Pi / 6) };
+        var curve = Build(ShapeKind.Polygon, p);
+        var centre = new Vector3(0, 0, p.CornerRadius);
+        foreach (var sample in CurveSamples(curve))
+            Assert.InRange(sample.DistanceTo(centre), p.CornerRadius * (1 - 3e-4f), p.CornerRadius * (1 + 3e-4f));
     }
 }

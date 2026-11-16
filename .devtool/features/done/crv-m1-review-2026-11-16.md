@@ -1,13 +1,13 @@
 ---
 id: "crv-m1-review-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T12:50:52.000Z"
-modified: "2026-11-16T13:06:56.000Z"
-completedAt: null
+modified: "2026-11-16T13:09:50.000Z"
+completedAt: "2026-11-16T13:09:50.000Z"
 labels: ["v1.0.0", "m1", "review"]
 order: "b4"
 ---
@@ -32,3 +32,6 @@ The board moves this card to *Done* when approved. Do not start M2 before that. 
   - S-bend is always two equal arcs.
 - 463 Core tests pass.
 - Next, after approval: M2 (track pieces with tilt, closed outlines, the `Curve3D` adapter, `CurveSettings`).
+
+## Board decision (2026-11-16)
+Shape sheet as expected; accuracy and point counts good enough. M1 approved. M2 may start.
