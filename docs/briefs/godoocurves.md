@@ -3,8 +3,8 @@
 ## Sub-project 4: godoocurves
 
 **Decisions by:** the board (Syndias)
-**Status:** Approved for M0 on 2026-11-16. Planning decisions below were made by the board on 2026-11-16. Milestones M0–M5 in §7, tracked in the epic `godoocurves` with the labels `v1.0.0` and `m0` to `m5`.
-**Reference material:** `BezierPathGenerator/` at the repo root (untracked, from the board): an editor plugin that adds a *Generate Curve* button for a selected `Path3D` and writes one of seven preset shapes into its `Curve3D`. Its curve math (`Beziers`) is missing, so it does not build; godoocurves writes the math fresh (§3).
+**Status:** M0 to M4 approved on 2026-11-16; M5 (release 1.0.0) in review. Planning decisions below were made by the board on 2026-11-16. Milestones M0–M5 in §7, tracked in the epic `godoocurves` with the labels `v1.0.0` and `m0` to `m5`.
+**Reference material:** `BezierPathGenerator/` at the repo root (untracked, from the board; deleted in M5): an editor plugin that adds a *Generate Curve* button for a selected `Path3D` and writes one of seven preset shapes into its `Curve3D`. Its curve math (`Beziers`) was missing, so it did not build; godoocurves writes the math fresh (§3).
 
 ---
 

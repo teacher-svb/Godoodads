@@ -76,7 +76,7 @@ public partial class BuildCurvesDemo : Node
             path.AddChild(Profile(Channel, Blue, path.Curve.Closed));
             path.AddChild(new Label3D
             {
-                Name = "Name", Text = CurveSettings.ShapeLabels[i], Position = new Vector3(0, 8, 0), FontSize = 96,
+                Name = "Name", Text = CurveSettings.ShapeLabels[i], Position = new Vector3(0, 10, 0), FontSize = 96, PixelSize = 0.03f, OutlineSize = 24,
                 Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
             });
             root.AddChild(path);

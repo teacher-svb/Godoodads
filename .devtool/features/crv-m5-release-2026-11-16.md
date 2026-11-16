@@ -1,12 +1,12 @@
 ---
 id: "crv-m5-release-2026-11-16"
-status: "todo"
+status: "in-progress"
 priority: "high"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T14:51:48.000Z"
-modified: "2026-11-16T14:51:48.000Z"
+modified: "2026-11-16T14:55:42.000Z"
 completedAt: null
 labels: ["v1.0.0", "m5", "docs", "release"]
 order: "f2"

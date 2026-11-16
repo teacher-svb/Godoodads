@@ -2,7 +2,7 @@
 
 Generate preset Bezier shapes on a `Path3D`, straight from the Godot editor: arcs, S-bends, waves, loops, helixes, corkscrews, banked turns and closed outlines. Each shape either replaces the path's curve or is appended at its end, so you can build a track from pieces that join without a kink. Shapes that lean, such as banked turns and corkscrews, set the curve's tilt, so a cart or a mesh along the path leans with them.
 
-**Status:** in development (milestone M3). The plan is in [docs/briefs/godoocurves.md](../../docs/briefs/godoocurves.md).
+![A coaster built from appended pieces: a lift and drop, banked turns, a loop, a wave and a corkscrew, with a train on the track](docs/coaster.png)
 
 **Requirements:** Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
@@ -25,6 +25,8 @@ Generate preset Bezier shapes on a `Path3D`, straight from the Godot editor: arc
 
 ### Shapes
 
+![Every shape at its default settings, each with a channel that shows which way is up](docs/shapes.png)
+
 All lengths are in the path's local units. **Bend** chooses which way a shape turns, seen when heading along Direction: Left, Right, Up or Down.
 
 | Shape | Settings | Notes |
@@ -33,7 +35,7 @@ All lengths are in the path's local units. **Bend** chooses which way a shape tu
 | Parabolic | Length, Height | A jump arc that ends level with its start. It leaves at its slope, so it kinks when appended after a straight. A negative Height dips. |
 | Circle | Radius, Bend | Closed. |
 | Semicircle | Radius, Bend | Ends facing back. |
-| Loop | Length, Diameter, Side Shift | A vertical loop between a straight run-in and run-out; Length runs from start to end. Side Shift moves the exit sideways so the track does not run into itself. |
+| Loop | Length, Diameter, Side Shift | A vertical loop between a straight run-in and run-out; Length runs from start to end. Side Shift moves the exit sideways so the track does not run into itself; it eases in and out, so the loop leaves and rejoins the straight without a sideways kink. |
 | Wave | Length, Amplitude, Cycles, Bend | Crests of height Amplitude that start and end level. Bend Up gives hills, Left or Right a slalom. |
 | Spiral | Length, Radius, Turns | Winds around the start direction, starting and ending on that axis. |
 | Arc | Radius, Angle, Bend | Any angle up to 360°. |
@@ -53,6 +55,20 @@ Closed shapes can only Replace. Nothing can be appended to a closed curve.
 The curve's tilt is set relative to the curve's own up vectors, which is how Godot's `CSGPolygon3D` (Path Rotation: Path Follow) and `Curve3D.sample_baked_with_rotation` use it.
 
 For a `PathFollow3D`, use **Rotation Mode: XYZ** with **Tilt Enabled**. Do not use **Oriented**: in Godot 4.7 it orients by world up and only adds the tilt, so a cart flips over in a loop and leans wrongly after one.
+
+![Riding the demo coaster: the train leans out of a banked turn, with the loop ahead](docs/ride.png)
+
+## Demo
+
+The demo scenes are in this repository under `demo/godoocurves/`. The release zip contains only the addon. Each path stores its settings, so you can open the dialog on it and carry on.
+
+- `shapes.tscn`: every shape at its default settings.
+- `coaster.tscn`: a 365 m ride appended from 15 pieces, with a deck and rails (`CSGPolygon3D`), pillars and a three-car train. **Run the scene** (F6) to ride it from the front car.
+- `outlines.tscn`: closed shapes in use: a fence on a Rounded Rectangle, a flower-bed border on a Polygon, a pond rim on an Ellipse, and a running track on a Figure Eight.
+
+![Closed outlines: a fence, a hexagonal flower bed, a pond rim and a figure-eight running track](docs/outlines.png)
+
+`demo/godoocurves/tools/build_demo.tscn` rebuilds all three with the addon's own code: `godot --headless --path . res://demo/godoocurves/tools/build_demo.tscn`.
 
 ## Good to know
 
