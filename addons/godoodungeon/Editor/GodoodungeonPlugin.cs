@@ -40,8 +40,11 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     /// <summary>
     /// One running generation. Never survives an assembly reload, which cancels it first.
     /// PreviousSeed is the seed before Randomise Seed picked this run's, or null when it was not on.
+    /// Settings is a copy taken at Generate: the dialog stays editable while the generation runs,
+    /// and the GridMap stores the settings that made the result.
     /// </summary>
-    private sealed record ActiveRun(DungeonJob Job, DungeonTileSets TileSets, long Seed, long? PreviousSeed, Stopwatch Clock, List<string> Warnings);
+    private sealed record ActiveRun(DungeonJob Job, DungeonTileSets TileSets, long Seed, long? PreviousSeed, Stopwatch Clock, List<string> Warnings,
+        DungeonSettings Settings);
 
     private SpatialMenuHook _menu;
     private TileSetInspectorPlugin _tileSetInspector;
@@ -57,6 +60,11 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private string _overlayState;
     private string _previewKey;
     private PreviewResult _preview;
+
+    /// <summary>How often Preview Layout checks the GridMap for painted, erased or edited cells.</summary>
+    private const ulong CellCheckMsec = 250;
+    private long _cellFingerprint;
+    private ulong _cellsCheckedAt;
 
     /// <summary>Cells where the last Generate failed, drawn in red until the next Generate or dialog open.</summary>
     private Godot.Collections.Array<Vector3I> _failedCells = new();
@@ -188,6 +196,10 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         if (_selected == null)
             return;
 
+        // A drag whose mouse release was lost (released over the dialog) ends on the settings it started on.
+        if (_dragHandle >= 0)
+            CommitBox(_dragOrigin, _dragSize, true);
+        _dragHandle = -1;
         _failedSeeds.Clear();
         _failedCells.Clear();
         _keepStatus = false;
@@ -257,7 +269,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var record = DungeonGridMap.ReadRecord(_target);
         var handPlaced = DungeonGridMap.ReadHandPlaced(_target, _settings.BoundsOrigin, _settings.BoundsSize, record);
         var job = new DungeonJob(DungeonGridMap.Request(_settings, tileSets, handPlaced));
-        _run = new ActiveRun(job, tileSets, _settings.Seed, previousSeed, Stopwatch.StartNew(), tileSets.Warnings);
+        _run = new ActiveRun(job, tileSets, _settings.Seed, previousSeed, Stopwatch.StartNew(), tileSets.Warnings, (DungeonSettings)_settings.Duplicate());
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         _dialog.SetStatus("Generating…");
@@ -321,7 +333,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var previous = DungeonGridMap.ReadRecord(_target);
         var cells = DungeonGridMap.Cells(result, run.TileSets.Room, run.TileSets.Corridor);
         var (changes, record) = DungeonGridMap.Write(_target, previous, cells);
-        var stored = (DungeonSettings)_settings.Duplicate();
+        var stored = run.Settings;
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
@@ -332,7 +344,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, record.Encode());
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
         var markers = AddMarkerChanges(undoRedo, result, run.TileSets, previous, cells.Keys.ToHashSet());
+        long? cellsBefore = CellsBeforeWrite();
         undoRedo.CommitAction();
+        KeepPreviewAfterWrite(cellsBefore);
 
         var layout = result.Layout;
         _dialog.SetStatus($"Generated {layout.Rooms.Count} rooms, {layout.Doors.Count} doors and {result.RouteCount} corridors "
@@ -430,7 +444,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
         if (markers.Count > 0)
             AddMarkerRemovals(undoRedo, DungeonGridMap.MarkerContainer(_target), EditorInterface.Singleton.GetEditedSceneRoot() ?? _target, markers);
+        long? cellsBefore = CellsBeforeWrite();
         undoRedo.CommitAction();
+        KeepPreviewAfterWrite(cellsBefore);
 
         int kept = record.Count - cleared;
         _keepStatus = true;
@@ -523,7 +539,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         var (min, max) = BoundsGizmoPlugin.Extents(_target, _settings.BoundsOrigin, _settings.BoundsSize);
         UpdatePreview();
-        string state = $"{min}|{max}|{(_settings.PreviewLayout ? _previewKey : "")}|{string.Join(";", _failedCells)}";
+        // The run flag is part of the state, so the handles hide when a generation starts and come back after.
+        string state = $"{min}|{max}|{(_settings.PreviewLayout ? _previewKey : "")}|{_run != null}|{string.Join(";", _failedCells)}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -565,12 +582,34 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         mesh.SurfaceEnd();
     }
 
-    /// <summary>The settings Preview Layout depends on. Hand-placed cells are read again whenever these change.</summary>
+    /// <summary>The settings Preview Layout depends on. The GridMap's cells are in the key too, see <see cref="UpdatePreview"/>.</summary>
     private string PreviewKey() => string.Join("|", _settings.BoundsOrigin, _settings.BoundsSize, _settings.RoomCount, _settings.MinRoomSize,
         _settings.MaxRoomSize, _settings.RoomHeight, _settings.Gap, _settings.Margin, _settings.WallClearance, _settings.ExtraConnections,
         _settings.MaxDoorsPerRoom, _settings.PathWander, _settings.Seed, _settings.LayoutAttempts, _settings.AttemptsPerRoom);
 
-    /// <summary>Recomputes the preview when it is on and a setting it depends on changed.</summary>
+    /// <summary>
+    /// After Generate or Clear Dungeon wrote the GridMap: the cells changed, but not which of them
+    /// were placed by hand, so the preview still holds. Takes the new fingerprint without
+    /// recomputing, so the preview's line and layout warnings are not added below the result again.
+    /// Does nothing when a setting changed too, or the preview was not up to date: <paramref name="before"/>
+    /// is the fingerprint just before the write, so a cell painted since the last check still counts.
+    /// </summary>
+    /// <summary>The fingerprint before Generate or Clear Dungeon writes, or null when Preview Layout has no preview.</summary>
+    private long? CellsBeforeWrite() => _previewKey == null ? null : DungeonGridMap.Fingerprint(_target);
+
+    private void KeepPreviewAfterWrite(long? before)
+    {
+        if (before == null || _previewKey != PreviewKey() + "|" + before)
+            return;
+        _cellFingerprint = DungeonGridMap.Fingerprint(_target);
+        _cellsCheckedAt = Time.GetTicksMsec();
+        _previewKey = PreviewKey() + "|" + _cellFingerprint;
+    }
+
+    /// <summary>
+    /// Recomputes the preview when it is on and a setting it depends on, or the GridMap's cells,
+    /// changed. The cells are fingerprinted a few times per second, not every frame.
+    /// </summary>
     private void UpdatePreview()
     {
         if (!_settings.PreviewLayout)
@@ -579,7 +618,13 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _preview = null;
             return;
         }
-        string key = PreviewKey();
+        ulong now = Time.GetTicksMsec();
+        if (_previewKey == null || now - _cellsCheckedAt >= CellCheckMsec)
+        {
+            _cellsCheckedAt = now;
+            _cellFingerprint = DungeonGridMap.Fingerprint(_target);
+        }
+        string key = PreviewKey() + "|" + _cellFingerprint;
         if (key == _previewKey)
             return;
         _previewKey = key;
@@ -684,6 +729,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var map = HandleTarget;
         if (map == null || !EditorInterface.Singleton.GetSelection().GetSelectedNodes().Contains(map))
         {
+            // A drag that loses its target (deselected, dialog closed, generation started) is cancelled.
+            if (_dragHandle >= 0)
+                CommitBox(_dragOrigin, _dragSize, true);
             _dragHandle = -1;
             return pass;
         }
@@ -694,15 +742,15 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             {
                 case InputEventMouseMotion motion:
                     var (origin, size) = BoundsGizmoPlugin.DragFace(map, viewportCamera, motion.Position, _dragHandle, BoxOrigin(0), BoxSize(0));
-                    SetBox(0, origin, size);
+                    SetBox(origin, size);
                     return stop;
                 case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
-                    CommitBox(0, _dragOrigin, _dragSize, false);
+                    CommitBox(_dragOrigin, _dragSize, false);
                     _dragHandle = -1;
                     return stop;
                 case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }:
                 case InputEventKey { Keycode: Key.Escape, Pressed: true }:
-                    CommitBox(0, _dragOrigin, _dragSize, true);
+                    CommitBox(_dragOrigin, _dragSize, true);
                     _dragHandle = -1;
                     return stop;
             }
@@ -743,8 +791,11 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         return best;
     }
 
-    /// <summary>The GridMap whose bounds have handles: the dialog's target while the dialog is open.</summary>
-    public GridMap HandleTarget => _dialog != null && _dialog.Visible && TargetIsAlive ? _target : null;
+    /// <summary>
+    /// The GridMap whose bounds have handles: the dialog's target while the dialog is open and no
+    /// generation runs.
+    /// </summary>
+    public GridMap HandleTarget => _dialog != null && _dialog.Visible && _run == null && TargetIsAlive ? _target : null;
 
     public int BoxCount => 1;
 
@@ -755,27 +806,29 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     public Vector3I BoxSize(int box) => _settings.BoundsSize;
 
     /// <summary>Changes the bounds while a handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
-    public void SetBox(int box, Vector3I origin, Vector3I size)
+    private void SetBox(Vector3I origin, Vector3I size)
     {
-        _settings.BoundsOrigin = origin;
-        _settings.BoundsSize = size;
-        _settings.NotifyPropertyListChanged();
+        _settings.SetBounds(origin, size);
         if (TargetIsAlive)
             _target.UpdateGizmos();
     }
 
-    /// <summary>Ends a handle drag: puts the bounds back when cancelled, otherwise adds one undo step.</summary>
-    public void CommitBox(int box, Vector3I origin, Vector3I size, bool cancel)
+    /// <summary>
+    /// Ends a handle drag: puts the bounds back when cancelled, otherwise adds one undo step. The step
+    /// targets the settings resource that was dragged, so undoing it after the dialog was opened for
+    /// another GridMap leaves that GridMap's settings alone.
+    /// </summary>
+    private void CommitBox(Vector3I origin, Vector3I size, bool cancel)
     {
         if (cancel)
         {
-            SetBox(box, origin, size);
+            SetBox(origin, size);
             return;
         }
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction("Resize Dungeon Bounds");
-        undoRedo.AddDoMethod(this, MethodName.SetBox, box, BoxOrigin(box), BoxSize(box));
-        undoRedo.AddUndoMethod(this, MethodName.SetBox, box, origin, size);
+        undoRedo.AddDoMethod(_settings, DungeonSettings.MethodName.SetBounds, _settings.BoundsOrigin, _settings.BoundsSize);
+        undoRedo.AddUndoMethod(_settings, DungeonSettings.MethodName.SetBounds, origin, size);
         undoRedo.CommitAction(false);
     }
 

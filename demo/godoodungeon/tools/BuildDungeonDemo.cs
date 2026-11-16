@@ -132,7 +132,7 @@ public partial class BuildDungeonDemo : Node
         // The tile sets must pass godoodungeon's check and the WFC tile set check without warnings.
         var settings = new DungeonSettings
         {
-            RoomTileSet = room, CorridorTileSet = corridor, DoorTile = Array.FindIndex(RoomModules, m => m.Name == "Door"),
+            RoomTileSet = room, CorridorTileSet = corridor, Door = room.Tiles.Single(t => t.ResourceName == "Door").Item,
             RoomEdgeSocket = EdgeSocket, PathSocket = PathSocket,
         };
         var check = DungeonTileSets.Check(settings);

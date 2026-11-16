@@ -15,6 +15,10 @@ public sealed class DungeonTileSets
 {
     public TileSetBinding Room { get; private set; }
     public TileSetBinding Corridor { get; private set; }
+
+    /// <summary>The room tile index of <see cref="DungeonSettings.Door"/>, or -1 when it is not in the room tile set.</summary>
+    public int DoorTile { get; private set; } = -1;
+
     public List<string> Errors { get; } = new();
     public List<string> Warnings { get; } = new();
     public bool IsValid => Errors.Count == 0;
@@ -45,7 +49,9 @@ public sealed class DungeonTileSets
         if (!result.Room.IsValid || !result.Corridor.IsValid)
             return result;
 
-        var (errors, warnings) = DungeonTileRules.Check(result.Room.Compiled, result.Room.TileNames, settings.DoorTile,
+        // The door is stored by item (1.0.1); the rules and the solver use the tile's index.
+        result.DoorTile = settings.Door == DungeonSettings.NoDoor ? -1 : result.Room.TileForItem(settings.Door);
+        var (errors, warnings) = DungeonTileRules.Check(result.Room.Compiled, result.Room.TileNames, result.DoorTile,
             settings.RoomEdgeSocket, result.Corridor.Compiled, settings.PathSocket);
         result.Errors.AddRange(errors);
         result.Warnings.AddRange(warnings);

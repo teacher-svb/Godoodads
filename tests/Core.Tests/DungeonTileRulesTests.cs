@@ -77,16 +77,16 @@ public class DungeonTileRulesTests
     {
         var errors = Check(edge: "rim").Errors;
         Assert.Contains(errors, e => e.StartsWith("No room tile has a face 'rim+'"));
-        Assert.Contains(errors, e => e.StartsWith("The Door Tile 'Door' needs exactly one horizontal face with 'rim+'"));
+        Assert.Contains(errors, e => e.StartsWith("The Door tile 'Door' needs exactly one horizontal face with 'rim+'"));
     }
 
     [Fact]
     public void The_door_tile_must_be_chosen_and_have_one_outer_face()
     {
-        Assert.Equal("Choose the Door Tile from the room tile set.", Assert.Single(Check(door: -1).Errors));
-        Assert.Equal("Choose the Door Tile from the room tile set.", Assert.Single(Check(door: 9).Errors));
-        Assert.Equal("The Door Tile 'Corner' needs exactly one horizontal face with 'outside+' (its outside), but has 2.", Assert.Single(Check(door: 2).Errors));
-        Assert.StartsWith("The Door Tile 'Floor' needs exactly one", Assert.Single(Check(door: 0).Errors));
+        Assert.Equal("Choose the Door tile from the room tile set.", Assert.Single(Check(door: -1).Errors));
+        Assert.Equal("Choose the Door tile from the room tile set.", Assert.Single(Check(door: 9).Errors));
+        Assert.Equal("The Door tile 'Corner' needs exactly one horizontal face with 'outside+' (its outside), but has 2.", Assert.Single(Check(door: 2).Errors));
+        Assert.StartsWith("The Door tile 'Floor' needs exactly one", Assert.Single(Check(door: 0).Errors));
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class DungeonTileRulesTests
     {
         var (errors, warnings) = Check(door: 1);
         Assert.Empty(errors);
-        Assert.StartsWith("The Door Tile 'Wall' has a weight above 0", Assert.Single(warnings));
+        Assert.StartsWith("The Door tile 'Wall' has a weight above 0", Assert.Single(warnings));
     }
 
     [Fact]
@@ -169,5 +169,18 @@ public class DungeonTileRulesTests
         Assert.Equal((1 << Directions.PosZ) | (1 << Directions.NegZ), DungeonTileRules.PathFaces(corridor.Variants[alongZ], "path"));
         int empty = DungeonTileRules.EmptyVariant(corridor, "path");
         Assert.Equal(CEmpty, corridor.Variants[empty].TileIndex);
+    }
+
+    [Fact]
+    public void The_empty_corridor_tile_is_chosen_by_its_weight_at_the_bottom_of_its_curve()
+    {
+        // Corridors are one layer, which the solver treats as height 0 of a curve.
+        var rubble = new TileDefinition(S("x", "x", "v", "v", "x", "x"), TileRotation.None, 50, new[] { 0.0, 1.0 });
+        var corridor = Compile(CorridorTiles.Append(rubble));
+        int empty = DungeonTileRules.EmptyVariant(corridor, "path");
+        Assert.Equal(CEmpty, corridor.Variants[empty].TileIndex);
+
+        var onlyRubble = Without(CEmpty).Append(rubble);
+        Assert.Contains(Check(corridor: onlyRubble).Errors, e => e.Contains("no tile without 'path' faces"));
     }
 }

@@ -10,7 +10,7 @@ script = ExtResource("4_qfsj5")
 Seed = 2
 RoomTileSet = ExtResource("3_54ied")
 CorridorTileSet = ExtResource("2_44m14")
-DoorTile = 10
+Door = 10
 BoundsSize = Vector3i(64, 1, 64)
 RoomCount = 20
 

@@ -61,7 +61,7 @@ public static class SolveInputs
             int variant = DungeonTileRules.DoorVariant(tiles, doorTile, edge, Direction(door.Side));
             if (variant < 0)
                 return new SolveInput(origin, grid, initial, boundary,
-                    $"The Door Tile has no rotation whose '{edge}+' face points {Directions.Name(Direction(door.Side))}, so the door at {layout.GridCell(door.Cell)} cannot be placed.");
+                    $"The Door tile has no rotation whose '{edge}+' face points {Directions.Name(Direction(door.Side))}, so the door at {layout.GridCell(door.Cell)} cannot be placed.");
             var local = door.Cell - rect.Position;
             initial[grid.Index(new Vector3I(local.X, 0, local.Y))] = variant;
         }

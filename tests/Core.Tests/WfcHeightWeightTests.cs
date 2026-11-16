@@ -95,6 +95,40 @@ public class WfcHeightWeightTests
         Assert.Equal(0, result.Failure.Cell.Y);
     }
 
+    // A one-layer grid is the curve's bottom layer (height 0), as for the router and LayersWithoutWeight.
+    private static readonly GridTopology OneLayer = GridTopology.Create3D(new Vector3I(16, 1, 16));
+
+    [Fact]
+    public void AOneLayerGridUsesTheBottomOfTheCurve()
+    {
+        var set = CompiledTileSet.Compile(new[] { Tile(1, 0, 1), Tile() }, OneLayer.ActiveDirections);
+        Assert.Empty(set.LayersWithoutWeight(1));
+        for (long seed = 1; seed <= 8; seed++)
+        {
+            var result = new WfcSolver(OneLayer, set).Solve(new SolveOptions { Seed = seed });
+            Assert.Equal(SolveStatus.Solved, result.Status);
+            Assert.DoesNotContain(result.Cells, v => set.Variants[v].TileIndex == 0);
+        }
+    }
+
+    [Fact]
+    public void AOneLayerGridWithoutWeightAtTheBottomCannotBeSolved()
+    {
+        var set = CompiledTileSet.Compile(new[] { Tile(1, 0, 1), Tile(0) }, OneLayer.ActiveDirections);
+        Assert.Equal(new[] { 0 }, set.LayersWithoutWeight(1));
+        Assert.Equal(SolveStatus.Impossible, new WfcSolver(OneLayer, set).Solve(new SolveOptions { Seed = 7 }).Status);
+    }
+
+    [Fact]
+    public void AOneLayerGridWithAFlatCurveGivesTheSameResultAsNoCurve()
+    {
+        // Tile sets without curves keep the plain weights, so their results do not change.
+        var plain = CompiledTileSet.Compile(new[] { Tile(2), Tile(1) }, OneLayer.ActiveDirections);
+        var flat = CompiledTileSet.Compile(new[] { Tile(2, 1, 1), Tile(1) }, OneLayer.ActiveDirections);
+        Assert.Equal(new WfcSolver(OneLayer, plain).Solve(new SolveOptions { Seed = 9 }).Cells,
+            new WfcSolver(OneLayer, flat).Solve(new SolveOptions { Seed = 9 }).Cells);
+    }
+
     [Fact]
     public void ZeroEverywhereIsACompileError()
     {

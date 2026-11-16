@@ -337,6 +337,10 @@ public partial class TileSetPreview : VBoxContainer, ISerializationListener
         foreach (var tile in _tileSet.Tiles)
             if (tile != null)
                 text.Append('|').Append(TileKey(tile));
+        // Editing an External Sockets entry does not rebuild the inspector, so the signature must see it.
+        text.Append("|external");
+        foreach (string socket in _tileSet.ExternalSockets ?? new Godot.Collections.Array<string>())
+            text.Append('|').Append(socket);
         return text.ToString();
     }
 

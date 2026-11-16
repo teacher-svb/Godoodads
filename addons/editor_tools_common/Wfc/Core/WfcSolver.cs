@@ -124,7 +124,9 @@ public sealed class WfcSolver
             double sum = 0;
             for (int v = 0; v < _variantCount; v++)
             {
-                double weight = _layers == 1 ? tiles.VariantWeights[v] : tiles.WeightAt(v, height);
+                // A one-layer grid with curves is their bottom layer (height 0), as for the router and
+                // LayersWithoutWeight. Only tile sets without curves use the plain weights.
+                double weight = tiles.HasHeightProfiles ? tiles.WeightAt(v, height) : tiles.VariantWeights[v];
                 _weights[layer * _variantCount + v] = weight;
                 sum += weight;
                 if (weight <= 0)

@@ -37,6 +37,24 @@ public static class DungeonGridMap
             map.SetMeta(RecordKey, data);
     }
 
+    /// <summary>
+    /// A cheap value that changes when any cell of the map or the stored record changes, so Preview
+    /// Layout can tell when the hand-placed cells may have changed. Independent of cell order.
+    /// Only compared within one editor session: it uses <see cref="HashCode"/>.
+    /// </summary>
+    public static long Fingerprint(GridMap map)
+    {
+        long cells = 0;
+        var used = map.GetUsedCells();
+        foreach (Vector3I cell in used)
+            cells += HashCode.Combine(cell, map.GetCellItem(cell), map.GetCellItemOrientation(cell));
+        var hash = new HashCode();
+        hash.Add(cells);
+        hash.Add(used.Count);
+        hash.AddBytes(StoredRecord(map));
+        return hash.ToHashCode();
+    }
+
     /// <summary>Occupied cells in the box that the last dungeon did not write, or that changed since.</summary>
     public static HashSet<Vector3I> ReadHandPlaced(GridMap map, Vector3I origin, Vector3I size, GeneratedRecord record)
     {
@@ -58,7 +76,7 @@ public static class DungeonGridMap
         Layout = settings.ToLayoutSettings(),
         Origin = settings.BoundsOrigin,
         RoomTiles = tileSets.Room.Compiled,
-        DoorTile = settings.DoorTile,
+        DoorTile = tileSets.DoorTile,
         EdgeSocket = settings.RoomEdgeSocket,
         CorridorTiles = tileSets.Corridor.Compiled,
         PathSocket = settings.PathSocket,
