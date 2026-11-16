@@ -9,6 +9,7 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 | godooscatter (MultiMesh Scatter) | `addons/godooscatter/` | 1.3.1, see its [README](addons/godooscatter/README.md) | [docs/briefs/godooscatter.md](docs/briefs/godooscatter.md) |
 | godoowave (WFC Generator) | `addons/godoowave/` | 1.4.2, see its [README](addons/godoowave/README.md) | [docs/briefs/godoowave.md](docs/briefs/godoowave.md) |
 | godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | 1.0.1, see its [README](addons/godoodungeon/README.md) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
+| godoocurves | `addons/godoocurves/` | In development (M0), see its [README](addons/godoocurves/README.md) | [docs/briefs/godoocurves.md](docs/briefs/godoocurves.md) |
 
 ## Install an addon
 
