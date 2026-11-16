@@ -1,15 +1,15 @@
 ---
 id: "dgn-1-0-1-preview-external-sockets-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-16T09:27:47.000Z"
-modified: "2026-11-16T09:37:35.000Z"
-completedAt: null
+modified: "2026-11-16T11:01:39.756Z"
+completedAt: "2026-11-16T11:01:39.756Z"
 labels: ["v1.0.1", "editor", "bug", "common"]
-order: "d6b"
+order: "Zk"
 ---
 # godoodungeon 1.0.1: The tile set preview ignores newly added External Sockets
 

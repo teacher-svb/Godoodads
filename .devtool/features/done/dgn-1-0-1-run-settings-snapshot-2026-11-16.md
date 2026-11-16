@@ -1,15 +1,15 @@
 ---
 id: "dgn-1-0-1-run-settings-snapshot-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-16T09:45:59.000Z"
-modified: "2026-11-16T10:34:32.000Z"
-completedAt: null
+modified: "2026-11-16T11:01:40.880Z"
+completedAt: "2026-11-16T11:01:40.880Z"
 labels: ["v1.0.1", "editor", "bug"]
-order: "d6c"
+order: "Zj"
 ---
 # godoodungeon 1.0.1: Stored settings follow edits made during the generation
 
