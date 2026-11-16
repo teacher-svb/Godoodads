@@ -1,13 +1,13 @@
 ---
 id: "crv-m4-review-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T14:38:18.000Z"
-modified: "2026-11-16T14:50:36.000Z"
-completedAt: null
+modified: "2026-11-16T14:51:48.000Z"
+completedAt: "2026-11-16T14:51:48.000Z"
 labels: ["v1.0.0", "m4", "review"]
 order: "e2"
 ---
@@ -25,3 +25,6 @@ order: "e2"
 - The curvature step where arcs meet straights is kept as an idea card: `crv-idea-curvature-easing-2026-11-16`.
 - Outlines and continuing the coaster in Append mode: passed.
 - 501 Core and 127 engine tests pass.
+
+## Board decision (2026-11-16, round 2)
+Loop jolt gone. M4 approved on result quality. M5 may start.
