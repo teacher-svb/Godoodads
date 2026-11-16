@@ -20,7 +20,7 @@ project/assembly_name="Godoodads"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/godooscatter/plugin.cfg", "res://addons/godoowave/plugin.cfg", "res://addons/godoodungeon/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/godooscatter/plugin.cfg", "res://addons/godoowave/plugin.cfg", "res://addons/godoodungeon/plugin.cfg", "res://addons/godoocurves/plugin.cfg")
 
 [godot_mcp]
 

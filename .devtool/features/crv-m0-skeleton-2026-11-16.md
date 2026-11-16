@@ -1,12 +1,12 @@
 ---
 id: "crv-m0-skeleton-2026-11-16"
-status: "todo"
+status: "in-progress"
 priority: "medium"
 assignee: "claude"
 epic: "godoocurves"
 dueDate: null
 created: "2026-11-16T12:24:14.000Z"
-modified: "2026-11-16T12:24:14.000Z"
+modified: "2026-11-16T12:30:15.000Z"
 completedAt: null
 labels: ["v1.0.0", "m0", "editor", "infra"]
 order: "a2"

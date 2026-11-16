@@ -94,7 +94,8 @@ Every shape is built in a local frame: **forward** (the direction the path start
 
 #### 4.4 Tilt
 
-- Shapes that lean write per-point tilt: Banked Turn eases from 0 to Bank and back over the turn, and Corkscrew turns its tilt with the spiral, so the side of the track faces the axis. Other shapes write tilt 0, or carry the end tilt of the curve they append to.
+- Godot's tilt is a roll **on top of** the curve's own up vectors, which Godot computes by turning the start's up as little as possible along the curve (§10.2). Those up vectors twist on any curve that leaves its plane: after a loop with a Side Shift of 1 m the up at the exit is 19° off, and a corkscrew whose tilt is simply its roll angle faces the wrong way. So a shape does not set tilt directly. **Core gives the wanted up direction at each point**; the adapter writes the points, reads Godot's untilted up at each one, and sets the tilt to the signed angle between them around the tangent, unwrapped so neighbouring tilts never differ by more than 180° (checked in M0: corkscrew within 0.04° at 8 points per turn, loop exit back to exact).
+- Wanted up: Banked Turn eases from the frame's up to Bank and back over the turn; Corkscrew faces the axis; Loop faces the loop's centre and returns to the frame's up on the run-out; every other shape keeps the frame's up. So each shape ends with the up of its own frame, and the next appended piece continues from it.
 - Up vectors stay enabled on the curve. A `PathFollow3D` and a `CSGPolygon3D` in path mode must follow the tilt through loops and corkscrews without flips (§10.2).
 
 ---
@@ -112,7 +113,7 @@ Every shape is built in a local frame: **forward** (the direction the path start
 ### 6. Known pitfalls
 
 1. A `Curve3D` can be shared by several paths or saved as a `.tres`. Editing it in place would change all of them; §4.3 works on a copy.
-2. Path3D up vectors and tilt are computed from the baked curve. A bake interval that is too coarse for a small loop gives visible kinks; the README names `bake_interval`.
+2. Path3D up vectors twist on curves that leave their plane, and tilt is relative to them (§4.4). Setting tilt from the shape alone gives wrong rolls; the adapter has to measure Godot's up vectors. The bake interval made no difference to the up vectors of a 3 m loop between 0.05 and 1.0 (M0).
 3. Points are in the Path3D's local space. A scaled or rotated Path3D scales and rotates the shape with it, which is expected but worth stating.
 4. A loop without Side Shift crosses itself at its bottom. That is allowed (some uses want it) but CSG geometry along it overlaps.
 5. Appending to a curve whose last point has no handles and no previous point has no direction: it uses the default Direction and says so.
@@ -163,11 +164,13 @@ Note further ideas as idea cards in the epic `godoocurves` with the labels `v2.0
 
 ### 10. Assumptions to verify in M0
 
-1. Godot 4.7's `Curve3D` has a `closed` property (or equivalent) that a `Path3D`, a `PathFollow3D` and a `CSGPolygon3D` honour. If not, closed shapes repeat their first point.
-2. With up vectors enabled, per-point tilt is followed by `PathFollow3D` (rotation mode Oriented) and by `CSGPolygon3D` path mode through a vertical loop and a corkscrew, without a flip at the top of the loop.
-3. Godot's 3D toolbar shows no menu button for `Path3D` with an icon `SpatialMenuHook` can find; the hook's own button is used, and it does not clash with godoowave and godoodungeon's shared GridMap button.
-4. A `Resource` in a Path3D's metadata saves and loads with the scene, and survives an assembly reload (as `WfcSettings` does on a GridMap).
-5. `Curve3D.SampleBakedUpVector` at the end of the curve gives the up vector Append needs, including the last point's tilt.
+Results from card `crv-m0-verify-engine` (2026-11-16), checked headless with Godot 4.7.
+
+1. **True.** `Curve3D` has `closed` (`set_closed`/`is_closed`), and the baked curve includes the closing side (a 4 m square: 12 m open, 16 m closed), which `PathFollow3D` follows. `CSGPolygon3D` has its own `path_joined`; whether it needs it with a closed curve is checked visually in the M4 demo.
+2. **True, with a condition.** Godot's up vectors through a vertical loop are smooth (at most 0.3° between samples) and face the loop's centre without a flip at the top, at any bake interval from 0.05 to 1.0. But tilt is added on top of those up vectors, which twist: see §4.4 for the method that resolved it. Positive tilt turns up right-handed around the tangent (on a +X line, +Y turns toward +Z). `PathFollow3D` (Oriented, `tilt_enabled`) and `CSGPolygon3D` (path follow) read the same up vectors; seen in motion in M4.
+3. **True.** Godot 4.7 has no built-in menu button with the Path3D icon: the skeleton plugin reports "using its own Path3D toolbar button" (`crv-m0-skeleton`, headless editor with `--verbose`). `SpatialMenuHook` adds that button with the Path3D icon, and hooks share a fallback button only when their icons match, so it cannot clash with the GridMap button.
+4. **True.** A C# `Resource` in a Path3D's metadata saves as a sub-resource of the scene and loads with its values. Surviving an assembly reload uses the same mechanism as `WfcSettings` on a GridMap; checked by hand with the skeleton.
+5. **True.** `sample_baked_up_vector(length, apply_tilt: true)` at the end gives the tilted up (last point tilt 0.5 rad: up 28.65° from +Y), the same as the basis of `sample_baked_with_rotation`.
 
 ---
 
