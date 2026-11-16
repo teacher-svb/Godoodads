@@ -1,0 +1,697 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/godoocurves/Resources/CurveSettings.cs" id="1_kewre"]
+
+[sub_resource type="Environment" id="Environment_q385j"]
+background_mode = 1
+background_color = Color(0.78, 0.85, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.6, 0.62, 0.66, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_pqip6"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0),
+"tilts": PackedFloat32Array(0, -2.3841858e-07)
+}
+point_count = 2
+
+[sub_resource type="Resource" id="Resource_ew0wt"]
+script = ExtResource("1_kewre")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frwao"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_2fs8x"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 3.3333333, 6.6666665, 0, 0, 0, 0, -3.3333333, 6.6666665, 0, 0, 0, 0, 10, 0, 0),
+"tilts": PackedFloat32Array(0, -2.3841858e-07)
+}
+point_count = 2
+
+[sub_resource type="Resource" id="Resource_rj6xa"]
+script = ExtResource("1_kewre")
+Shape = 1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gsg1v"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_ih1gg"]
+closed = true
+_data = {
+"points": PackedVector3Array(-2.7614238, 0, -4.8282266e-07, 2.7614238, 0, 0, 0, 0, 0, 1.2070566e-07, 0, -2.7614238, -1.2070566e-07, 0, 2.7614238, 5, 0, 5, 2.7614238, 0, 2.4141133e-07, -2.7614238, 0, -2.4141133e-07, -4.371139e-07, 0, 10, -3.292965e-08, 0, 2.7614238, 3.292965e-08, 0, -2.7614238, -5, 0, 5),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07)
+}
+point_count = 4
+
+[sub_resource type="Resource" id="Resource_106xn"]
+script = ExtResource("1_kewre")
+Shape = 2
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_g70wt"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_kxdv8"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 2.7614238, 0, 0, 0, 0, 0, 1.2070566e-07, 0, -2.7614238, -1.2070566e-07, 0, 2.7614238, 5, 0, 5, 2.7614238, 0, 2.4141133e-07, 0, 0, 0, -4.371139e-07, 0, 10),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07)
+}
+point_count = 3
+
+[sub_resource type="Resource" id="Resource_u0hxy"]
+script = ExtResource("1_kewre")
+Shape = 3
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_drwoq"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_tahd3"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1.6568544, 0, 0, 5, 0, 0, 7.24234e-08, -1.6568544, 0, -7.24234e-08, 1.6568544, 0, 8, 3.0000002, 0, 1.6568544, 1.448468e-07, 0, -1.6568544, -1.448468e-07, 0, 4.9999995, 6, 0, -1.975779e-08, 1.6568544, 0, 1.975779e-08, -1.6568544, 0, 2, 3, 0, -1.6568544, -2.896936e-07, 0, 0, 0, 0, 5.0000005, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 0),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07)
+}
+point_count = 7
+
+[sub_resource type="Resource" id="Resource_h2mnd"]
+script = ExtResource("1_kewre")
+Shape = 4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_amjhe"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_mfmto"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.2777778, 0, 0, 0, 0, 0, -0.2777778, 0, -0.45344988, 0.2777778, 0, 0.45344988, 0.8333333, 0, 0.75, -0.2777778, 0, -0.45344988, 0.2777778, 0, 0.45344988, 1.6666666, 0, 2.25, -0.2777778, 0, -6.412236e-17, 0.2777778, 0, 6.412236e-17, 2.5, 0, 3, -0.2777778, 0, 0.45344988, 0.2777778, 0, -0.45344988, 3.3333333, 0, 2.25, -0.2777778, 0, 0.45344988, 0.2777778, 0, -0.45344988, 4.1666665, 0, 0.75, -0.2777778, 0, 1.2824472e-16, 0.2777778, 0, -1.2824472e-16, 5, 0, 0, -0.2777778, 0, -0.45344988, 0.2777778, 0, 0.45344988, 5.8333335, 0, 0.75, -0.2777778, 0, -0.45344988, 0.2777778, 0, 0.45344988, 6.6666665, 0, 2.25, -0.2777778, 0, -1.9236707e-16, 0.2777778, 0, 1.9236707e-16, 7.5, 0, 3, -0.2777778, 0, 0.45344988, 0.2777778, 0, -0.45344988, 8.333333, 0, 2.25, -0.2777778, 0, 0.45344988, 0.2777778, 0, -0.45344988, 9.166667, 0, 0.75, -0.2777778, 0, 2.5648944e-16, 0, 0, 0, 10, 0, 0),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 13
+
+[sub_resource type="Resource" id="Resource_8pnya"]
+script = ExtResource("1_kewre")
+Shape = 5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jvq2k"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_und0f"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.13888888, 0, 0, 0, 0, 0, -0.13888888, 0.16814794, 0.17172219, 0.13888888, -0.16814794, -0.17172219, 0.41666666, -0.32075015, -0.18518518, -0.13888888, -0.0107499305, 0.43387333, 0.13888888, 0.0107499305, -0.43387333, 0.8333333, -0.6481481, -1.1226255, -0.13888888, -0.4363323, 0.41666666, 0.13888888, 0.4363323, -0.41666666, 1.25, -1.5308085e-16, -2.5, -0.13888888, -0.7449998, -0.0024589712, 0.13888888, 0.7449998, 0.0024589712, 1.6666666, 1.8518518, -3.2075014, -0.13888888, -0.6044802, -0.5840275, 0.13888888, 0.6044802, 0.5840275, 2.0833333, 4.009377, -2.3148148, -0.13888888, -1.0687059e-16, -0.8726646, 0.13888888, 1.0687059e-16, 0.8726646, 2.5, 5, -6.123234e-16, -0.13888888, 0.4363323, -0.75574976, 0.13888888, -0.4363323, 0.75574976, 2.9166667, 4.3301272, 2.5, -0.13888888, 0.75574976, -0.4363323, 0.13888888, -0.75574976, 0.4363323, 3.3333333, 2.5, 4.3301272, -0.13888888, 0.8726646, -1.6030588e-16, 0.13888888, -0.8726646, 1.6030588e-16, 3.75, 9.18485e-16, 5, -0.13888888, 0.75574976, 0.4363323, 0.13888888, -0.75574976, -0.4363323, 4.1666665, -2.5, 4.3301272, -0.13888888, 0.4363323, 0.75574976, 0.13888888, -0.4363323, -0.75574976, 4.5833335, -4.3301272, 2.5, -0.13888888, 2.1374118e-16, 0.8726646, 0.13888888, -2.1374118e-16, -0.8726646, 5, -5, 1.2246468e-15, -0.13888888, -0.4363323, 0.75574976, 0.13888888, 0.4363323, -0.75574976, 5.4166665, -4.3301272, -2.5, -0.13888888, -0.75574976, 0.4363323, 0.13888888, 0.75574976, -0.4363323, 5.8333335, -2.5, -4.3301272, -0.13888888, -0.8726646, 1.0422583e-15, 0.13888888, 0.8726646, -1.0422583e-15, 6.25, -5.9717004e-15, -5, -0.13888888, -0.75574976, -0.4363323, 0.13888888, 0.75574976, 0.4363323, 6.6666665, 2.5, -4.3301272, -0.13888888, -0.4363323, -0.75574976, 0.13888888, 0.4363323, 0.75574976, 7.0833335, 4.3301272, -2.5, -0.13888888, -3.2061176e-16, -0.8726646, 0.13888888, 3.2061176e-16, 0.8726646, 7.5, 5, -1.83697e-15, -0.13888888, 0.6044802, -0.5840275, 0.13888888, -0.6044802, 0.5840275, 7.9166665, 4.009377, 2.3148148, -0.13888888, 0.7449998, -0.0024589712, 0.13888888, -0.7449998, 0.0024589712, 8.333333, 1.8518518, 3.2075014, -0.13888888, 0.4363323, 0.41666666, 0.13888888, -0.4363323, -0.41666666, 8.75, 1.0715659e-15, 2.5, -0.13888888, 0.0107499305, 0.43387333, 0.13888888, -0.0107499305, -0.43387333, 9.166667, -0.6481481, 1.1226255, -0.13888888, -0.16814794, 0.17172219, 0.13888888, 0.16814794, -0.17172219, 9.583333, -0.32075015, 0.18518518, -0.13888888, 0, 0, 0, 0, 0, 10, 0, 0),
+"tilts": PackedFloat32Array(0, -0.50149465, -0.65527487, -0.6744592, -1.8779831, -3.1321347, -3.171535, -3.1797206, -3.272706, -4.495393, -5.7180796, -5.8110647, -5.81925, -5.8274355, -5.9204216, -7.1431074, -8.365794, -8.45878, -8.466966, -8.506367, -9.760517, -10.964043, -10.983229, -11.137016, -11.638502)
+}
+point_count = 25
+
+[sub_resource type="Resource" id="Resource_14rir"]
+script = ExtResource("1_kewre")
+Shape = 6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_do67t"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_aibdq"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 2.7614238, 0, 0, 0, 0, 0, 1.2070566e-07, 0, -2.7614238, 0, 0, 0, 5, 0, 5),
+"tilts": PackedFloat32Array(0, -2.3841858e-07)
+}
+point_count = 2
+
+[sub_resource type="Resource" id="Resource_m78vr"]
+script = ExtResource("1_kewre")
+Shape = 7
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xjlen"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_pxfwp"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 1.7775339, 0, 0, 0, 0, 0, -1.4839963, 0, -0.9784592, 1.4839962, 0, 0.97845906, 5, 0, 1.5000005, -1.7775339, 0, 0, 0, 0, 0, 10, 0, 3),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07)
+}
+point_count = 3
+
+[sub_resource type="Resource" id="Resource_2v04u"]
+script = ExtResource("1_kewre")
+Shape = 8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5k0hl"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_avsh0"]
+closed = true
+_data = {
+"points": PackedVector3Array(-1.5707964, 0, 1.9236709e-16, 1.5707964, 0, 0, 0, 0, 0, -1.1107208, 0, -0.5553604, 1.1107208, 0, 0.5553604, 4.2426405, 0, 0.8786797, -9.618354e-17, 0, -0.7853982, 9.618354e-17, 0, 0.7853982, 6, 0, 3, 1.1107208, 0, -0.5553604, -1.1107208, 0, 0.5553604, 4.2426405, 0, 5.1213207, 1.5707964, 0, -9.618354e-17, -1.5707964, 0, 9.618354e-17, 7.347881e-16, 0, 6, 1.1107208, 0, 0.5553604, -1.1107208, 0, -0.5553604, -4.2426405, 0, 5.1213207, 2.8855061e-16, 0, 0.7853982, -2.8855061e-16, 0, -0.7853982, -6, 0, 3, -1.1107208, 0, 0.5553604, 1.1107208, 0, -0.5553604, -4.2426405, 0, 0.8786797),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07)
+}
+point_count = 8
+
+[sub_resource type="Resource" id="Resource_3u2h0"]
+script = ExtResource("1_kewre")
+Shape = 9
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_awwim"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_uumbd"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 2.7614238, 0.21974713, 0, 0, 0, 0, 1.2070566e-07, -0.21974713, -2.7614238, -1.2070566e-07, 0.21974713, 2.7614238, 5, 0.625, 5, 2.7614238, -0.21974713, 2.4141133e-07, -2.7614238, 0.21974713, -2.4141133e-07, -4.371139e-07, 1.25, 10, -3.292965e-08, -0.21974713, 2.7614238, 3.292965e-08, 0.21974713, -2.7614238, -5, 1.875, 5, -2.7614238, -0.21974713, -4.8282266e-07, 2.7614238, 0.21974713, 4.8282266e-07, 8.742278e-07, 2.5, 0, 9.3271575e-07, -0.21974713, -2.7614238, -9.3271575e-07, 0.21974713, 2.7614238, 5, 3.125, 5.000002, 2.7614238, -0.21974713, 6.58593e-08, -2.7614238, 0.21974713, -6.58593e-08, -1.1924881e-07, 3.75, 10, -1.8325018e-06, -0.21974713, 2.7614238, 1.8325018e-06, 0.21974713, -2.7614238, -5, 4.375, 4.9999967, -2.7614238, -0.21974713, -9.656453e-07, 0, 0, 0, 1.7484556e-06, 5, 0),
+"tilts": PackedFloat32Array(0, -0.12459588, -0.24919176, -0.37378764, -0.49838257, -0.6229775, -0.7475734, -0.8721683, -0.9967642)
+}
+point_count = 9
+
+[sub_resource type="Resource" id="Resource_3dfi3"]
+script = ExtResource("1_kewre")
+Shape = 10
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hgs2e"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_vdwuv"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.13888888, 0, 0, 0, 0, 0, -0.13888888, 0.16814794, 0.17172219, 0.13888888, -0.16814794, -0.17172219, 0.41666666, -0.32075015, -0.18518518, -0.13888888, -0.0107499305, 0.43387333, 0.13888888, 0.0107499305, -0.43387333, 0.8333333, -0.6481481, -1.1226255, -0.13888888, -0.4363323, 0.41666666, 0.13888888, 0.4363323, -0.41666666, 1.25, -1.5308085e-16, -2.5, -0.13888888, -0.7449998, -0.0024589712, 0.13888888, 0.7449998, 0.0024589712, 1.6666666, 1.8518518, -3.2075014, -0.13888888, -0.6044802, -0.5840275, 0.13888888, 0.6044802, 0.5840275, 2.0833333, 4.009377, -2.3148148, -0.13888888, -1.0687059e-16, -0.8726646, 0.13888888, 1.0687059e-16, 0.8726646, 2.5, 5, -6.123234e-16, -0.13888888, 0.4363323, -0.75574976, 0.13888888, -0.4363323, 0.75574976, 2.9166667, 4.3301272, 2.5, -0.13888888, 0.75574976, -0.4363323, 0.13888888, -0.75574976, 0.4363323, 3.3333333, 2.5, 4.3301272, -0.13888888, 0.8726646, -1.6030588e-16, 0.13888888, -0.8726646, 1.6030588e-16, 3.75, 9.18485e-16, 5, -0.13888888, 0.75574976, 0.4363323, 0.13888888, -0.75574976, -0.4363323, 4.1666665, -2.5, 4.3301272, -0.13888888, 0.4363323, 0.75574976, 0.13888888, -0.4363323, -0.75574976, 4.5833335, -4.3301272, 2.5, -0.13888888, 2.1374118e-16, 0.8726646, 0.13888888, -2.1374118e-16, -0.8726646, 5, -5, 1.2246468e-15, -0.13888888, -0.4363323, 0.75574976, 0.13888888, 0.4363323, -0.75574976, 5.4166665, -4.3301272, -2.5, -0.13888888, -0.75574976, 0.4363323, 0.13888888, 0.75574976, -0.4363323, 5.8333335, -2.5, -4.3301272, -0.13888888, -0.8726646, 1.0422583e-15, 0.13888888, 0.8726646, -1.0422583e-15, 6.25, -5.9717004e-15, -5, -0.13888888, -0.75574976, -0.4363323, 0.13888888, 0.75574976, 0.4363323, 6.6666665, 2.5, -4.3301272, -0.13888888, -0.4363323, -0.75574976, 0.13888888, 0.4363323, 0.75574976, 7.0833335, 4.3301272, -2.5, -0.13888888, -3.2061176e-16, -0.8726646, 0.13888888, 3.2061176e-16, 0.8726646, 7.5, 5, -1.83697e-15, -0.13888888, 0.6044802, -0.5840275, 0.13888888, -0.6044802, 0.5840275, 7.9166665, 4.009377, 2.3148148, -0.13888888, 0.7449998, -0.0024589712, 0.13888888, -0.7449998, 0.0024589712, 8.333333, 1.8518518, 3.2075014, -0.13888888, 0.4363323, 0.41666666, 0.13888888, -0.4363323, -0.41666666, 8.75, 1.0715659e-15, 2.5, -0.13888888, 0.0107499305, 0.43387333, 0.13888888, -0.0107499305, -0.43387333, 9.166667, -0.6481481, 1.1226255, -0.13888888, -0.16814794, 0.17172219, 0.13888888, 0.16814794, -0.17172219, 9.583333, -0.32075015, 0.18518518, -0.13888888, 0, 0, 0, 0, 0, 10, 0, 0),
+"tilts": PackedFloat32Array(0, 0.1046865, -0.18491793, -0.23267817, -0.18455696, -0.111035585, -0.02994299, 0.05237031, 0.13468361, 0.21699595, 0.29930925, 0.3816216, 0.4639349, 0.5462482, 0.62856054, 0.71087384, 0.79318714, 0.8754995, 0.9578128, 1.0389054, 1.1124258, 1.160547, 1.1127858, 0.8231747, 0.9278698)
+}
+point_count = 25
+
+[sub_resource type="Resource" id="Resource_hl7rh"]
+script = ExtResource("1_kewre")
+Shape = 11
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ik5eu"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_8hjxu"]
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0.1636575, 0, 0, 0, 0, 0, -0.16286944, 0, -0.01604124, 0.16286944, 0, 0.01604124, 0.49008572, 0, 0.024076462, -0.16051286, 0, -0.031927995, 0.16051286, 0, 0.031927995, 0.9754516, 0, 0.09607363, -0.15661047, 0, -0.047507267, 0.15661047, 0, 0.047507267, 1.4514234, 0, 0.21529818, -0.15119982, 0, -0.06262902, 0.15119982, 0, 0.06262902, 1.9134173, 0, 0.38060236, -0.14433303, 0, -0.07714762, 0.14433303, 0, 0.07714762, 2.3569837, 0, 0.590394, -0.13607624, 0, -0.090923235, 0.13607624, 0, 0.090923235, 2.777851, 0, 0.84265184, -0.12650895, 0, -0.10382323, 0.12650895, 0, 0.10382323, 3.1719666, 0, 1.1349478, -0.11572333, 0, -0.11572333, 0.11572333, 0, 0.11572333, 3.535534, 0, 1.4644661, -0.103823215, 0, -0.12650895, 0.103823215, 0, 0.12650895, 3.8650522, 0, 1.8280337, -0.09092323, 0, -0.13607624, 0.09092323, 0, 0.13607624, 4.157348, 0, 2.2221491, -0.077147596, 0, -0.14433303, 0.077147596, 0, 0.14433303, 4.4096065, 0, 2.6430168, -0.062629014, 0, -0.15119982, 0.062629014, 0, 0.15119982, 4.6193976, 0, 3.086583, -0.047507256, 0, -0.15661047, 0.047507256, 0, 0.15661047, 4.784702, 0, 3.5485768, -0.03192798, 0, -0.16051286, 0.03192798, 0, 0.16051286, 4.9039264, 0, 4.024549, -0.01604124, 0, -0.16286944, 0.01604124, 0, 0.16286944, 4.9759235, 0, 4.5099144, 7.1536967e-09, 0, -0.1636575, 0, 0, 0, 5, 0, 5),
+"tilts": PackedFloat32Array(0, 0.08181262, 0.26179934, 0.44178605, 0.5235987, 0.52359843, 0.5235982, 0.5235989, 0.5235987, 0.52359843, 0.5235982, 0.5235989, 0.5235987, 0.44178653, 0.26179934, 0.08181214, 0)
+}
+point_count = 17
+
+[sub_resource type="Resource" id="Resource_fahdt"]
+script = ExtResource("1_kewre")
+Shape = 12
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_16m5t"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_iem3c"]
+closed = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5522848, 0, 0, 4, 0, 0, 2.4141134e-08, 0, -0.5522848, 0, 0, 0, 5, 0, 1, 0, 0, 0, 0, 0, 0.5522848, 5, 0, 5, 0.5522848, 0, 2.4141134e-08, 0, 0, 0, 4, 0, 6, 0, 0, 0, -0.5522848, 0, 0, -4, 0, 6, -2.4141134e-08, 0, 0.5522848, 0, 0, 0, -5, 0, 5, 0, 0, 0, 0, 0, -0.5522848, -5, 0, 1, -0.5522848, 0, -2.4141134e-08, 0, 0, 0, -4, 0, 0),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 9
+
+[sub_resource type="Resource" id="Resource_jd3fj"]
+script = ExtResource("1_kewre")
+Shape = 13
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6v836"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_u7aob"]
+closed = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.35726553, 0, 8.517874e-08, 1.9226499, 0, -1.10120816e-07, -0.17863275, 0, -0.30940104, 0, 0, 0, 2.788675, 0, 0.4999999, 0, 0, 0, 0.1786328, 0, 0.3094011, 4.7113247, 0, 3.8301268, 0.17863281, 0, -0.3094011, 0, 0, 0, 4.7113247, 0, 4.830127, 0, 0, 0, -0.1786328, 0, 0.3094011, 2.7886753, 0, 8.160254, 0.3572656, 0, 1.0647344e-08, 0, 0, 0, 1.9226499, 0, 8.660254, 0, 0, 0, -0.35726565, 0, 0, -1.9226506, 0, 8.660254, 0.17863278, 0, 0.30940115, 0, 0, 0, -2.788676, 0, 8.160254, 0, 0, 0, -0.17863278, 0, -0.30940107, -4.711325, 0, 4.830127, -0.17863277, 0, 0.30940107, 0, 0, 0, -4.711325, 0, 3.8301268, 0, 0, 0, 0.17863283, 0, -0.30940107, -2.7886739, 0, 0.49999902, -0.35726562, 0, -4.2589377e-08, 0, 0, 0, -1.9226483, 0, -9.536743e-07),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 13
+
+[sub_resource type="Resource" id="Resource_d2lan"]
+script = ExtResource("1_kewre")
+Shape = 14
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_11j8w"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_tjd15"]
+closed = true
+_data = {
+"points": PackedVector3Array(-2.0223114, 0, 0, 2.0223114, 0, 0, 0, 0, 0, -0.7739051, 0, -1.8683721, 0.7739051, 0, 1.8683721, 4.6193976, 0, 3.086583, 1.4299902, 0, -1.4299902, 0, 0, 0, 3.535534, 0, 8.535534, 0, 0, 0, -1.9526215, 0, 1.9526215, -3.535534, 0, 15.606602, -1.9526217, 0, -1.9526213, 1.9526217, 0, 1.9526213, -3.5355337, 0, 22.67767, -1.9526213, 0, 1.9526217, 1.9526213, 0, -1.9526217, 3.5355341, 0, 22.67767, 1.9526215, 0, 1.9526215, 0, 0, 0, 3.535534, 0, 15.606602, 0, 0, 0, -1.4299902, 0, -1.4299902, -3.535534, 0, 8.535534, -0.77390504, 0, 1.8683721, 0.77390504, 0, -1.8683721, -4.6193976, 0, 3.0865831),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 9
+
+[sub_resource type="Resource" id="Resource_njkrl"]
+script = ExtResource("1_kewre")
+Shape = 15
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jnuuc"]
+albedo_color = Color(0.25, 0.55, 0.85, 1)
+
+[node name="Shapes" type="Node3D" unique_id=1262735430]
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1191858242]
+transform = Transform3D(0.8660254, 0.38302222, -0.32139382, 0, 0.64278764, 0.76604444, 0.5, -0.66341394, 0.5566704, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Environment" type="WorldEnvironment" parent="." unique_id=1415294179]
+environment = SubResource("Environment_q385j")
+
+[node name="OverviewCamera" type="Camera3D" parent="." unique_id=1831467962]
+transform = Transform3D(1, 0, 0, 0, 0.81915206, 0.57357645, 0, -0.57357645, 0.81915206, 60, 90, 150)
+current = true
+
+[node name="Straight" type="Path3D" parent="." unique_id=1921356075]
+curve = SubResource("Curve3D_pqip6")
+metadata/godoodads_curve_settings = SubResource("Resource_ew0wt")
+
+[node name="Profile" type="CSGPolygon3D" parent="Straight" unique_id=1808930144]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_frwao")
+
+[node name="Name" type="Label3D" parent="Straight" unique_id=385043811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Straight"
+font_size = 96
+outline_size = 24
+
+[node name="Parabolic" type="Path3D" parent="." unique_id=481973449]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 0)
+curve = SubResource("Curve3D_2fs8x")
+metadata/godoodads_curve_settings = SubResource("Resource_rj6xa")
+
+[node name="Profile" type="CSGPolygon3D" parent="Parabolic" unique_id=1453583825]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_gsg1v")
+
+[node name="Name" type="Label3D" parent="Parabolic" unique_id=1670097539]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Parabolic"
+font_size = 96
+outline_size = 24
+
+[node name="Circle" type="Path3D" parent="." unique_id=1618840111]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 0)
+curve = SubResource("Curve3D_ih1gg")
+metadata/godoodads_curve_settings = SubResource("Resource_106xn")
+
+[node name="Profile" type="CSGPolygon3D" parent="Circle" unique_id=2026779699]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_g70wt")
+
+[node name="Name" type="Label3D" parent="Circle" unique_id=2123405528]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Circle"
+font_size = 96
+outline_size = 24
+
+[node name="Semicircle" type="Path3D" parent="." unique_id=526404055]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 0)
+curve = SubResource("Curve3D_kxdv8")
+metadata/godoodads_curve_settings = SubResource("Resource_u0hxy")
+
+[node name="Profile" type="CSGPolygon3D" parent="Semicircle" unique_id=690081120]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_drwoq")
+
+[node name="Name" type="Label3D" parent="Semicircle" unique_id=1902334728]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Semicircle"
+font_size = 96
+outline_size = 24
+
+[node name="Loop" type="Path3D" parent="." unique_id=1938958155]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 40)
+curve = SubResource("Curve3D_tahd3")
+metadata/godoodads_curve_settings = SubResource("Resource_h2mnd")
+
+[node name="Profile" type="CSGPolygon3D" parent="Loop" unique_id=983206685]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_amjhe")
+
+[node name="Name" type="Label3D" parent="Loop" unique_id=1497346790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Loop"
+font_size = 96
+outline_size = 24
+
+[node name="Wave" type="Path3D" parent="." unique_id=1537568107]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 40)
+curve = SubResource("Curve3D_mfmto")
+metadata/godoodads_curve_settings = SubResource("Resource_8pnya")
+
+[node name="Profile" type="CSGPolygon3D" parent="Wave" unique_id=1744920018]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_jvq2k")
+
+[node name="Name" type="Label3D" parent="Wave" unique_id=145964559]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Wave"
+font_size = 96
+outline_size = 24
+
+[node name="Spiral" type="Path3D" parent="." unique_id=168360922]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 40)
+curve = SubResource("Curve3D_und0f")
+metadata/godoodads_curve_settings = SubResource("Resource_14rir")
+
+[node name="Profile" type="CSGPolygon3D" parent="Spiral" unique_id=252668423]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_do67t")
+
+[node name="Name" type="Label3D" parent="Spiral" unique_id=1337304511]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Spiral"
+font_size = 96
+outline_size = 24
+
+[node name="Arc" type="Path3D" parent="." unique_id=1777924045]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 40)
+curve = SubResource("Curve3D_aibdq")
+metadata/godoodads_curve_settings = SubResource("Resource_m78vr")
+
+[node name="Profile" type="CSGPolygon3D" parent="Arc" unique_id=693861380]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_xjlen")
+
+[node name="Name" type="Label3D" parent="Arc" unique_id=1237953040]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Arc"
+font_size = 96
+outline_size = 24
+
+[node name="Sbend" type="Path3D" parent="." unique_id=712003186]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 80)
+curve = SubResource("Curve3D_pxfwp")
+metadata/godoodads_curve_settings = SubResource("Resource_2v04u")
+
+[node name="Profile" type="CSGPolygon3D" parent="Sbend" unique_id=164757941]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_5k0hl")
+
+[node name="Name" type="Label3D" parent="Sbend" unique_id=1863418319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "S-bend"
+font_size = 96
+outline_size = 24
+
+[node name="Ellipse" type="Path3D" parent="." unique_id=357730834]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 80)
+curve = SubResource("Curve3D_avsh0")
+metadata/godoodads_curve_settings = SubResource("Resource_3u2h0")
+
+[node name="Profile" type="CSGPolygon3D" parent="Ellipse" unique_id=491175253]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_awwim")
+
+[node name="Name" type="Label3D" parent="Ellipse" unique_id=1955270076]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Ellipse"
+font_size = 96
+outline_size = 24
+
+[node name="Helix" type="Path3D" parent="." unique_id=364491435]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 80)
+curve = SubResource("Curve3D_uumbd")
+metadata/godoodads_curve_settings = SubResource("Resource_3dfi3")
+
+[node name="Profile" type="CSGPolygon3D" parent="Helix" unique_id=96855250]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_hgs2e")
+
+[node name="Name" type="Label3D" parent="Helix" unique_id=35100231]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Helix"
+font_size = 96
+outline_size = 24
+
+[node name="Corkscrew" type="Path3D" parent="." unique_id=1291347531]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 80)
+curve = SubResource("Curve3D_vdwuv")
+metadata/godoodads_curve_settings = SubResource("Resource_hl7rh")
+
+[node name="Profile" type="CSGPolygon3D" parent="Corkscrew" unique_id=1534717366]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_ik5eu")
+
+[node name="Name" type="Label3D" parent="Corkscrew" unique_id=1946761544]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Corkscrew"
+font_size = 96
+outline_size = 24
+
+[node name="BankedTurn" type="Path3D" parent="." unique_id=1984291036]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 120)
+curve = SubResource("Curve3D_8hjxu")
+metadata/godoodads_curve_settings = SubResource("Resource_fahdt")
+
+[node name="Profile" type="CSGPolygon3D" parent="BankedTurn" unique_id=1708511045]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = false
+material = SubResource("StandardMaterial3D_16m5t")
+
+[node name="Name" type="Label3D" parent="BankedTurn" unique_id=1254047790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Banked Turn"
+font_size = 96
+outline_size = 24
+
+[node name="RoundedRectangle" type="Path3D" parent="." unique_id=306804449]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 40, 0, 120)
+curve = SubResource("Curve3D_iem3c")
+metadata/godoodads_curve_settings = SubResource("Resource_jd3fj")
+
+[node name="Profile" type="CSGPolygon3D" parent="RoundedRectangle" unique_id=484942560]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_6v836")
+
+[node name="Name" type="Label3D" parent="RoundedRectangle" unique_id=742031024]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Rounded Rectangle"
+font_size = 96
+outline_size = 24
+
+[node name="Polygon" type="Path3D" parent="." unique_id=1726076401]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 80, 0, 120)
+curve = SubResource("Curve3D_u7aob")
+metadata/godoodads_curve_settings = SubResource("Resource_d2lan")
+
+[node name="Profile" type="CSGPolygon3D" parent="Polygon" unique_id=531159019]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_11j8w")
+
+[node name="Name" type="Label3D" parent="Polygon" unique_id=12379274]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Polygon"
+font_size = 96
+outline_size = 24
+
+[node name="FigureEight" type="Path3D" parent="." unique_id=249112708]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 120, 0, 120)
+curve = SubResource("Curve3D_tjd15")
+metadata/godoodads_curve_settings = SubResource("Resource_njkrl")
+
+[node name="Profile" type="CSGPolygon3D" parent="FigureEight" unique_id=1800654694]
+polygon = PackedVector2Array(-1, 0, 1, 0, 1, 0.5, 0.85, 0.5, 0.85, 0.12, -0.85, 0.12, -0.85, 0.5, -1, 0.5)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_jnuuc")
+
+[node name="Name" type="Label3D" parent="FigureEight" unique_id=1010650978]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+pixel_size = 0.03
+billboard = 1
+text = "Figure Eight"
+font_size = 96
+outline_size = 24

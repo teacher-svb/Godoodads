@@ -1,0 +1,195 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://addons/godoocurves/Resources/CurveSettings.cs" id="1_b0ev2"]
+
+[sub_resource type="Environment" id="Environment_sdnis"]
+background_mode = 1
+background_color = Color(0.78, 0.85, 0.92, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.6, 0.62, 0.66, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uu27j"]
+albedo_color = Color(0.36, 0.55, 0.3, 1)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_0mwi4"]
+material = SubResource("StandardMaterial3D_uu27j")
+size = Vector2(400, 400)
+
+[sub_resource type="Curve3D" id="Curve3D_cpvku"]
+closed = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 2.7614238, 0, 0, 15, 0, 14, 1.2070566e-07, 0, 2.7614238, 0, 0, 0, 20, 0, 9, 0, 0, 0, 0, 0, -2.7614238, 20, 0, -9, 2.7614238, 0, -1.2070566e-07, 0, 0, 0, 15, 0, -14, 0, 0, 0, -2.7614238, 0, 0, -15, 0, -14, -1.2070566e-07, 0, -2.7614238, 0, 0, 0, -20, 0, -9, 0, 0, 0, 0, 0, 2.7614238, -20, 0, 9, -2.7614238, 0, 1.2070566e-07, 0, 0, 0, -15, 0, 14),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 9
+
+[sub_resource type="Resource" id="Resource_wy3hy"]
+script = ExtResource("1_b0ev2")
+Shape = 13
+Width = 40.0
+Depth = 28.0
+CornerRadius = 5.0
+Bend = 0
+Start = Vector3(0, 0, 14)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l0jt3"]
+albedo_color = Color(0.92, 0.92, 0.9, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_8qj0w"]
+closed = true
+_data = {
+"points": PackedVector3Array(0, 0, 0, 0, 0, 0, -10, 0, 3.4, 0, 0, 0, 0.21435933, 0, -4.258937e-08, -8.34641, 0, 3.4, -0.107179664, 0, 0.18564062, 0, 0, 0, -7.8267946, 0, 3.1000001, 0, 0, 0, 0.10717965, 0, -0.1856407, -6.1732054, 0, 0.23589826, 0.107179716, 0, 0.18564068, 0, 0, 0, -6.1732054, 0, -0.3641019, 0, 0, 0, -0.10717976, 0, -0.1856407, -7.8267946, 0, -3.2282028, 0.21435945, 0, -8.517877e-08, 0, 0, 0, -8.34641, 0, -3.5282025, 0, 0, 0, -0.2143593, 0, 4.2589374e-08, -11.65359, 0, -3.5282025, 0.10717962, 0, -0.1856406, 0, 0, 0, -12.173205, 0, -3.2282023, 0, 0, 0, -0.10717966, 0, 0.18564071, -13.826795, 0, -0.3641014, -0.10717974, 0, -0.18564066, 0, 0, 0, -13.826795, 0, 0.23589873, 0, 0, 0, 0.107179694, 0, 0.18564062, -12.173204, 0, 3.1000009, -0.21435934, 0, 4.2589377e-08, 0, 0, 0, -11.653589, 0, 3.4000008),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 13
+
+[sub_resource type="Resource" id="Resource_enb40"]
+script = ExtResource("1_b0ev2")
+Shape = 14
+Radius = 4.0
+CornerRadius = 0.6
+Bend = 0
+Start = Vector3(-10, 0, 3.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rwrk8"]
+albedo_color = Color(0.6, 0.32, 0.22, 1)
+
+[sub_resource type="Curve3D" id="Curve3D_bev0p"]
+closed = true
+_data = {
+"points": PackedVector3Array(-1.5707964, 0, -2.5648944e-16, 1.5707964, 0, 0, 8, 0, 4, -1.1107208, 0, 0.7404805, 1.1107208, 0, -0.7404805, 12.2426405, 0, 2.828427, -9.618354e-17, 0, 1.0471976, 9.618354e-17, 0, -1.0471976, 14, 0, 0, 1.1107208, 0, 0.7404805, -1.1107208, 0, -0.7404805, 12.2426405, 0, -2.8284273, 1.5707964, 0, 1.2824472e-16, -1.5707964, 0, -1.2824472e-16, 8, 0, -4, 1.1107208, 0, -0.7404805, -1.1107208, 0, 0.7404805, 3.7573595, 0, -2.8284273, 2.8855061e-16, 0, -1.0471976, -2.8855061e-16, 0, 1.0471976, 2, 0, 0, -1.1107208, 0, -0.7404805, 1.1107208, 0, 0.7404805, 3.7573595, 0, 2.828427),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07)
+}
+point_count = 8
+
+[sub_resource type="Resource" id="Resource_qkvfa"]
+script = ExtResource("1_b0ev2")
+Shape = 9
+RadiusSide = 4.0
+Bend = 0
+Start = Vector3(8, 0, 4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jmwgm"]
+albedo_color = Color(0.6, 0.58, 0.55, 1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iiesu"]
+albedo_color = Color(0.2, 0.45, 0.65, 1)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_s2sk8"]
+material = SubResource("StandardMaterial3D_iiesu")
+top_radius = 1.0
+bottom_radius = 1.0
+height = 0.02
+
+[sub_resource type="Curve3D" id="Curve3D_s7po2"]
+closed = true
+_data = {
+"points": PackedVector3Array(-1.617849, 0, 0, 1.6178491, 0, 0, 0, 0, -40, -0.6191241, 0, -1.4946977, 0.6191241, 0, 1.4946977, 3.695518, 0, -37.530735, 1.1439922, 0, -1.1439922, 0, 0, 0, 2.828427, 0, -33.171574, 0, 0, 0, -1.5620972, 0, 1.5620972, -2.828427, 0, -27.514719, -1.5620972, 0, -1.562097, 1.5620972, 0, 1.562097, -2.8284268, 0, -21.857864, -1.562097, 0, 1.5620972, 1.562097, 0, -1.5620972, 2.8284273, 0, -21.857864, 1.5620972, 0, 1.5620972, 0, 0, 0, 2.828427, 0, -27.514719, 0, 0, 0, -1.1439921, 0, -1.1439921, -2.828427, 0, -33.171574, -0.619124, 0, 1.4946976, 0.619124, 0, -1.4946976, -3.695518, 0, -37.530735),
+"tilts": PackedFloat32Array(0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0, -2.3841858e-07, -4.7683716e-07, 2.3841858e-07, 0)
+}
+point_count = 9
+
+[sub_resource type="Resource" id="Resource_11tky"]
+script = ExtResource("1_b0ev2")
+Shape = 15
+Radius = 4.0
+Start = Vector3(0, 0, -40)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_xnb8f"]
+albedo_color = Color(0.8, 0.45, 0.25, 1)
+
+[node name="Outlines" type="Node3D" unique_id=1258067545]
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=1404894890]
+transform = Transform3D(0.8660254, 0.38302222, -0.32139382, 0, 0.64278764, 0.76604444, 0.5, -0.66341394, 0.5566704, 0, 0, 0)
+shadow_enabled = true
+
+[node name="Environment" type="WorldEnvironment" parent="." unique_id=664617633]
+environment = SubResource("Environment_sdnis")
+
+[node name="OverviewCamera" type="Camera3D" parent="." unique_id=689915107]
+transform = Transform3D(1, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 5, 55, 55)
+current = true
+
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=151508271]
+mesh = SubResource("PlaneMesh_0mwi4")
+
+[node name="Fence" type="Path3D" parent="." unique_id=1337066171]
+curve = SubResource("Curve3D_cpvku")
+metadata/godoodads_curve_settings = SubResource("Resource_wy3hy")
+
+[node name="Profile" type="CSGPolygon3D" parent="Fence" unique_id=1167469137]
+polygon = PackedVector2Array(-0.06, 0, 0.06, 0, 0.06, 1.3, -0.06, 1.3)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_l0jt3")
+
+[node name="FlowerBed" type="Path3D" parent="." unique_id=1468708402]
+curve = SubResource("Curve3D_8qj0w")
+metadata/godoodads_curve_settings = SubResource("Resource_enb40")
+
+[node name="Profile" type="CSGPolygon3D" parent="FlowerBed" unique_id=1665396234]
+polygon = PackedVector2Array(-0.2, 0, 0.2, 0, 0.2, 0.35, -0.2, 0.35)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_rwrk8")
+
+[node name="Pond" type="Path3D" parent="." unique_id=552460848]
+curve = SubResource("Curve3D_bev0p")
+metadata/godoodads_curve_settings = SubResource("Resource_qkvfa")
+
+[node name="Profile" type="CSGPolygon3D" parent="Pond" unique_id=2059349533]
+polygon = PackedVector2Array(-0.35, 0, 0.35, 0, 0.35, 0.3, -0.35, 0.3)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_jmwgm")
+
+[node name="Water" type="MeshInstance3D" parent="Pond" unique_id=811035420]
+transform = Transform3D(6, 0, 0, 0, 1, 0, 0, 0, 4, 8, 0.15, 0)
+mesh = SubResource("CylinderMesh_s2sk8")
+
+[node name="RunningTrack" type="Path3D" parent="." unique_id=2094617316]
+curve = SubResource("Curve3D_s7po2")
+metadata/godoodads_curve_settings = SubResource("Resource_11tky")
+
+[node name="Profile" type="CSGPolygon3D" parent="RunningTrack" unique_id=151571139]
+polygon = PackedVector2Array(-0.8, 0, 0.8, 0, 0.8, 0.04, -0.8, 0.04)
+mode = 2
+path_node = NodePath("..")
+path_interval_type = 0
+path_interval = 0.25
+path_simplify_angle = 0.0
+path_rotation = 2
+path_rotation_accurate = false
+path_local = true
+path_continuous_u = true
+path_u_distance = 1.0
+path_joined = true
+material = SubResource("StandardMaterial3D_xnb8f")

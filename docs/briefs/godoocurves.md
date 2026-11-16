@@ -3,8 +3,8 @@
 ## Sub-project 4: godoocurves
 
 **Decisions by:** the board (Syndias)
-**Status:** Approved for M0 on 2026-11-16. Planning decisions below were made by the board on 2026-11-16. Milestones M0–M5 in §7, tracked in the epic `godoocurves` with the labels `v1.0.0` and `m0` to `m5`.
-**Reference material:** `BezierPathGenerator/` at the repo root (untracked, from the board): an editor plugin that adds a *Generate Curve* button for a selected `Path3D` and writes one of seven preset shapes into its `Curve3D`. Its curve math (`Beziers`) is missing, so it does not build; godoocurves writes the math fresh (§3).
+**Status:** M0 to M4 approved on 2026-11-16; M5 (release 1.0.0) in review. Planning decisions below were made by the board on 2026-11-16. Milestones M0–M5 in §7, tracked in the epic `godoocurves` with the labels `v1.0.0` and `m0` to `m5`.
+**Reference material:** `BezierPathGenerator/` at the repo root (untracked, from the board; deleted in M5): an editor plugin that adds a *Generate Curve* button for a selected `Path3D` and writes one of seven preset shapes into its `Curve3D`. Its curve math (`Beziers`) was missing, so it did not build; godoocurves writes the math fresh (§3).
 
 ---
 
@@ -62,20 +62,20 @@ Every shape is built in a local frame: **forward** (the direction the path start
 | Existing | Parabolic | Length, Height | Exact: a quadratic Bezier raised to a cubic, in the frame's up plane, ending level with the start. Leaves at its slope (see below); a negative Height dips |
 | Existing | Circle | Radius, Bend | Closed. Starts at the start point, tangent to forward |
 | Existing | Semicircle | Radius, Bend | Open, ends facing back |
-| Existing | Loop | Length, Diameter, Side Shift | Length is the distance along Direction from start to end (decided 2026-11-16), with the vertical loop in the middle and straight run-in and run-out. Side Shift moves the exit sideways, so the track does not cross itself (0 allowed) |
+| Existing | Loop | Length, Diameter, Side Shift | Length is the distance along Direction from start to end (decided 2026-11-16), with the vertical loop in the middle and straight run-in and run-out. Side Shift moves the exit sideways, so the track does not cross itself (0 allowed); it eases in and out (smoothstep), so the loop leaves and rejoins the straights along Direction without a sideways kink (decided at the M4 review) |
 | Existing | Wave | Length, Amplitude, Cycles, Bend | Crests of height Amplitude above the start line (a 1 − cos wave), starting and ending level along Direction (decided 2026-11-16). Bend Up gives hills, Left or Right a slalom to one side |
 | Existing | Spiral | Length, Radius, Turns | Helix around the forward axis. The radius grows from 0 over the first half turn and shrinks back over the last, so it starts and ends on the axis heading along Direction (decided 2026-11-16) |
 | Arcs and bends | Arc | Radius, Angle, Bend | Angle above 0 and up to 360° (Bend picks the side); 360° is closed. Circle and Semicircle are its presets |
 | Arcs and bends | S-bend | Length, Offset, Bend | Two equal opposite arcs, angle 2·atan(Offset/Length) each; ends Offset to the side, parallel to the start |
 | Arcs and bends | Ellipse | Radius Forward, Radius Side, Bend | Closed |
-| Track pieces | Helix | Radius, Turns, Rise, Bend | Turns around the up axis while climbing (Rise may be negative) |
+| Track pieces | Helix | Radius, Turns, Rise, Bend | Turns around the up axis (Bend Left or Right) while climbing Rise at a constant slope (decided 2026-11-16); a negative Rise descends |
 | Track pieces | Corkscrew | Length, Radius, Turns | Spiral path (with its eased ends) plus tilt, so the track rolls with the turn (§4.4) |
-| Track pieces | Banked Turn | Radius, Angle, Bank, Bend | Horizontal arc with tilt that eases from 0 to Bank and back (§4.4) |
+| Track pieces | Banked Turn | Radius, Angle, Bank, Bend | Horizontal arc whose bank eases in over the first quarter of the turn, holds at Bank and eases out over the last quarter (decided 2026-11-16, §4.4) |
 | Closed outlines | Rounded Rectangle | Width, Depth, Corner Radius, Bend | Closed; Corner Radius 0 gives sharp corners |
 | Closed outlines | Polygon | Sides, Radius, Corner Radius, Bend | Closed regular polygon |
-| Closed outlines | Figure Eight | Length, Width, Bend | Closed, crossing at its middle |
+| Closed outlines | Figure Eight | Radius, Bend | Closed and flat (decided 2026-11-16): two round lobes of Radius joined by straights that cross at 90° in the middle, like a figure-eight track, 2R·(1 + √2) long toward Bend (decided at the M2 review; a lemniscate of Gerono looked too angular). Starts at the tip of one lobe heading along Direction |
 
-- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. The exception is Parabolic, a true jump arc that leaves at the slope its Height gives (decided 2026-11-16; Wave with 1 cycle gives a smooth hump). Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
+- Every shape **starts heading along Direction**, so an appended piece continues the curve without a kink. The exceptions are Parabolic, a true jump arc that leaves at the slope its Height gives (decided 2026-11-16; Wave with 1 cycle gives a smooth hump), and Helix, which climbs at a constant slope from its first point (decided 2026-11-16). Arcs, bends and Helix end in the direction their angle gives; the other open shapes also end along Direction.
 - Arcs are split into pieces of at most 90°, with handle length 4/3·tan(θ/4)·r. Other shapes use the fewest cubic segments that keep the curve within **0.1 % of the shape's size** of the exact shape (§8).
 - Ranges in the inspector stop impossible values (radius > 0, sides ≥ 3, cycles ≥ 1, corner radius ≤ half the shorter side).
 
@@ -118,6 +118,7 @@ Every shape is built in a local frame: **forward** (the direction the path start
 3. Points are in the Path3D's local space. A scaled or rotated Path3D scales and rotates the shape with it, which is expected but worth stating.
 4. A loop without Side Shift crosses itself at its bottom. That is allowed (some uses want it) but CSG geometry along it overlaps.
 5. Appending to a curve whose last point has no handles and no previous point has no direction: it uses the default Direction and says so.
+6. `PathFollow3D` in rotation mode Oriented ignores the curve's up vectors (§10.2): it flips in loops and does not match tilt computed for the curve. Use rotation mode XYZ with `tilt_enabled`.
 
 ---
 
@@ -168,7 +169,7 @@ Note further ideas as idea cards in the epic `godoocurves` with the labels `v2.0
 Results from card `crv-m0-verify-engine` (2026-11-16), checked headless with Godot 4.7.
 
 1. **True.** `Curve3D` has `closed` (`set_closed`/`is_closed`), and the baked curve includes the closing side (a 4 m square: 12 m open, 16 m closed), which `PathFollow3D` follows. `CSGPolygon3D` has its own `path_joined`; whether it needs it with a closed curve is checked visually in the M4 demo.
-2. **True, with a condition.** Godot's up vectors through a vertical loop are smooth (at most 0.3° between samples) and face the loop's centre without a flip at the top, at any bake interval from 0.05 to 1.0. But tilt is added on top of those up vectors, which twist: see §4.4 for the method that resolved it. Positive tilt turns up right-handed around the tangent (on a +X line, +Y turns toward +Z). `PathFollow3D` (Oriented, `tilt_enabled`) and `CSGPolygon3D` (path follow) read the same up vectors; seen in motion in M4.
+2. **True, with a condition.** Godot's up vectors through a vertical loop are smooth (at most 0.3° between samples) and face the loop's centre without a flip at the top, at any bake interval from 0.05 to 1.0. But tilt is added on top of those up vectors, which twist: see §4.4 for the method that resolved it. Positive tilt turns up right-handed around the tangent (on a +X line, +Y turns toward +Z). **Corrected at the M2 review:** `CSGPolygon3D` (path follow) and `sample_baked_with_rotation` use these up vectors, but `PathFollow3D` in rotation mode **Oriented does not**: it builds its rotation with `Basis.looking_at(tangent)` from world up and only adds the tilt (Godot 4.7 `PathFollow3D::correct_posture`). Its cart flips in a loop and is off by the tilt that compensates the curve's twist. Rotation mode **XYZ** keeps the curve's own up vectors and adds the tilt; measured along the M2 review track it matches the curve's up within 0.0°. The README tells users to use XYZ.
 3. **True.** Godot 4.7 has no built-in menu button with the Path3D icon: the skeleton plugin reports "using its own Path3D toolbar button" (`crv-m0-skeleton`, headless editor with `--verbose`). `SpatialMenuHook` adds that button with the Path3D icon, and hooks share a fallback button only when their icons match, so it cannot clash with the GridMap button.
 4. **True.** A C# `Resource` in a Path3D's metadata saves as a sub-resource of the scene and loads with its values. Surviving an assembly reload uses the same mechanism as `WfcSettings` on a GridMap; checked by hand with the skeleton.
 5. **True.** `sample_baked_up_vector(length, apply_tilt: true)` at the end gives the tilted up (last point tilt 0.5 rad: up 28.65° from +Y), the same as the basis of `sample_baked_with_rotation`.
@@ -177,4 +178,4 @@ Results from card `crv-m0-verify-engine` (2026-11-16), checked headless with God
 
 ### 11. Board decisions (2026-11-16)
 
-Planning: Path3D only; curve math written fresh; dialog with settings stored on the node; Replace or Append; the seven existing shapes plus arcs and bends, track pieces and closed outlines; Start, Direction and Up placement; tilt written per point; `BezierPathGenerator/` kept out of the build and deleted in M5. After the draft: the preview overlay is in v1 (§5), and the menu item is "Generate Curve (GDDS)". The brief was approved for M0, and M0 was approved the same day. Before M1: Wave starts and ends level, Spiral and Corkscrew ease in and out, and Loop's Length runs from start to end (§4.1).
+Planning: Path3D only; curve math written fresh; dialog with settings stored on the node; Replace or Append; the seven existing shapes plus arcs and bends, track pieces and closed outlines; Start, Direction and Up placement; tilt written per point; `BezierPathGenerator/` kept out of the build and deleted in M5. After the draft: the preview overlay is in v1 (§5), and the menu item is "Generate Curve (GDDS)". The brief was approved for M0, and M0 was approved the same day. Before M1: Wave starts and ends level, Spiral and Corkscrew ease in and out, and Loop's Length runs from start to end (§4.1). During M1: Parabolic leaves at its slope. M1 approved the same day. Before M2: Helix climbs at a constant slope, Banked Turn ramps, holds and ramps its bank, and Figure Eight is always flat.

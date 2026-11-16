@@ -15,27 +15,35 @@ public static class Arcs
     /// <summary>
     /// Adds an arc around <paramref name="center"/>, starting at <c>center + radial</c> and turning by
     /// <paramref name="angle"/> radians around <paramref name="axis"/> (right-handed; negative turns
-    /// the other way). <paramref name="drift"/> is added linearly over the arc, as a Side Shift.
+    /// the other way). <paramref name="drift"/> is added over the arc: linearly (a helix's climb), or
+    /// with <paramref name="easeDrift"/> along a smoothstep, so it starts and ends without sideways
+    /// speed (a loop's Side Shift).
     /// <paramref name="up"/> gives the wanted up from the unit radial and the fraction of the arc done.
-    /// Pieces are at most 90°. Returns the number of segments added.
+    /// Pieces are at most 90°, and at least <paramref name="minSegments"/> (for a wanted up that
+    /// changes along the arc, since Godot interpolates tilt linearly between points). Returns the
+    /// number of segments added.
     /// </summary>
     public static int Add(CurveBuilder builder, Vector3 center, Vector3 radial, Vector3 axis, float angle, Vector3 drift,
-        Func<Vector3, float, Vector3> up)
+        Func<Vector3, float, Vector3> up, int minSegments = 1, bool easeDrift = false)
     {
         axis = axis.Normalized();
         float radius = radial.Length();
-        int segments = Math.Max(1, (int)Math.Ceiling(Math.Abs(angle) / MaxSegmentAngle - 1e-6));
+        int segments = Math.Max(Math.Max(1, minSegments), (int)Math.Ceiling(Math.Abs(angle) / MaxSegmentAngle - 1e-6));
         float step = angle / segments;
         float handle = HandleLength(step) * radius;
         float sign = Math.Sign(angle);
-        var driftHandle = drift / (3f * segments);
+        // The drift's handle uses the same factor per radian as the circle's (4/3·tan(Δ/4) instead of
+        // Δ/3), so a helix or a shifted loop leaves in its exact direction.
+        float perRadian = Math.Abs(angle) < 1e-9f ? 0 : HandleLength(step) / Math.Abs(angle);
         for (int i = 0; i <= segments; i++)
         {
             var r = radial.Rotated(axis, step * i);
             var tangent = axis.Cross(r).Normalized() * sign;
-            var h = tangent * handle + driftHandle;
             float fraction = i / (float)segments;
-            builder.Add(new CurvePoint(center + r + drift * fraction, -h, h, up(r / radius, fraction)));
+            float done = easeDrift ? fraction * fraction * (3 - 2 * fraction) : fraction;
+            float rate = easeDrift ? 6 * fraction * (1 - fraction) : 1;
+            var h = tangent * handle + drift * (rate * perRadian);
+            builder.Add(new CurvePoint(center + r + drift * done, -h, h, up(r / radius, fraction)));
         }
         return segments;
     }

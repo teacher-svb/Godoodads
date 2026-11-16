@@ -12,8 +12,6 @@
   <ItemGroup>
     <!-- Engine-free tests build as their own project. -->
     <Compile Remove="tests/Core.Tests/**" />
-    <!-- Reference for godoocurves (docs/briefs/godoocurves.md). It does not build; deleted in godoocurves M5. -->
-    <Compile Remove="BezierPathGenerator/**" />
   </ItemGroup>
   <!-- gdUnit4: engine-dependent tests under tests/<addon>/ compile into this assembly. -->
   <ItemGroup>
