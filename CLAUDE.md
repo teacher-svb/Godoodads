@@ -22,6 +22,7 @@ dotnet test tests/Core.Tests --filter "FullyQualifiedName~Sampler" # single test
 $GODOT --headless -e --path . --quit-after 200                     # load the editor headless to catch plugin load errors
 $GODOT --headless --path . res://demo/godooscatter/tools/build_demos.tscn  # rebuild the per-mode demo scenes
 $GODOT --headless --path . res://demo/godoowave/tools/build_demo.tscn       # rebuild the WFC hillside ruin tile set and scenes
+$GODOT --headless --path . res://demo/godoocurves/tools/build_review.tscn  # rebuild the godoocurves review scene (all shapes, appended track)
 ```
 
 gdUnit4 versions are pinned as a pair (`gdUnit4.api` 5.1.0-rc5 with `gdUnit4.test.adapter` 3.1.1). Newer adapters need a newer api, so upgrade both together.
