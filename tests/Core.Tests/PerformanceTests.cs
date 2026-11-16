@@ -53,4 +53,25 @@ public class PerformanceTests
         Assert.Equal(50_000, result.Placed);
         Assert.True(clock.ElapsedMilliseconds < budgetMs, $"{clock.ElapsedMilliseconds} ms");
     }
+
+    // Amount at the top of its slider with a tree-sized Min Distance. Before 1.3.1 this took
+    // minutes and gigabytes (about 12 GB at 3 m), and around 5 m the editor ran out of memory.
+    [Theory]
+    [InlineData(1f)]
+    [InlineData(5f)]
+    public void Large_min_distance_with_a_large_amount_stays_bounded(float minDistance)
+    {
+        var surface = Grid(10, 100f);
+        long allocated = System.GC.GetAllocatedBytesForCurrentThread();
+        var clock = Stopwatch.StartNew();
+        var result = ScatterPipeline.Run(surface, new ScatterOptions { Amount = 100_000, MinDistance = minDistance });
+        clock.Stop();
+        allocated = System.GC.GetAllocatedBytesForCurrentThread() - allocated;
+
+        _output.WriteLine($"min distance {minDistance}: {result.Placed} placed in {clock.ElapsedMilliseconds} ms, {allocated / 1_000_000} MB allocated");
+        Assert.True(result.Placed > 0);
+        Assert.Equal(result.Requested - result.Placed, result.RemovedBySpacing);
+        Assert.True(clock.ElapsedMilliseconds < 4000, $"{clock.ElapsedMilliseconds} ms");
+        Assert.True(allocated < 600_000_000, $"{allocated / 1_000_000} MB allocated");
+    }
 }

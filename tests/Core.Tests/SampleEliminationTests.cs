@@ -62,6 +62,38 @@ public class SampleEliminationTests
     }
 
     [Fact]
+    public void Min_distance_far_above_the_natural_spacing_still_fills_the_area()
+    {
+        // 10,000 requested at 3 m on 100 × 100 m: at most about 1,280 fit, and the candidates
+        // are thinned. Random packing reaches about half the hexagonal bound.
+        var candidates = RandomPlanePoints(50_000, 100, 6);
+        var fixedPoints = new[] { new Vector3(50, 0, 50) };
+        var result = SampleElimination.Eliminate(candidates, 10_000, 3f, 10_000f, fixedPoints);
+        var kept = result.Kept.Select(i => candidates[i]).ToList();
+        Assert.True(MinPairDistance(kept) >= 3f);
+        Assert.All(kept, p => Assert.True(p.DistanceTo(fixedPoints[0]) >= 3f));
+        Assert.True(kept.Count > 400, $"{kept.Count} kept");
+        Assert.Equal(10_000 - kept.Count, result.RemovedForSpacing);
+        Assert.True(result.Kept.SequenceEqual(result.Kept.OrderBy(i => i)));
+    }
+
+    [Fact]
+    public void A_thin_strip_keeps_its_candidates()
+    {
+        // 100 × 0.2 m holds about 100 points 1 m apart, five times what its area suggests;
+        // the neighbour count is low, so no candidates are dropped. Capping candidates by area
+        // (about 23 fit by area, so 115 candidates) would keep fewer.
+        var rng = new Pcg32(7);
+        var candidates = new Vector3[500];
+        for (int i = 0; i < candidates.Length; i++)
+            candidates[i] = new Vector3(rng.Range(0, 100), 0, rng.Range(0, 0.2f));
+        var result = SampleElimination.Eliminate(candidates, 100, 1f, 20f);
+        var kept = result.Kept.Select(i => candidates[i]).ToList();
+        Assert.True(MinPairDistance(kept) >= 1f);
+        Assert.True(kept.Count >= 50, $"{kept.Count} kept");
+    }
+
+    [Fact]
     public void Fixed_points_are_avoided()
     {
         var candidates = RandomPlanePoints(1000, 10, 4);

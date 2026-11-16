@@ -47,10 +47,33 @@ public static class SampleElimination
         float radius = MathF.Max(2f * rMax, minDistance);
         if (radius <= 0f)
             return new Result(FirstN(targetCount), 0);
-        float rMin = 2f * rMax * Beta * (1f - MathF.Pow((float)targetCount / n, Gamma));
-        float minDistanceSq = minDistance * minDistance;
+        float radiusSq = radius * radius;
 
         var grid = new SpatialHash(radius, candidates);
+
+        // When the hard limit is wider than the spreading radius, Amount does not fit and every
+        // candidate has (minDistance / 2rMax)² times the usual number of neighbours, which once ran
+        // to minutes and gigabytes. Keep a prefix instead: candidates are independent samples, so
+        // a prefix is a uniform subset with fewer neighbours each. Runs where the target fits keep
+        // every candidate and give the same result as before.
+        if (minDistance > 2f * rMax && targetCount > 0)
+        {
+            float budget = NeighbourBudgetPerCandidate * n / targetCount;
+            double average = AverageNeighbours(candidates, grid, radiusSq);
+            if (average > budget)
+            {
+                int keep = Math.Max(1, (int)(n * (budget / average)));
+                var prefix = new Vector3[keep];
+                for (int i = 0; i < keep; i++)
+                    prefix[i] = candidates[i];
+                candidates = prefix;
+                n = keep;
+                grid = new SpatialHash(radius, candidates);
+            }
+        }
+
+        float rMin = MathF.Max(0f, 2f * rMax * Beta * (1f - MathF.Pow((float)targetCount / n, Gamma)));
+        float minDistanceSq = minDistance * minDistance;
         var weights = new double[n];
         var conflicts = new int[n];
 
@@ -59,7 +82,6 @@ public static class SampleElimination
         var neighbours = new List<int>(n * 16);
         var neighbourWeight = new List<float>(n * 16);
         var neighbourConflict = new List<bool>(n * 16);
-        float radiusSq = radius * radius;
         for (int i = 0; i < n; i++)
         {
             start[i] = neighbours.Count;
@@ -105,7 +127,8 @@ public static class SampleElimination
         for (int i = 0; i < n; i++)
             heap.Push(i, Priority(weights[i], conflicts[i]));
 
-        int alive = n, removed = 0;
+        // Candidates dropped from the prefix above count as removed for spacing too.
+        int alive = n, removed = Math.Max(0, targetCount - n);
         var isAlive = new bool[n];
         Array.Fill(isAlive, true);
         while (heap.Count > 0)
@@ -135,6 +158,41 @@ public static class SampleElimination
             if (isAlive[i])
                 kept[k++] = i;
         return new Result(kept, removed);
+    }
+
+    /// <summary>
+    /// Average neighbours per candidate allowed when the minimum distance dominates, per candidate
+    /// generated for each target sample. A target that fits has about 3.6 per candidate factor.
+    /// </summary>
+    private const float NeighbourBudgetPerCandidate = 10f;
+    // Distance checks spent on estimating the neighbour count, and the fewest candidates queried.
+    private const long EstimateChecks = 4_000_000;
+    private const int EstimateMinQueries = 32;
+    private const int EstimateMaxQueries = 2048;
+
+    /// <summary>
+    /// Average neighbour count within the radius, measured on the first candidates. They are
+    /// independent samples, so the first ones are as good as any; the count stops early when
+    /// neighbourhoods are large.
+    /// </summary>
+    private static double AverageNeighbours(IReadOnlyList<Vector3> candidates, SpatialHash grid, float radiusSq)
+    {
+        long checks = 0, found = 0;
+        int queries = 0;
+        int limit = Math.Min(candidates.Count, EstimateMaxQueries);
+        while (queries < limit && (queries < EstimateMinQueries || checks < EstimateChecks))
+        {
+            var p = candidates[queries];
+            grid.ForEachNear(p, j =>
+            {
+                checks++;
+                if (p.DistanceSquaredTo(candidates[j]) < radiusSq)
+                    found++;
+            });
+            found--; // the candidate itself
+            queries++;
+        }
+        return queries == 0 ? 0 : (double)found / queries;
     }
 
     private static float Weight(float distance, float radius, float rMin)
