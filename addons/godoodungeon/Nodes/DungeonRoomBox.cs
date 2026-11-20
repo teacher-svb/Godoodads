@@ -43,6 +43,9 @@ public partial class DungeonRoomBox : GridMapBox
         return (origin, size);
     }
 
-    /// <summary>Generated boxes in the preview's room colour, Built ones in a warm stone colour.</summary>
-    public override Color BoxColour => Mode == RoomBoxMode.Built ? new Color(1f, 0.6f, 0.25f) : new Color(0.3f, 0.8f, 1f);
+    /// <summary>
+    /// Generated boxes pink, Built ones orange: the colours Preview Layout uses for them, apart from
+    /// the cyan of generated rooms, the violet bounds, yellow doors and green corridors.
+    /// </summary>
+    public override Color BoxColour => Mode == RoomBoxMode.Built ? new Color(1f, 0.6f, 0.25f) : new Color(1f, 0.45f, 0.8f);
 }

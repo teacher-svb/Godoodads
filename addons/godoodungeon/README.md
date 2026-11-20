@@ -81,7 +81,7 @@ A **room box** fixes a room where you put it, and the dungeon is laid out and co
 - A box stands on the bottom layer of the bounds, inside them and at least the Margin from their edge, at least 3 × 3 cells, and at least the Gap from other boxes; a Generated box may not cover cells you placed. Generate names a box that breaks a rule and draws it in red.
 - Only enabled direct children count. Untick **Enabled** to leave a box out; the cells of a Built box then are ordinary cells you placed.
 - **Data** on a box (for example `{"role": "boss"}`) is copied to its room in the [dungeon graph](#dungeon-graph) on every Generate, together with the room's `Box` and `IsBuilt`, so a game can find the boss room. Data set on a box survives regenerating; Data set on the graph does not.
-- The status counts the boxes: `Generated 10 rooms (2 room boxes, 1 built), …`. Preview Layout draws box rooms in their own colour: light cyan for Generated, orange for Built.
+- The status counts the boxes: `Generated 10 rooms (2 room boxes, 1 built), …`. Room boxes are drawn pink (Generated) or orange (Built), in the viewport and in Preview Layout, where generated rooms are cyan.
 
 ### Markers
 

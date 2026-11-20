@@ -33,7 +33,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     // the first violet as yellow: linear colours are brightened, and the demo scene tonemaps).
     private static readonly Color BoundsColour = new(0.55f, 0.2f, 0.95f);
     private static readonly Color RoomColour = new(0.3f, 0.8f, 1f);
-    private static readonly Color GeneratedBoxColour = new(0.55f, 0.95f, 1f);
+    private static readonly Color GeneratedBoxColour = new(1f, 0.45f, 0.8f);   // as DungeonRoomBox.BoxColour
     private static readonly Color BuiltBoxColour = new(1f, 0.6f, 0.25f);
     private static readonly Color DoorColour = new(1f, 0.85f, 0.2f);
     private static readonly Color CorridorColour = new(0.45f, 1f, 0.45f);
