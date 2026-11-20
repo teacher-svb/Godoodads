@@ -45,6 +45,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     private GridMap _target;
     private WfcSettings _settings = new();
     private BoundsGizmoPlugin _gizmo;
+    private PinBoxGizmoPlugin _pinBoxGizmo;
     private MeshInstance3D _overlay;
     private string _overlayState;
     private Godot.Collections.Array<Vector3I> _failedCells = new();
@@ -66,6 +67,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
 
         _gizmo = new BoundsGizmoPlugin { Owner = this, GizmoName = "godoowave bounds" };
         AddNode3DGizmoPlugin(_gizmo);
+        _pinBoxGizmo = new PinBoxGizmoPlugin();
+        AddNode3DGizmoPlugin(_pinBoxGizmo);
         // Forwarded input reaches this plugin before the GridMap editor, which would take handle drags.
         SetInputEventForwardingAlwaysEnabled();
 
@@ -86,6 +89,11 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             _gizmo.Owner = null;
             RemoveNode3DGizmoPlugin(_gizmo);
             _gizmo = null;
+        }
+        if (_pinBoxGizmo != null)
+        {
+            RemoveNode3DGizmoPlugin(_pinBoxGizmo);
+            _pinBoxGizmo = null;
         }
         if (_dialogFilter != null)
         {

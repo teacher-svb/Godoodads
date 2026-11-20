@@ -1,12 +1,12 @@
 ---
 id: "wfc-1-5-pinbox-facts-2026-11-20"
-status: "todo"
+status: "in-progress"
 priority: "high"
 assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-20T13:00:00.000Z"
-modified: "2026-11-20T13:00:00.000Z"
+modified: "2026-11-20T22:30:00.000Z"
 completedAt: null
 labels: ["v1.5.0", "spike", "editor"]
 order: "d1"
@@ -23,3 +23,14 @@ Brief: §16.6.
 
 ## Done when
 - Each fact has a recorded result (headless where possible, manual for 1, 2 and 4), and the brief says which transform option was chosen.
+
+## Spike (2026-11-20)
+A first version to check the facts against, which `wfc-1-5-pinbox-node` finishes:
+- `addons/editor_tools_common/Nodes/GridMapBox.cs` (`Godoodads.Common`, `[Tool]`, not global): Origin, Size (default 4 × 1 × 4), Enabled; `NotificationLocalTransformChanged` snaps Origin to the nearest cell and resets rotation and scale; setting Origin moves the node to the box's minimum corner; configuration warning without a GridMap parent.
+- `addons/editor_tools_common/Editor/GridMapBoxGizmoPlugin.cs`: outline in the box's colour (faded when disabled) and six face handles through `_SetHandle`/`_CommitHandle`, reusing `BoundsGizmoPlugin.DragFace`; one undo action on Origin and Size per drag.
+- `addons/godoowave/Nodes/WfcPinBox.cs` (`[Tool, GlobalClass]`, pin colour) and `Editor/PinBoxGizmoPlugin.cs` (*godoowave pin boxes*), registered by the godoowave plugin.
+
+## Results
+3. **Pass (headless).** A `WfcSettings` file with properties the class no longer has loads without an error or warning; the remaining values (Seed, BoundsSize) load, and the resource works as GridMap metadata. Removing `PinOrigin`/`PinSize` is safe. Records with pinned bits: covered by the cells card's decode test.
+2. **Pass so far (headless):** in a running tree, setting the position snaps Origin at once ((10.7, 0.2, 3.1) → cell (5, 0, 2), node at (10, 0, 4)), rotation and scale reset. Undo of a move-tool drag: manual.
+1, 4: manual.
