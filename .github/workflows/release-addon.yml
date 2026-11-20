@@ -15,6 +15,10 @@ env:
 
 jobs:
   release:
+    # The repository is also hosted on a Forgejo instance that mirrors to GitHub, and Forgejo
+    # Actions runs .github/workflows too. Releases are published on GitHub only (the last step uses
+    # gh), so the job is skipped elsewhere.
+    if: github.server_url == 'https://github.com'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
