@@ -47,10 +47,11 @@ public class WfcPathTests
     }
 
     /// <summary>One Generate as the plugin runs it: read, lay out paths, solve, write cells and record.</summary>
-    private static PathPlan Generate(GridMap map, TileSetBinding binding, Vector3I origin, GridTopology grid, long seed, double wander)
+    private static PathPlan Generate(GridMap map, TileSetBinding binding, Vector3I origin, GridTopology grid, long seed, double wander,
+        System.Collections.Generic.IReadOnlyList<CellBox> pinBoxes = null)
     {
         var record = GridMapCells.ReadRecord(map);
-        var cells = GridMapCells.ReadFixed(map, origin, grid, binding, record);
+        var cells = GridMapCells.ReadFixed(map, origin, grid, binding, record, pinBoxes);
         var job = new SolveJob(grid, binding.Compiled, cells.Initial, new SolveOptions { Seed = seed }, paths: new PathRequest(P, wander, origin));
         job.Start();
         AssertThat(job.Wait(10000)).IsTrue();
@@ -58,7 +59,7 @@ public class WfcPathTests
             return job.Plan;
         AssertThat(job.Result.Status).IsEqual(SolveStatus.Solved);
         GridMapCells.Apply(map, GridMapCells.Diff(map, origin, grid, binding, cells.Initial, job.Result.Cells).Do);
-        GridMapCells.WriteRecord(map, GridMapCells.RecordAfter(record, origin, grid, binding, cells.Initial, job.Result.Cells).Encode());
+        GridMapCells.WriteRecord(map, GridMapCells.RecordAfter(record, origin, grid, binding, cells.Initial, job.Result.Cells, pinBoxes).Encode());
         return job.Plan;
     }
 
@@ -98,11 +99,8 @@ public class WfcPathTests
         AssertThat(second.PlacedPathCells).IsEqual(2);
         AssertThat(string.Join(",", second.RouteFaces)).IsNotEqual(string.Join(",", first.RouteFaces));
 
-        // Pinned, the whole path is placed: one closed group with nothing left to route.
-        var (pinned, changed) = GridMapCells.Pin(map, origin, grid.Size, true);
-        AssertThat(changed).IsGreater(0);
-        GridMapCells.WriteRecord(map, pinned.Encode());
-        var third = Generate(map, binding, origin, grid, 3, 1);
+        // Under a pin box (brief §16.2), the whole path is placed: one closed group with nothing left to route.
+        var third = Generate(map, binding, origin, grid, 3, 1, new[] { new CellBox(origin, grid.Size) });
         AssertThat(third.IsValid).IsTrue();
         AssertThat(third.RouteCount).IsEqual(0);
         AssertThat(third.PlacedPathCells).IsEqual(second.RouteCellCount + 2);

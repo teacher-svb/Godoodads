@@ -4,6 +4,9 @@ using System.Linq;
 using Godot;
 using GdUnit4;
 using Godoodads.Common;
+using Godoodads.Common.Wfc;
+using Godoodads.Common.Wfc.Adapters;
+using Godoodads.Common.Wfc.Core;
 using Godoodads.Wave;
 using static GdUnit4.Assertions;
 
@@ -96,6 +99,33 @@ public class WfcPinBoxTests
         {
             map.Free();
         }
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void A_1_4_scene_with_pinned_cells_loads_and_its_pins_are_ordinary_generated_cells()
+    {
+        // Brief §16.4: no migration. See tests/godoowave/fixtures/wfc_1_4/README.md.
+        var root = ResourceLoader.Load<PackedScene>("res://tests/godoowave/fixtures/wfc_1_4/pinned_1_4.tscn", null, ResourceLoader.CacheMode.Ignore)
+            .Instantiate();
+        var map = root.GetNode<GridMap>("GridMap");
+        var settings = WfcSettings.StoredOn(map);
+        AssertThat(settings).IsNotNull();
+        AssertThat(settings.Seed).IsEqual(3L);
+        AssertThat(settings.BoundsSize).IsEqual(new Vector3I(3, 1, 1));
+        AssertThat(map.GetCellItem(new Vector3I(2, 0, 0))).IsEqual(2);
+        AssertThat(map.GetCellItemOrientation(new Vector3I(2, 0, 0))).IsEqual(10);
+
+        var record = GridMapCells.ReadRecord(map);
+        AssertThat(record.Count).IsEqual(3);
+        AssertThat(record.Matches(new Vector3I(0, 0, 0), 1, 0) && record.Matches(new Vector3I(2, 0, 0), 2, 10)).IsTrue();
+
+        var binding = TileSetBinding.Create(settings.TileSet, Directions.All3D);
+        var grid = GridTopology.Create3D(settings.BoundsSize);
+        var cells = GridMapCells.ReadFixed(map, settings.BoundsOrigin, grid, binding, record);
+        AssertThat(cells.Replaced).IsEqual(3);   // the old pins no longer keep cells
+        AssertThat(cells.Initial.All(c => c == WfcSolver.Free)).IsTrue();
+        root.Free();
     }
 
 #if TOOLS

@@ -41,7 +41,7 @@ public partial class WfcSettings : Resource
 
     /// <summary>
     /// Clear Bounds First and the Clear Bounds button keep the cells you placed, and generated cells
-    /// you edited since. Everything else generated goes, pinned cells too. Off clears everything.
+    /// you edited since. Everything else generated goes. Off clears everything. Cells in pin boxes always stay.
     /// </summary>
     [Export] public bool KeepPlacedCells { get; set; }
 
@@ -57,60 +57,22 @@ public partial class WfcSettings : Resource
     [Export] public Vector3I BoundsOrigin { get; set; }
     [Export] public Vector3I BoundsSize { get; set; } = new(24, 8, 24);
 
-    /// <summary>Raised by the pin buttons. The WFC plugin pins or unpins the cells in the pin box.</summary>
-    [Signal] public delegate void PinRequestedEventHandler(bool pin);
+    /// <summary>The origin of a box as the viewport handles number them. Box 0 is the bounds, the only box the settings hold.</summary>
+    public Vector3I BoxOrigin(int box) => BoundsOrigin;
+
+    /// <summary>The size of a box. Box 0 is the bounds.</summary>
+    public Vector3I BoxSize(int box) => BoundsSize;
 
     /// <summary>
-    /// Generated cells inside this box can be pinned, so the next Generate keeps them.
-    /// A size of 0 hides the box.
-    /// </summary>
-    [ExportGroup("Pin Box", "Pin")]
-    [Export] public Vector3I PinOrigin { get; set; }
-    [Export] public Vector3I PinSize { get; set; }
-    [ExportToolButton("Place Around Bounds", Icon = "ToolScale")]
-    public Callable PinPlaceButton => Callable.From(PlacePinBox);
-    [ExportToolButton("Pin Generated Cells", Icon = "Pin")]
-    public Callable PinCellsButton => Callable.From(RequestPin);
-    [ExportToolButton("Unpin", Icon = "Unlinked")]
-    public Callable PinUnpinButton => Callable.From(RequestUnpin);
-
-    public bool HasPinBox => PinSize.X > 0 && PinSize.Y > 0 && PinSize.Z > 0;
-
-    public void PlacePinBox()
-    {
-        PinOrigin = BoundsOrigin;
-        PinSize = BoundsSize;
-        NotifyPropertyListChanged();
-    }
-
-    /// <summary>The origin of a box as the viewport handles number them: 0 is the bounds, 1 the pin box.</summary>
-    public Vector3I BoxOrigin(int box) => box == 0 ? BoundsOrigin : PinOrigin;
-
-    /// <summary>The size of a box: 0 is the bounds, 1 the pin box.</summary>
-    public Vector3I BoxSize(int box) => box == 0 ? BoundsSize : PinSize;
-
-    /// <summary>
-    /// Sets a box: 0 is the bounds, 1 the pin box. The do and undo target of a handle drag, so
-    /// undo changes these settings and not the ones the dialog has open by then.
+    /// Sets the bounds (box 0). The do and undo target of a handle drag, so undo changes these
+    /// settings and not the ones the dialog has open by then. Pin boxes are nodes since 1.5 (brief §16).
     /// </summary>
     public void SetBox(int box, Vector3I origin, Vector3I size)
     {
-        if (box == 0)
-        {
-            BoundsOrigin = origin;
-            BoundsSize = size;
-        }
-        else
-        {
-            PinOrigin = origin;
-            PinSize = size;
-        }
+        BoundsOrigin = origin;
+        BoundsSize = size;
         NotifyPropertyListChanged();
     }
-
-    private void RequestPin() => EmitSignal(SignalName.PinRequested, true);
-
-    private void RequestUnpin() => EmitSignal(SignalName.PinRequested, false);
 
     /// <summary>
     /// Sockets imagined just outside each face of the bounds, for example "rock" below.

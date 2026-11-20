@@ -113,14 +113,14 @@ public class WfcRegenerateTests
 
     [TestCase]
     [RequireGodotRuntime]
-    public void Pinned_cells_are_kept_and_unpinned_cells_are_replaced()
+    public void Cells_in_pin_boxes_stay_and_empty_ones_stay_empty()
     {
         var binding = Binding();
         var map = Map(binding);
-        var grid = GridTopology.Create3D(new Vector3I(6, 1, 1));
+        var grid = GridTopology.Create3D(new Vector3I(7, 1, 1));
         var at = (int x) => new Vector3I(x, 0, 0);
 
-        // A first generation wrote item 0 everywhere; cell 4 was edited by hand since.
+        // A first generation wrote item 0 on cells 0 to 5; cell 4 was edited and cell 5 erased since.
         var record = new GeneratedRecord();
         for (int x = 0; x < 6; x++)
         {
@@ -128,32 +128,41 @@ public class WfcRegenerateTests
             map.SetCellItem(at(x), 0, 0);
         }
         map.SetCellItem(at(4), 1, 0);
-        GridMapCells.WriteRecord(map, record.Encode());
+        map.SetCellItem(at(5), (int)GridMap.InvalidCellItem);
+        // Two overlapping pin boxes over cells 2 to 6; one sticks out of the bounds.
+        var boxes = new[] { new CellBox(at(2), new Vector3I(3, 1, 1)), new CellBox(at(4), new Vector3I(9, 1, 1)) };
 
-        var (pinnedRecord, pinned) = GridMapCells.Pin(map, at(2), new Vector3I(3, 1, 1), true);   // cells 2 to 4
-        AssertThat(pinned).IsEqual(2);   // the edited cell 4 is already kept
-        var read = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, pinnedRecord);
-        AssertThat(read.Pinned).IsEqual(2);
-        AssertThat(read.Edited).IsEqual(1);
-        AssertThat(read.Replaced).IsEqual(3);
-        AssertThat(read.Initial[2] >= 0 && read.Initial[3] >= 0 && read.Initial[4] >= 0).IsTrue();
+        var read = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record, boxes);
+        AssertThat(read.PinBoxCells).IsEqual(5);
+        AssertThat(read.Replaced).IsEqual(2);
+        AssertThat(read.Kept).IsEqual(3);
         AssertThat(read.Initial[0]).IsEqual(WfcSolver.Free);
+        AssertThat(read.Initial[1]).IsEqual(WfcSolver.Free);
+        AssertThat(read.Initial[2]).IsEqual(binding.Compiled.FindVariant(0, 0));   // generated, now pinned
+        AssertThat(read.Initial[3]).IsEqual(binding.Compiled.FindVariant(0, 0));
+        AssertThat(read.Initial[4]).IsEqual(binding.Compiled.FindVariant(1, 0));   // edited, pinned
+        AssertThat(read.Initial[5]).IsEqual(WfcSolver.Excluded);                   // empty: stays empty
+        AssertThat(read.Initial[6]).IsEqual(WfcSolver.Excluded);
 
-        // Pins survive the next generation's record.
-        var solved = Enumerable.Range(0, 6).Select(c => read.Initial[c] >= 0 ? read.Initial[c] : binding.Compiled.FindVariant(2, 0)).ToArray();
-        var after = GridMapCells.RecordAfter(pinnedRecord, Vector3I.Zero, grid, binding, read.Initial, solved);
-        AssertThat(after.IsPinned(at(2)) && after.IsPinned(at(3))).IsTrue();
-        AssertThat(after.Matches(at(0), 2, 0)).IsTrue();
+        // Generated cells in the boxes stay generated in the record, so once the boxes go the next
+        // Generate replaces them.
+        var solved = Enumerable.Range(0, 7).Select(c => read.Initial[c] >= 0 ? read.Initial[c] : binding.Compiled.FindVariant(2, 0)).ToArray();
+        var after = GridMapCells.RecordAfter(record, Vector3I.Zero, grid, binding, read.Initial, solved, boxes);
+        AssertThat(after.Matches(at(0), 2, 0) && after.Matches(at(1), 2, 0)).IsTrue();
+        AssertThat(after.Matches(at(2), 0, 0) && after.Matches(at(3), 0, 0)).IsTrue();
+        GridMapCells.Apply(map, GridMapCells.Diff(map, Vector3I.Zero, grid, binding, read.Initial, solved).Do);
+        var freed = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, after);
+        AssertThat(freed.Replaced).IsEqual(4);   // cells 0 to 3
+        AssertThat(freed.Initial[4]).IsEqual(binding.Compiled.FindVariant(1, 0));   // still edited: kept
+        AssertThat(freed.PinBoxCells).IsEqual(0);
 
-        GridMapCells.WriteRecord(map, pinnedRecord.Encode());
-        var (unpinnedRecord, unpinned) = GridMapCells.Pin(map, at(0), new Vector3I(6, 1, 1), false);
-        AssertThat(unpinned).IsEqual(2);
-        AssertThat(GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, unpinnedRecord).Replaced).IsEqual(5);
+        // Old records may carry 1.2–1.4 pins: they no longer keep a cell.
+        AssertThat(GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, GeneratedRecord.Decode(after.Encode())).Replaced).IsEqual(4);
     }
 
     [TestCase]
     [RequireGodotRuntime]
-    public void Clearing_with_keep_placed_cells_frees_generated_and_pinned_cells_only()
+    public void Clear_bounds_first_keeps_pin_box_cells_with_and_without_keep_placed_cells()
     {
         var binding = Binding();
         var map = Map(binding);
@@ -161,49 +170,54 @@ public class WfcRegenerateTests
         var at = (int x) => new Vector3I(x, 0, 0);
 
         var record = new GeneratedRecord();
-        record.Set(at(0), 0, 0); map.SetCellItem(at(0), 0, 0);                 // generated, unchanged
-        record.Set(at(1), 0, 0, pinned: true); map.SetCellItem(at(1), 0, 0);   // generated, pinned
-        record.Set(at(2), 0, 0); map.SetCellItem(at(2), 1, 0);                 // generated, then edited
-        map.SetCellItem(at(3), 2, 0);                                          // placed by hand
+        record.Set(at(0), 0, 0); map.SetCellItem(at(0), 0, 0);   // generated, unchanged
+        record.Set(at(1), 0, 0); map.SetCellItem(at(1), 0, 0);   // generated, in a pin box
+        record.Set(at(2), 0, 0); map.SetCellItem(at(2), 1, 0);   // generated, then edited
+        map.SetCellItem(at(3), 2, 0);                            // placed by hand
+        var boxes = new[] { new CellBox(at(1), Vector3I.One), new CellBox(at(4), Vector3I.One) };   // cell 4 is empty
 
-        var read = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record, clearPins: true);
-        AssertThat(read.Replaced).IsEqual(2);
-        AssertThat(read.ClearedPins).IsEqual(1);
-        AssertThat(read.Pinned).IsEqual(0);
-        AssertThat(read.Edited).IsEqual(1);
-        AssertThat(read.Kept).IsEqual(2);
-        AssertThat(read.Initial[0]).IsEqual(WfcSolver.Free);
-        AssertThat(read.Initial[1]).IsEqual(WfcSolver.Free);
-        AssertThat(read.Initial[2]).IsEqual(binding.Compiled.FindVariant(1, 0));
-        AssertThat(read.Initial[3]).IsEqual(binding.Compiled.FindVariant(2, 0));
-        AssertThat(read.Initial[4]).IsEqual(WfcSolver.Free);
+        var keep = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record, boxes, keepPlaced: true);
+        AssertThat(keep.Replaced).IsEqual(1);
+        AssertThat(keep.Edited).IsEqual(1);
+        AssertThat(keep.Kept).IsEqual(3);
+        AssertThat(keep.PinBoxCells).IsEqual(2);
+        AssertThat(keep.Initial[0]).IsEqual(WfcSolver.Free);
+        AssertThat(keep.Initial[1]).IsEqual(binding.Compiled.FindVariant(0, 0));
+        AssertThat(keep.Initial[2]).IsEqual(binding.Compiled.FindVariant(1, 0));
+        AssertThat(keep.Initial[3]).IsEqual(binding.Compiled.FindVariant(2, 0));
+        AssertThat(keep.Initial[4]).IsEqual(WfcSolver.Excluded);
 
-        // Without clearPins the pin holds, as in 1.3.0.
-        var kept = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record);
-        AssertThat(kept.Pinned).IsEqual(1);
-        AssertThat(kept.ClearedPins).IsEqual(0);
-        AssertThat(kept.Initial[1]).IsEqual(binding.Compiled.FindVariant(0, 0));
+        var all = GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record, boxes, keepPlaced: false);
+        AssertThat(all.Replaced).IsEqual(3);
+        AssertThat(all.Kept).IsEqual(1);
+        AssertThat(all.Initial[0] == WfcSolver.Free && all.Initial[2] == WfcSolver.Free && all.Initial[3] == WfcSolver.Free).IsTrue();
+        AssertThat(all.Initial[1]).IsEqual(binding.Compiled.FindVariant(0, 0));
+        AssertThat(all.Initial[4]).IsEqual(WfcSolver.Excluded);
+
+        // Without pin boxes nothing survives Clear Bounds First with Keep Placed Cells off.
+        AssertThat(GridMapCells.ReadFixed(map, Vector3I.Zero, grid, binding, record, keepPlaced: false).Initial.All(c => c == WfcSolver.Free)).IsTrue();
     }
 
     [TestCase]
     [RequireGodotRuntime]
-    public void A_cleared_pin_leaves_no_entry_where_the_new_solve_is_empty()
+    public void A_freed_cell_leaves_no_entry_where_the_new_solve_is_empty()
     {
         var binding = Binding();
         var grid = GridTopology.Create3D(new Vector3I(3, 1, 1));
         var at = (int x) => new Vector3I(x, 0, 0);
         var previous = new GeneratedRecord();
-        previous.Set(at(0), 0, 0, pinned: true);   // freed and solved empty
-        previous.Set(at(1), 0, 0, pinned: true);   // freed and solved as item 2
-        previous.Set(at(2), 0, 0, pinned: true);   // still pinned and fixed
+        previous.Set(at(0), 0, 0);   // freed and solved empty
+        previous.Set(at(1), 0, 0);   // freed and solved as item 2
+        previous.Set(at(2), 0, 0);   // in a pin box and fixed
 
         int item0 = binding.Compiled.FindVariant(0, 0), item2 = binding.Compiled.FindVariant(2, 0), empty = binding.Compiled.FindVariant(3, 0);
         var initial = new[] { WfcSolver.Free, WfcSolver.Free, item0 };
-        var record = GridMapCells.RecordAfter(previous, Vector3I.Zero, grid, binding, initial, new[] { empty, item2, item0 });
+        var record = GridMapCells.RecordAfter(previous, Vector3I.Zero, grid, binding, initial, new[] { empty, item2, item0 },
+            new[] { new CellBox(at(2), Vector3I.One) });
 
         AssertThat(record.Contains(at(0))).IsFalse();
-        AssertThat(record.Matches(at(1), 2, 0) && !record.IsPinned(at(1))).IsTrue();
-        AssertThat(record.IsPinned(at(2))).IsTrue();
+        AssertThat(record.Matches(at(1), 2, 0)).IsTrue();
+        AssertThat(record.Matches(at(2), 0, 0)).IsTrue();
     }
 
     private static PropertyUsageFlags Usage(WfcSettings settings, string name) =>
@@ -257,7 +271,7 @@ public class WfcRegenerateTests
         var at = (int x) => new Vector3I(x, 0, 0);
         var record = new GeneratedRecord();
         record.Set(at(0), 0, 0); map.SetCellItem(at(0), 0, 0);                 // generated, unchanged
-        record.Set(at(1), 0, 0, pinned: true); map.SetCellItem(at(1), 0, 0);   // generated, pinned
+        record.Set(at(1), 0, 0); map.SetCellItem(at(1), 0, 0);                 // generated, unchanged
         record.Set(at(2), 0, 0); map.SetCellItem(at(2), 1, 22);                // generated, then edited
         map.SetCellItem(at(3), 2, 10);                                         // placed by hand
         record.Set(new Vector3I(9, 0, 0), 0, 0);                               // outside the bounds
@@ -272,7 +286,7 @@ public class WfcRegenerateTests
         var cleared = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: false);
         AssertThat(cleared.Cleared).IsEqual(4);
         AssertThat(cleared.Kept).IsEqual(0);
-        AssertThat(cleared.ClearedPins).IsEqual(1);
+        AssertThat(cleared.PinBoxCells).IsEqual(0);
         AssertThat(cleared.Initial.All(c => c == WfcSolver.Free)).IsTrue();
 
         GridMapCells.Apply(map, cleared.Changes.Do);
@@ -295,7 +309,6 @@ public class WfcRegenerateTests
         var (map, grid, record) = ClearScene();
         var cleared = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: true);
         AssertThat(cleared.Cleared).IsEqual(2);
-        AssertThat(cleared.ClearedPins).IsEqual(1);
         AssertThat(cleared.Kept).IsEqual(2);
         AssertThat(cleared.Initial[0]).IsEqual(WfcSolver.Free);
         AssertThat(cleared.Initial[2]).IsEqual(WfcSolver.Excluded);
@@ -311,6 +324,34 @@ public class WfcRegenerateTests
         var unrecorded = GridMapCells.Clear(map, Vector3I.Zero, grid, new GeneratedRecord(), keepPlaced: true);
         AssertThat(unrecorded.Cleared).IsEqual(0);
         AssertThat(unrecorded.Kept).IsEqual(2);
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Clear_bounds_keeps_pin_box_cells_in_both_modes()
+    {
+        var (map, grid, record) = ClearScene();
+        var boxes = new[] { new CellBox(new Vector3I(1, 0, 0), Vector3I.One), new CellBox(new Vector3I(4, 0, 0), Vector3I.One) };
+
+        var all = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: false, boxes);
+        AssertThat(all.Cleared).IsEqual(3);
+        AssertThat(all.PinBoxCells).IsEqual(2);
+        AssertThat(all.Initial[1]).IsEqual(WfcSolver.Excluded);
+        AssertThat(all.Initial[4]).IsEqual(WfcSolver.Excluded);
+
+        var keep = GridMapCells.Clear(map, Vector3I.Zero, grid, record, keepPlaced: true, boxes);
+        AssertThat(keep.Cleared).IsEqual(1);
+        AssertThat(keep.Kept).IsEqual(2);
+        AssertThat(keep.PinBoxCells).IsEqual(2);
+
+        GridMapCells.Apply(map, all.Changes.Do);
+        AssertThat(map.GetCellItem(new Vector3I(1, 0, 0))).IsEqual(0);
+        AssertThat(map.GetUsedCells().Count).IsEqual(1);
+
+        // The record keeps the pin box cell's entry, so it stays generated.
+        var after = GridMapCells.RecordAfterClear(record, Vector3I.Zero, grid.Size, boxes);
+        AssertThat(after.Count).IsEqual(2);
+        AssertThat(after.Matches(new Vector3I(1, 0, 0), 0, 0)).IsTrue();
     }
 
     [TestCase]
