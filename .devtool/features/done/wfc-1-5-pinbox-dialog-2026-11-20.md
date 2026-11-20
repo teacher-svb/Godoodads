@@ -1,13 +1,13 @@
 ---
 id: "wfc-1-5-pinbox-dialog-2026-11-20"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-20T13:00:00.000Z"
-modified: "2026-11-21T01:40:00.000Z"
-completedAt: null
+modified: "2026-11-21T02:00:00.000Z"
+completedAt: "2026-11-21T02:00:00.000Z"
 labels: ["v1.5.0", "editor", "ui"]
 order: "d4"
 ---
@@ -35,3 +35,6 @@ Build, focus Godot, re-enable godoowave. Hillside demo, select the GridMap, open
 3. Generate: the status says "Kept N cells in 2 pin boxes as they were."; cells in the boxes are unchanged, empty cells in them stay empty.
 4. Clear Bounds with Keep Placed Cells off and on: pin box cells stay.
 5. Delete one box (or untick Enabled), Generate: its cells are replaced.
+
+## Board check (2026-11-21)
+Passed: Add Pin Box (placement, selection, undo), pin box handles with the GridMap selected and their undo, Generate keeps box cells and leaves empty ones empty with the status line, Clear Bounds in both modes keeps them, a removed or disabled box frees its cells.
