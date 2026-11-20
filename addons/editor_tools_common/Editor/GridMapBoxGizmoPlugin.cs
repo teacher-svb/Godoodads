@@ -93,7 +93,7 @@ public partial class GridMapBoxGizmoPlugin : EditorNode3DGizmoPlugin
     }
 
     /// <summary>The box's corners in the box node's own space (the node sits at the minimum corner).</summary>
-    private static (Vector3 Min, Vector3 Max) Corners(GridMap map, GridMapBox box)
+    public static (Vector3 Min, Vector3 Max) Corners(GridMap map, GridMapBox box)
     {
         var (min, max) = BoundsGizmoPlugin.Extents(map, box.Origin, Positive(box.Size));
         var corner = GridMapBox.CornerOf(map, box.Origin);
@@ -124,7 +124,7 @@ public partial class GridMapBoxGizmoPlugin : EditorNode3DGizmoPlugin
         return lines.ToArray();
     }
 
-    private static Vector3 FaceCentre(Vector3 min, Vector3 max, int direction)
+    public static Vector3 FaceCentre(Vector3 min, Vector3 max, int direction)
     {
         var centre = (min + max) * 0.5f;
         int axis = direction / 2;

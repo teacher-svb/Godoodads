@@ -63,6 +63,21 @@ public partial class GridMapBox : Node3D
     /// <summary>True when the box is enabled, has cells and sits directly under a GridMap.</summary>
     public bool IsActive => Enabled && Size.X > 0 && Size.Y > 0 && Size.Z > 0 && Map != null;
 
+    /// <summary>
+    /// The active boxes of type <typeparamref name="T"/> under a GridMap: direct children only,
+    /// enabled and with cells, in child order. Nested boxes and disabled ones do nothing.
+    /// </summary>
+    public static System.Collections.Generic.List<T> ActiveChildren<T>(GridMap map) where T : GridMapBox
+    {
+        var boxes = new System.Collections.Generic.List<T>();
+        if (map == null)
+            return boxes;
+        foreach (var child in map.GetChildren())
+            if (child is T box && box.IsActive)
+                boxes.Add(box);
+        return boxes;
+    }
+
     /// <summary>True when the cell lies inside the box.</summary>
     public bool HasCell(Vector3I cell) =>
         cell.X >= Origin.X && cell.Y >= Origin.Y && cell.Z >= Origin.Z
