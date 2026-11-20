@@ -120,4 +120,59 @@ public class WfcDemoAssetTests
         AssertThat(solved).IsEqual(20);
         AssertThat(climbing).IsEqual(20);   // the ends are two layers apart
     }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void The_pin_box_demo_keeps_its_ruin_and_its_clearing_for_any_seed()
+    {
+        // Brief §16.7: hillside_pins.tscn ships a generated hillside with two full-height pin boxes.
+        var root = ResourceLoader.Load<PackedScene>("res://demo/godoowave/hillside_pins.tscn", null, ResourceLoader.CacheMode.Ignore).Instantiate();
+        var map = root.GetNode<GridMap>("GridMap");
+        var settings = WfcSettings.StoredOn(map);
+        var boxes = Godoodads.Common.GridMapBox.ActiveChildren<Godoodads.Wave.WfcPinBox>(map);
+        AssertThat(boxes.Select(b => b.Name.ToString()).ToArray()).IsEqual(new[] { "RuinPin", "ClearingPin" });
+        var pinBoxes = boxes.Select(b => new CellBox(b.Origin, b.Size)).ToList();
+
+        var grid = GridTopology.Create3D(settings.BoundsSize);
+        var binding = TileSetBinding.Create(settings.TileSet, grid.ActiveDirections);
+        var ruin = Godoodads.Wave.Demo.BuildWfcDemo.RuinPieces.Select(n => settings.TileSet.Library.FindItemByName(n)).ToHashSet();
+        var errors = new System.Collections.Generic.List<string>();
+        var boundary = settings.ParseBoundary(errors);
+        AssertThat(errors.Count).IsEqual(0);
+
+        string Snapshot(CellBox box)
+        {
+            var parts = new System.Collections.Generic.List<string>();
+            for (int cell = 0; cell < grid.CellCount; cell++)
+            {
+                var at = settings.BoundsOrigin + grid.Coordinates(cell);
+                if (box.Contains(at))
+                    parts.Add($"{map.GetCellItem(at)}/{map.GetCellItemOrientation(at)}");
+            }
+            return string.Join(",", parts);
+        }
+        int RuinIn(CellBox box) => Enumerable.Range(0, grid.CellCount).Select(c => settings.BoundsOrigin + grid.Coordinates(c))
+            .Count(at => box.Contains(at) && ruin.Contains(map.GetCellItem(at)));
+        var before = pinBoxes.Select(Snapshot).ToArray();
+        AssertThat(RuinIn(pinBoxes[0])).IsGreaterEqual(20);
+        AssertThat(RuinIn(pinBoxes[1])).IsEqual(0);
+
+        foreach (long seed in new long[] { 101, 102 })
+        {
+            int changedOutside = 0;
+            var record = GridMapCells.ReadRecord(map);
+            var cells = GridMapCells.ReadFixed(map, settings.BoundsOrigin, grid, binding, record, pinBoxes);
+            var result = new WfcSolver(grid, binding.Compiled, cells.Initial).Solve(new SolveOptions { Seed = seed, Boundary = boundary });
+            AssertThat((int)result.Status).IsEqual((int)SolveStatus.Solved);
+            var diff = GridMapCells.Diff(map, settings.BoundsOrigin, grid, binding, cells.Initial, result.Cells);
+            changedOutside = diff.Do.Length / CellChanges.Stride;
+            GridMapCells.Apply(map, diff.Do);
+            GridMapCells.WriteRecord(map, GridMapCells.RecordAfter(record, settings.BoundsOrigin, grid, binding, cells.Initial, result.Cells, pinBoxes).Encode());
+
+            AssertThat(pinBoxes.Select(Snapshot).ToArray()).IsEqual(before);
+            AssertThat(RuinIn(pinBoxes[1])).IsEqual(0);
+            AssertThat(changedOutside).IsGreater(100);
+        }
+        root.Free();
+    }
 }

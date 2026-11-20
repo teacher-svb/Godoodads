@@ -437,6 +437,8 @@ On the first 1.5 card, in the editor:
 3. A 1.4 `WfcSettings` with `PinOrigin`/`PinSize` and a record with pinned bits load and generate without errors.
 4. The node survives an assembly reload (`[Tool]`, parameterless constructor, no C# events; CONVENTIONS.md).
 
+**Checked 2026-11-20 (card `wfc-1-5-pinbox-facts`), all true.** Handles on a selected pin box drag and undo with the dialog open or closed. The transform stays in sync with Origin (move tool, undo of a move, rotation and scale reset), so the node is **not** locked. Settings with properties the class no longer has load without errors. The node survives an assembly reload and a save and reopen.
+
 #### 16.7 Demo
 
 - The hillside ruin demo gets two pin boxes, one around the ruin and one around an empty clearing, built by `demo/godoowave/tools/build_demo.tscn`.

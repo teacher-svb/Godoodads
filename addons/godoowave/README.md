@@ -64,17 +64,27 @@ Kept 10,000 existing cells.
 
 ### Cells you place yourself
 
-Cells already in the bounds stay where they are, and the solve fills in around them. Use this to paint a ground layer, a road or a landmark first. Turn on **Clear Bounds First** to replace everything instead. With **Keep Placed Cells** on as well, Clear removes everything that was generated, pinned cells too, and keeps the cells you placed. **Clear Bounds** does the same clearing right away, without generating: everything in the bounds, or with Keep Placed Cells only the generated cells, together with their markers. It is one undo step and needs no tile set.
+Cells already in the bounds stay where they are, and the solve fills in around them. Use this to paint a ground layer, a road or a landmark first. Turn on **Clear Bounds First** to replace everything instead. With **Keep Placed Cells** on as well, Clear removes everything that was generated and keeps the cells you placed. **Clear Bounds** does the same clearing right away, without generating: everything in the bounds, or with Keep Placed Cells only the generated cells, together with their markers. It is one undo step and needs no tile set. Cells in [pin boxes](#pin-boxes) always stay.
 
 A cell whose item has no tile, or whose rotation is not one the tile allows, is left alone and does not constrain its neighbours. The status area reports how many there were.
 
 **Generate replaces the previous result.** The GridMap remembers which cells the last generation wrote, so pressing Generate again with another seed replaces them, without undoing first. Cells you placed yourself stay. A generated cell that you changed since (another item or rotation) counts as placed by you and stays too. The status area reports how many cells were replaced and how many edited cells were kept. What was written is stored compressed in the GridMap's metadata (about 20 KB for 100 × 16 × 100 cells) and is part of the undo step.
 
-**Pin cells to keep them.** To keep a good part of a result while regenerating the rest, press **Pin Box → Place Around Bounds**, drag the blue box over that part, and press **Pin Generated Cells**. Pinned cells count as placed by you until you press **Unpin**.
+### Pin boxes
+
+A **pin box** keeps a part of the GridMap exactly as it is while you regenerate the rest: a good corner of a result, a ruin you like, or an open space that must stay open. Pin boxes are child nodes of the GridMap (`WfcPinBox`), as many as you like, saved with the scene.
+
+- Press **Pin Boxes → Add Pin Box** in the dialog, or add a `WfcPinBox` child to the GridMap with *Add Child Node*. The new box sits in the middle of the bounds; drag its handles or move it to where you want it.
+- Everything inside an enabled pin box stays: Generate never changes its cells, occupied cells constrain their neighbours as cells you placed do, and **empty cells stay empty**. Clear Bounds and Clear Bounds First never touch it either, with Keep Placed Cells on or off.
+- Generated cells inside a box stay generated: untick **Enabled**, move the box or delete it, and the next Generate replaces them.
+- Only direct children of the GridMap count. Boxes may overlap and may stick out of the bounds.
+- The status area reports the cells the pin boxes kept, such as `Kept 1,536 cells in 2 pin boxes as they were.`
+
+**Updating from 1.2–1.4:** the single pin box in the dialog and its Pin and Unpin buttons are gone, and cells you pinned with them are ordinary generated cells again: the next Generate replaces them. Add a pin box over them before you generate.
 
 ### Boxes in the viewport
 
-While the dialog is open, the bounds (orange) and the pin box (blue) are drawn in the 3D viewport. With the GridMap selected, drag the dots on their faces to resize them by whole cells. Each drag is one undo step; right-click or Escape cancels it. Clicks away from the dots still paint the GridMap as usual.
+While the dialog is open, the bounds (orange) are drawn in the 3D viewport, and every pin box (blue) is drawn whether the dialog is open or not. With the GridMap selected, the bounds and every enabled pin box have dots on their faces: drag them to resize the box by whole cells. With a pin box selected, its own dots work the same way, and the move tool moves it cell by cell (rotation and scale snap back). Each drag is one undo step; right-click or Escape cancels it. Clicks away from the dots still paint the GridMap as usual. The viewport's gizmo menu can hide the outlines (*godoowave pin boxes*).
 
 ### Paths between placed cells
 
@@ -85,7 +95,7 @@ Give some tiles **path faces**: faces whose socket has one name, such as `path` 
 - With paths on, path tiles appear only on routes.
 - **Paths → Wander** goes from 0 (the shortest route) to 1 (meandering). The seed decides the route.
 - If the tiles around a route cannot be filled in, up to 8 other routes are tried. The status area reports how many routes were laid and over how many cells.
-- Route cells are generated cells: Generate lays a new route, and pinning keeps a path you like.
+- Route cells are generated cells: Generate lays a new route, and a pin box over a path you like keeps it.
 
 ## Options
 
@@ -95,10 +105,10 @@ Give some tiles **path faces**: faces whose socket has one name, such as `path` 
 | Randomise Seed | On: every Generate picks a new seed, shown (read-only) under Seed and in the status area. If that Generate fails or is stopped, Seed goes back to the seed before it, and a failed seed is not picked again while the dialog stays open. Off: Generate keeps using Seed. |
 | Seed | The same seed, settings and placed cells give the same result. Type a seed here, with Randomise Seed off, to repeat a result. |
 | Clear Bounds First | Removes everything in the bounds before solving, including cells you placed. Otherwise placed cells are kept. |
-| Keep Placed Cells | For Clear Bounds First and Clear Bounds: clear only generated cells, pinned ones too, and keep the cells you placed and generated cells you edited since. |
+| Keep Placed Cells | For Clear Bounds First and Clear Bounds: clear only generated cells, and keep the cells you placed and generated cells you edited since. Pin boxes are kept either way. |
 | Clear Bounds | Clears the bounds now by the two rows above, with undo. |
 | Bounds → Origin, Size | The box of cells to fill, in GridMap cell coordinates. You can also drag its handles in the viewport. |
-| Pin Box → Origin, Size, buttons | A second box for pinning generated cells (see above). A size of 0 hides it. |
+| Pin Boxes → Add Pin Box | Adds a pin box child to the GridMap (see [Pin boxes](#pin-boxes)). Its Origin, Size and Enabled are on the node. |
 | Boundary → Pos X … Neg Z | Optional socket per face of the bounds, as if a fixed neighbour with that socket sat outside it. For example `rock` on Neg Y gives a solid floor without painting a ground layer. Empty leaves the face unconstrained. |
 | Paths → Socket | The socket name of path faces, such as `path`. Placed cells with path faces are joined by routes before solving (see above). Empty turns paths off. |
 | Paths → Wander | 0 gives the shortest routes, 1 the most meandering. |
@@ -199,11 +209,11 @@ In every case the GridMap is left unchanged.
 
 The solver runs on a background thread and touches no engine objects, so the editor stays responsive. A rebuild of the C# project cancels a running solve first.
 
-**Performance** (100 × 16 × 100 cells, demo tile set with 54 variants): about 0.7 s with a rock boundary below and 0.8 s without, with every one of 20 seeds solved first time.
+**Performance** (100 × 16 × 100 cells, demo tile set with 54 variants): about 0.7 s with a rock boundary below and 0.8 s without, with every one of 20 seeds solved first time. Pin boxes add a few milliseconds to reading the cells and save the time of solving their cells.
 
 ## Demo
 
-`demo/godoowave/hillside_ground.tscn` rests on a `rock` bottom boundary socket, and `hillside_free.tscn` has no boundary. Tower tops carry a light marker (`assets/tower_light.tscn`). Both use the stacked hillside ruin tile set in `demo/godoowave/assets/`. `hillside_paths.tscn` uses the same tiles plus path tiles (`ruin_paths_tileset.tres`) and has two path ends placed on different heights; Generate joins them with a path that climbs through stairs cut into the slope. `demo/godoowave/tools/build_demo.tscn` rebuilds all of them.
+`demo/godoowave/hillside_ground.tscn` rests on a `rock` bottom boundary socket, and `hillside_free.tscn` has no boundary. Tower tops carry a light marker (`assets/tower_light.tscn`). Both use the stacked hillside ruin tile set in `demo/godoowave/assets/`. `hillside_paths.tscn` uses the same tiles plus path tiles (`ruin_paths_tileset.tres`) and has two path ends placed on different heights; Generate joins them with a path that climbs through stairs cut into the slope. `hillside_pins.tscn` comes generated, with a pin box around its largest ruin and one over a clearing: press Generate with Randomise Seed on, and the hillside changes while the ruin and the clearing stay. `demo/godoowave/tools/build_demo.tscn` rebuilds all of them.
 
 ## Limitations
 

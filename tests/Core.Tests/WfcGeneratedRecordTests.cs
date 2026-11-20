@@ -70,31 +70,63 @@ public class WfcGeneratedRecordTests
         Assert.True(bytes < 100_000, $"{record.Count} cells took {bytes} bytes.");
     }
 
-    [Fact]
-    public void PinnedFlagsRoundTripAndOldDataIsUnpinned()
+    /// <summary>A record in the 1.2–1.4 format, with the pinned flag (0x80) on the given cells.</summary>
+    private static byte[] OldFormat((Vector3I Position, int Item, int Orientation, bool Pinned)[] cells)
     {
-        var record = new GeneratedRecord();
-        record.Set(new Vector3I(1, 0, 0), 2, 22, pinned: true);
-        record.Set(new Vector3I(2, 0, 0), 2, 22);
-        var decoded = GeneratedRecord.Decode(record.Encode());
-        Assert.True(decoded.IsPinned(new Vector3I(1, 0, 0)));
-        Assert.False(decoded.IsPinned(new Vector3I(2, 0, 0)));
-        Assert.True(decoded.Matches(new Vector3I(1, 0, 0), 2, 22));
+        using var output = new System.IO.MemoryStream();
+        output.WriteByte(1);
+        using (var deflate = new System.IO.Compression.DeflateStream(output, System.IO.Compression.CompressionLevel.Optimal, leaveOpen: true))
+        using (var writer = new System.IO.BinaryWriter(deflate))
+        {
+            writer.Write(cells.Length);
+            foreach (var c in cells) writer.Write((short)c.Position.X);
+            foreach (var c in cells) writer.Write((short)c.Position.Y);
+            foreach (var c in cells) writer.Write((short)c.Position.Z);
+            foreach (var c in cells) writer.Write(c.Item);
+            foreach (var c in cells) writer.Write((byte)(c.Orientation | (c.Pinned ? 0x80 : 0)));
+        }
+        return output.ToArray();
     }
 
     [Fact]
-    public void PinningInsideABoxRespectsTheFilterAndRemoveInsideCanKeepPins()
+    public void PinsOfOldRecordsAreDroppedAndNewRecordsWriteNone()
+    {
+        var old = OldFormat(new[] { (new Vector3I(1, 0, 0), 2, 22, true), (new Vector3I(2, 0, 0), 3, 10, false) });
+        var decoded = GeneratedRecord.Decode(old);
+        Assert.Equal(2, decoded.Count);
+        Assert.True(decoded.Matches(new Vector3I(1, 0, 0), 2, 22));
+        Assert.True(decoded.Matches(new Vector3I(2, 0, 0), 3, 10));
+
+        var plain = new GeneratedRecord();
+        plain.Set(new Vector3I(1, 0, 0), 2, 22);
+        plain.Set(new Vector3I(2, 0, 0), 3, 10);
+        Assert.Equal(plain.Encode(), decoded.Encode());
+        Assert.Equal(OldFormat(new[] { (new Vector3I(1, 0, 0), 2, 22, false), (new Vector3I(2, 0, 0), 3, 10, false) }), plain.Encode());
+    }
+
+    [Fact]
+    public void RemoveInsideKeepsCellsInsideTheGivenBoxes()
     {
         var record = new GeneratedRecord();
-        for (int x = 0; x < 4; x++)
+        for (int x = 0; x < 6; x++)
             record.Set(new Vector3I(x, 0, 0), x, 0);
-        int pinned = record.SetPinnedInside(new Vector3I(1, 0, 0), new Vector3I(2, 1, 1), true, (_, written) => written.Item != 2);
-        Assert.Equal(1, pinned);
-        Assert.True(record.IsPinned(new Vector3I(1, 0, 0)));
-        Assert.False(record.IsPinned(new Vector3I(2, 0, 0)));
+        record.RemoveInside(Vector3I.Zero, new Vector3I(5, 1, 1),
+            new[] { new CellBox(new Vector3I(1, 0, 0), Vector3I.One), new CellBox(new Vector3I(3, 0, 0), new Vector3I(9, 1, 1)) });
+        Assert.Equal(new[] { 1, 3, 4, 5 }, record.Cells.Select(c => c.Key.X).OrderBy(x => x).ToArray());
+        record.RemoveInside(Vector3I.Zero, new Vector3I(5, 1, 1));
+        Assert.Equal(new[] { 5 }, record.Cells.Select(c => c.Key.X).ToArray());
+    }
 
-        record.RemoveInside(Vector3I.Zero, new Vector3I(4, 1, 1), keepPinned: true);
-        Assert.Equal(1, record.Count);
-        Assert.Equal(1, record.SetPinnedInside(Vector3I.Zero, new Vector3I(4, 1, 1), false));
+    [Fact]
+    public void CellBoxesHoldTheirCellsOnly()
+    {
+        var box = new CellBox(new Vector3I(-1, 0, 2), new Vector3I(2, 1, 3));
+        Assert.True(box.Contains(new Vector3I(-1, 0, 2)));
+        Assert.True(box.Contains(new Vector3I(0, 0, 4)));
+        Assert.False(box.Contains(new Vector3I(1, 0, 2)));
+        Assert.False(box.Contains(new Vector3I(0, 1, 2)));
+        Assert.False(new CellBox(Vector3I.Zero, new Vector3I(3, 0, 3)).Contains(Vector3I.Zero));
+        Assert.False(CellBox.AnyContains(null, Vector3I.Zero));
+        Assert.True(CellBox.AnyContains(new[] { new CellBox(Vector3I.One, Vector3I.One), box }, new Vector3I(0, 0, 3)));
     }
 }

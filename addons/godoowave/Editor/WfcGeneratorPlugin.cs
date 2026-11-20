@@ -24,7 +24,6 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     private const int MaxCell = short.MaxValue;
     private static readonly Color BoundsColour = new(1f, 0.6f, 0.1f);
     private static readonly Color FailureColour = new(1f, 0.15f, 0.15f);
-    private static readonly Color PinColour = new(0.2f, 0.75f, 1f);
 
     /// <summary>
     /// One running solve. Never survives an assembly reload, which cancels it first. While the solve
@@ -35,7 +34,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     /// </summary>
     private sealed record ActiveRun(SolveJob Job, TileSetBinding Binding, GridTopology Grid, FixedCells Cells, Vector3I Origin,
         long Seed, int CellsPerFrame, Stopwatch Clock, List<string> Warnings, Dictionary<int, (int Item, int Orientation)> Preview,
-        GeneratedRecord Record, long? PreviousSeed, WfcSettings Settings);
+        GeneratedRecord Record, long? PreviousSeed, WfcSettings Settings, IReadOnlyList<CellBox> PinBoxes, int PinBoxCount);
 
     private SpatialMenuHook _menu;
     private DialogInspectorFilterPlugin _dialogFilter;
@@ -45,6 +44,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     private GridMap _target;
     private WfcSettings _settings = new();
     private BoundsGizmoPlugin _gizmo;
+    private PinBoxGizmoPlugin _pinBoxGizmo;
     private MeshInstance3D _overlay;
     private string _overlayState;
     private Godot.Collections.Array<Vector3I> _failedCells = new();
@@ -66,6 +66,8 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
 
         _gizmo = new BoundsGizmoPlugin { Owner = this, GizmoName = "godoowave bounds" };
         AddNode3DGizmoPlugin(_gizmo);
+        _pinBoxGizmo = new PinBoxGizmoPlugin();
+        AddNode3DGizmoPlugin(_pinBoxGizmo);
         // Forwarded input reaches this plugin before the GridMap editor, which would take handle drags.
         SetInputEventForwardingAlwaysEnabled();
 
@@ -86,6 +88,11 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             _gizmo.Owner = null;
             RemoveNode3DGizmoPlugin(_gizmo);
             _gizmo = null;
+        }
+        if (_pinBoxGizmo != null)
+        {
+            RemoveNode3DGizmoPlugin(_pinBoxGizmo);
+            _pinBoxGizmo = null;
         }
         if (_dialogFilter != null)
         {
@@ -184,12 +191,12 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         if (WfcSettings.StoredOn(_target) is { } stored)
             _settings = (WfcSettings)stored.Duplicate();
 
-        var onPin = new Callable(this, MethodName.OnPinRequested);
-        if (!_settings.IsConnected(WfcSettings.SignalName.PinRequested, onPin))
-            _settings.Connect(WfcSettings.SignalName.PinRequested, onPin);
         var onClear = new Callable(this, MethodName.OnClearRequested);
         if (!_settings.IsConnected(WfcSettings.SignalName.ClearRequested, onClear))
             _settings.Connect(WfcSettings.SignalName.ClearRequested, onClear);
+        var onAddPinBox = new Callable(this, MethodName.OnAddPinBoxRequested);
+        if (!_settings.IsConnected(WfcSettings.SignalName.AddPinBoxRequested, onAddPinBox))
+            _settings.Connect(WfcSettings.SignalName.AddPinBoxRequested, onAddPinBox);
         _dialog.Edit(_settings);
         _dialog.SetStatus($"Target: {_target.Name}");
         if (_target.MeshLibrary == null)
@@ -284,17 +291,19 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
 
         var origin = _settings.BoundsOrigin;
         // Cells the last generation wrote are free again unless they were edited since (brief §11.2).
-        // Clear Bounds First frees everything, or with Keep Placed Cells also the pinned cells (1.3.1).
+        // Clear Bounds First without Keep Placed Cells frees everything else too (1.3.1). Cells in
+        // pin boxes are never free (§16.2).
         var record = GridMapCells.ReadRecord(_target);
-        var cells = !_settings.ClearBoundsFirst ? GridMapCells.ReadFixed(_target, origin, grid, binding, record)
-            : _settings.KeepPlacedCells ? GridMapCells.ReadFixed(_target, origin, grid, binding, record, clearPins: true)
-            : GridMapCells.AllFree(grid);
+        var pinBoxes = PinBoxes();
+        var cells = GridMapCells.ReadFixed(_target, origin, grid, binding, record, pinBoxes,
+            keepPlaced: !_settings.ClearBoundsFirst || _settings.KeepPlacedCells);
         var options = new SolveOptions { Seed = _settings.Seed, MaxBacktracks = _settings.MaxBacktracks, MaxRestarts = _settings.MaxRestarts, Boundary = boundary };
         int cellsPerFrame = Mathf.Max(_settings.CellsPerFrame, 0);
         var paths = _settings.HasPaths ? new PathRequest(_settings.PathSocket, _settings.PathWander, origin) : null;
         var job = new SolveJob(grid, binding.Compiled, cells.Initial, options, recordEvents: cellsPerFrame > 0, paths);
         _run = new ActiveRun(job, binding, grid, cells, origin, _settings.Seed, cellsPerFrame, Stopwatch.StartNew(),
-            binding.Warnings(), new Dictionary<int, (int, int)>(), record, previousSeed, (WfcSettings)_settings.Duplicate());
+            binding.Warnings(), new Dictionary<int, (int, int)>(), record, previousSeed, (WfcSettings)_settings.Duplicate(),
+            pinBoxes, pinBoxes.Count);
         _sinceProgress = ProgressInterval;
         SetRunning(true);
         job.Start();
@@ -473,7 +482,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     {
         var changes = GridMapCells.Diff(_target, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells);
         var stored = run.Settings;
-        byte[] written = GridMapCells.RecordAfter(run.Record, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells).Encode();
+        byte[] written = GridMapCells.RecordAfter(run.Record, run.Origin, run.Grid, run.Binding, run.Cells.Initial, result.Cells, run.PinBoxes).Encode();
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
@@ -497,8 +506,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
                     + (run.Job.RouteAttempts > 1 ? $", after trying {run.Job.RouteAttempts - 1} route(s) the tiles around could not fit." : "."));
         }
         if (run.Cells.Replaced > 0)
-            _dialog.AddStatus($"Replaced {run.Cells.Replaced:N0} cells from the previous generation"
-                + (run.Cells.ClearedPins > 0 ? $", including {run.Cells.ClearedPins:N0} pinned cells." : "."));
+            _dialog.AddStatus($"Replaced {run.Cells.Replaced:N0} cells from the previous generation.");
+        if (run.Cells.PinBoxCells > 0)
+            _dialog.AddStatus(PinBoxLine(run.Cells.PinBoxCells, run.PinBoxCount));
         if (markers.Placed > 0 || markers.Removed > 0)
             _dialog.AddStatus($"Placed {markers.Placed:N0} markers in {GridMapMarkers.ContainerName}"
                 + (markers.Removed > 0 ? $", replacing {markers.Removed:N0} from the previous generation." : "."));
@@ -509,8 +519,6 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             var parts = new List<string>();
             if (run.Cells.Edited > 0)
                 parts.Add($"{run.Cells.Edited:N0} generated cells you edited since");
-            if (run.Cells.Pinned > 0)
-                parts.Add($"{run.Cells.Pinned:N0} pinned cells");
             _dialog.AddStatus(parts.Count > 0
                 ? $"Kept {run.Cells.Kept:N0} existing cells, including {string.Join(" and ", parts)}."
                 : $"Kept {run.Cells.Kept:N0} existing cells.");
@@ -609,14 +617,15 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
 
         var origin = _settings.BoundsOrigin;
         var previous = GridMapCells.ReadRecord(_target);
-        var cleared = GridMapCells.Clear(_target, origin, grid, previous, _settings.KeepPlacedCells);
+        var pinBoxes = PinBoxes();
+        var cleared = GridMapCells.Clear(_target, origin, grid, previous, _settings.KeepPlacedCells, pinBoxes);
         var markers = GridMapMarkers.Replaced(_target, origin, grid, cleared.Initial);
-        var record = GridMapCells.RecordAfterClear(previous, origin, grid.Size);
+        var record = GridMapCells.RecordAfterClear(previous, origin, grid.Size, pinBoxes);
         if (cleared.Cleared == 0 && markers.Count == 0 && record.Count == previous.Count)
         {
             _dialog.SetStatus(cleared.Kept > 0
                 ? $"Nothing to clear: the {cleared.Kept:N0} cells in the bounds were placed by you (Keep Placed Cells is on)."
-                : "Nothing to clear: the bounds are empty.");
+                : cleared.PinBoxCells > 0 ? "Nothing to clear outside the pin boxes." : "Nothing to clear: the bounds are empty.");
             return;
         }
 
@@ -630,8 +639,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             AddMarkerRemovals(undoRedo, GridMapMarkers.Container(_target), EditorInterface.Singleton.GetEditedSceneRoot() ?? _target, markers);
         undoRedo.CommitAction();
 
-        _dialog.SetStatus($"Cleared {cleared.Cleared:N0} cells in the bounds"
-            + (cleared.ClearedPins > 0 ? $", including {cleared.ClearedPins:N0} pinned cells." : "."), ToolDialog.Severity.Success);
+        _dialog.SetStatus($"Cleared {cleared.Cleared:N0} cells in the bounds.", ToolDialog.Severity.Success);
+        if (cleared.PinBoxCells > 0)
+            _dialog.AddStatus(PinBoxLine(cleared.PinBoxCells, pinBoxes.Count));
         if (cleared.Kept > 0)
             _dialog.AddStatus($"Kept {cleared.Kept:N0} cells you placed or edited (Keep Placed Cells is on).");
         if (markers.Count > 0)
@@ -645,32 +655,38 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             GridMapCells.Apply(map, changes);
     }
 
-    /// <summary>Pins or unpins the generated cells in the pin box, as one undo step (brief §12.3).</summary>
-    public void OnPinRequested(bool pin)
+    /// <summary>The enabled pin box children of the target GridMap (brief §16.1), in child order.</summary>
+    private List<CellBox> PinBoxes() =>
+        GridMapBox.ActiveChildren<WfcPinBox>(_target).Select(box => new CellBox(box.Origin, box.Size)).ToList();
+
+    /// <summary>
+    /// Adds a WfcPinBox child to the target GridMap, owned by the edited scene, centred in the bounds
+    /// (brief §16.1), as one undo step, and selects it.
+    /// </summary>
+    public void OnAddPinBoxRequested()
     {
         if (!TargetIsAlive || _run != null)
             return;
-        if (!_settings.HasPinBox)
-        {
-            _dialog.SetStatus("Place the pin box first (Pin Box > Place Around Bounds, then drag its handles).", ToolDialog.Severity.Warning);
-            return;
-        }
-        var (record, changed) = GridMapCells.Pin(_target, _settings.PinOrigin, _settings.PinSize, pin);
-        if (changed == 0)
-        {
-            _dialog.SetStatus(pin ? "The pin box has no unpinned generated cells." : "The pin box has no pinned cells.");
-            return;
-        }
-
+        var (origin, size) = WfcPinBox.CentredIn(_settings.BoundsOrigin, _settings.BoundsSize);
+        var box = new WfcPinBox { Name = "PinBox", Origin = origin, Size = size };
+        var root = EditorInterface.Singleton.GetEditedSceneRoot() ?? _target;
         var undoRedo = GetUndoRedo();
-        undoRedo.CreateAction(pin ? "Pin WFC Cells" : "Unpin WFC Cells", UndoRedo.MergeMode.Disable, _target);
-        undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, record.Encode());
-        undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, GridMapCells.StoredRecord(_target));
+        undoRedo.CreateAction("Add WFC Pin Box", UndoRedo.MergeMode.Disable, _target);
+        undoRedo.AddDoMethod(_target, Node.MethodName.AddChild, box, true);
+        undoRedo.AddDoMethod(box, Node.MethodName.SetOwner, root);
+        undoRedo.AddDoReference(box);
+        undoRedo.AddUndoMethod(_target, Node.MethodName.RemoveChild, box);
         undoRedo.CommitAction();
-        _dialog.SetStatus(pin
-            ? $"Pinned {changed:N0} generated cells. Generate keeps them until you unpin them."
-            : $"Unpinned {changed:N0} cells. The next Generate replaces them.", ToolDialog.Severity.Success);
+
+        var selection = EditorInterface.Singleton.GetSelection();
+        selection.Clear();
+        selection.AddNode(box);
+        _dialog.SetStatus($"Added {box.Name}: cells {origin} to {origin + size - Vector3I.One}. Generate and Clear keep the cells inside it; "
+            + "drag its handles to resize it, or disable or delete it to free them.", ToolDialog.Severity.Success);
     }
+
+    private static string PinBoxLine(int cells, int boxes) =>
+        $"Kept {cells:N0} cells in {boxes} pin box{(boxes == 1 ? "" : "es")} as they were.";
 
     /// <summary>Do and undo target for the settings stored on the GridMap. Null removes them.</summary>
     public void ApplySettings(GridMap map, WfcSettings settings)
@@ -755,7 +771,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         var min = _target.MapToLocal(origin) - half;
         var max = _target.MapToLocal(origin + size - Vector3I.One) + half;
         // The run flag is part of the state, so the handles hide when a solve starts and come back after.
-        string state = $"{min}|{max}|{shown.PinOrigin}|{shown.PinSize}|{_run != null}|{string.Join(";", _failedCells)}";
+        // Pin boxes are in the state too, so their handles follow an undo of a pin box resize.
+        string boxes = string.Join(";", HandleBoxes().Select(b => $"{b.Origin}{b.Size}"));
+        string state = $"{min}|{max}|{boxes}|{_run != null}|{string.Join(";", _failedCells)}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -785,11 +803,6 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         mesh.ClearSurfaces();
         mesh.SurfaceBegin(Mesh.PrimitiveType.Lines);
         AddBox(mesh, min, max, BoundsColour);
-        if (shown.HasPinBox)
-        {
-            var pin = BoundsGizmoPlugin.Extents(_target, shown.PinOrigin, shown.PinSize);
-            AddBox(mesh, pin.Min, pin.Max, PinColour);
-        }
         foreach (var cell in _failedCells)
         {
             // Slightly larger than the cell, so the box stays visible around a placed module.
@@ -814,6 +827,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     // Boxes with viewport handles (BoundsGizmoPlugin): 0 is the bounds, 1 the pin box.
     private const float HandleRadius = 12f;
     private int _dragHandle = -1;
+    private WfcPinBox _dragPinBox;
     private Vector3I _dragOrigin;
     private Vector3I _dragSize;
 
@@ -836,8 +850,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             switch (@event)
             {
                 case InputEventMouseMotion motion:
+                    bool pin = box > 0 && _dragPinBox != null && IsInstanceValid(_dragPinBox);
                     var (origin, size) = BoundsGizmoPlugin.DragFace(map, viewportCamera, motion.Position,
-                        _dragHandle % Directions.Count, BoxOrigin(box), BoxSize(box));
+                        _dragHandle % Directions.Count, pin ? _dragPinBox.Origin : BoxOrigin(box), pin ? _dragPinBox.Size : BoxSize(box));
                     SetBox(box, origin, size);
                     return stop;
                 case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
@@ -859,6 +874,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             if (handle < 0)
                 return pass;
             _dragHandle = handle;
+            _dragPinBox = PinBoxAt(handle / Directions.Count);
             _dragOrigin = BoxOrigin(handle / Directions.Count);
             _dragSize = BoxSize(handle / Directions.Count);
             return stop;
@@ -898,13 +914,23 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     /// </summary>
     public GridMap HandleTarget => _dialog != null && _dialog.Visible && _run == null && TargetIsAlive ? _target : null;
 
-    public int BoxCount => 2;
+    // Box 0 is the bounds; boxes 1 to n are the enabled pin box children in child order (brief §16.3).
+    public int BoxCount => 1 + HandleBoxes().Count;
 
-    public bool BoxVisible(int box) => box == 0 || Shown.HasPinBox;
+    public bool BoxVisible(int box) => box < BoxCount;
 
-    public Vector3I BoxOrigin(int box) => Shown.BoxOrigin(box);
+    public Vector3I BoxOrigin(int box) => box == 0 ? Shown.BoundsOrigin : PinBoxAt(box)?.Origin ?? Vector3I.Zero;
 
-    public Vector3I BoxSize(int box) => Shown.BoxSize(box);
+    public Vector3I BoxSize(int box) => box == 0 ? Shown.BoundsSize : PinBoxAt(box)?.Size ?? Vector3I.Zero;
+
+    private List<WfcPinBox> HandleBoxes() => TargetIsAlive ? GridMapBox.ActiveChildren<WfcPinBox>(_target) : new List<WfcPinBox>();
+
+    /// <summary>The pin box with handle box number <paramref name="box"/> (1 for the first), or null.</summary>
+    private WfcPinBox PinBoxAt(int box)
+    {
+        var boxes = HandleBoxes();
+        return box >= 1 && box <= boxes.Count ? boxes[box - 1] : null;
+    }
 
     /// <summary>The settings the overlay and handles show: the running solve's copy, otherwise the dialog's.</summary>
     private WfcSettings Shown => _run?.Settings ?? _settings;
@@ -912,7 +938,13 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     /// <summary>Changes a box while its handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
     private void SetBox(int box, Vector3I origin, Vector3I size)
     {
-        _settings.SetBox(box, origin, size);
+        if (box == 0)
+            _settings.SetBox(box, origin, size);
+        else if (_dragPinBox != null && IsInstanceValid(_dragPinBox))
+        {
+            _dragPinBox.Origin = origin;
+            _dragPinBox.Size = size;
+        }
         if (TargetIsAlive)
             _target.UpdateGizmos();
     }
@@ -927,10 +959,26 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         if (cancel)
         {
             SetBox(box, origin, size);
+            _dragPinBox = null;
             return;
         }
         var undoRedo = GetUndoRedo();
-        undoRedo.CreateAction(box == 0 ? "Resize WFC Bounds" : "Resize WFC Pin Box");
+        if (box > 0)
+        {
+            // A pin box drag is one undo step on the node, not on the settings (brief §16.3).
+            var node = _dragPinBox;
+            _dragPinBox = null;
+            if (node == null || !IsInstanceValid(node))
+                return;
+            undoRedo.CreateAction("Resize WFC Pin Box", UndoRedo.MergeMode.Disable, node);
+            undoRedo.AddDoProperty(node, GridMapBox.PropertyName.Origin, node.Origin);
+            undoRedo.AddDoProperty(node, GridMapBox.PropertyName.Size, node.Size);
+            undoRedo.AddUndoProperty(node, GridMapBox.PropertyName.Origin, origin);
+            undoRedo.AddUndoProperty(node, GridMapBox.PropertyName.Size, size);
+            undoRedo.CommitAction(false);
+            return;
+        }
+        undoRedo.CreateAction("Resize WFC Bounds");
         undoRedo.AddDoMethod(_settings, WfcSettings.MethodName.SetBox, box, _settings.BoxOrigin(box), _settings.BoxSize(box));
         undoRedo.AddUndoMethod(_settings, WfcSettings.MethodName.SetBox, box, origin, size);
         undoRedo.CommitAction(false);
