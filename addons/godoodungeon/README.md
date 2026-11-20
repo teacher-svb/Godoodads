@@ -55,7 +55,7 @@ Close Godot, delete `addons/godoodungeon/`, then extract the new zip as above, a
 
 <img src="docs/dialog.png" alt="The Generate Dungeon dialog with every setting shown" width="360">
 
-Generate runs in the background and takes a fraction of a second for a 64 × 64 dungeon. Press **Stop** to cancel; the GridMap is then left exactly as it was. Each generation is one undo step (Ctrl+Z). The settings are saved on the GridMap, so reopening the dialog restores them, and the scene file can reproduce the dungeon. The status area shows the result:
+Generate runs in the background and takes a fraction of a second for a 64 × 64 dungeon. Press **Stop** to cancel; the GridMap is then left exactly as it was. Each generation is one undo step (Ctrl+Z); undo and redo also set the dialog's Seed to the seed of the dungeon on the map, so Preview Layout shows that dungeon. The settings are saved on the GridMap, so reopening the dialog restores them, and the scene file can reproduce the dungeon. The status area shows the result:
 
 ```
 Generated 19 rooms, 31 doors and 21 corridors in 0.1 s, written in 0.0 s. Seed 1.

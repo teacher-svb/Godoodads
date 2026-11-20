@@ -342,8 +342,13 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
         undoRedo.AddDoMethod(this, MethodName.ApplyCells, _target, changes.Do);
         undoRedo.AddUndoMethod(this, MethodName.ApplyCells, _target, changes.Undo);
+        var previousSettings = DungeonSettings.StoredOn(_target);
         undoRedo.AddDoMethod(this, MethodName.ApplySettings, _target, stored);
-        undoRedo.AddUndoMethod(this, MethodName.ApplySettings, _target, DungeonSettings.StoredOn(_target));
+        undoRedo.AddUndoMethod(this, MethodName.ApplySettings, _target, previousSettings);
+        // The open dialog's Seed follows the dungeon on the map, so Preview Layout and its room
+        // numbers show that dungeon after undo and redo (decided at the 1.1 release review).
+        undoRedo.AddDoMethod(this, MethodName.ApplySeed, _target, run.Seed);
+        undoRedo.AddUndoMethod(this, MethodName.ApplySeed, _target, previousSettings?.Seed ?? run.PreviousSeed ?? run.Seed);
         undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, record.Encode());
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
         undoRedo.AddDoMethod(this, MethodName.ApplyGraph, _target, graph);
@@ -494,6 +499,18 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     {
         if (IsInstanceValid(map))
             DungeonGraph.StoreOn(map, graph);
+    }
+
+    /// <summary>
+    /// Do and undo target for the open dialog's Seed: when the dialog edits this GridMap, its Seed
+    /// becomes the seed of the dungeon now on the map. Other settings stay as the user left them.
+    /// </summary>
+    public void ApplySeed(GridMap map, long seed)
+    {
+        if (_settings == null || !TargetIsAlive || _target != map || _settings.Seed == seed)
+            return;
+        _settings.Seed = seed;
+        _settings.NotifyPropertyListChanged();
     }
 
     /// <summary>Do and undo target for the record of what the dungeon wrote.</summary>

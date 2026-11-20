@@ -9,6 +9,9 @@ All notable changes to godoodungeon are documented here. The format follows [Kee
 - **Preview Layout numbers the rooms**, with the numbers the status messages use (`DungeonRoom.Number`).
 - **Graph demo:** `demo/godoodungeon/dungeon_graph.tscn` with `graph_demo.gd`, which marks a start, a goal and the shortest way between them at runtime.
 
+### Changed
+- **Undo and redo of Generate set the dialog's Seed** to the seed of the dungeon now on the map, so Preview Layout shows that dungeon. Until now the preview kept showing the undone dungeon while the dialog was open. Other settings stay as you left them.
+
 ## [1.0.1] - 2026-11-16
 
 ### Changed

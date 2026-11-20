@@ -6,7 +6,7 @@ assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-20T10:00:00.000Z"
-modified: "2026-11-20T18:30:00.000Z"
+modified: "2026-11-20T21:00:00.000Z"
 completedAt: null
 labels: ["v1.1.0", "editor", "ui"]
 order: "g5"
@@ -30,3 +30,6 @@ Build, focus Godot, then open the dialog on `demo/godoodungeon/dungeon_graph.tsc
 2. With the scene's seed (1), the numbers match the labels `graph_demo.gd` shows when the scene runs (room 3 start, room 12 goal).
 3. Change Seed: labels follow the new layout. Turn Preview Layout off or close the dialog: labels gone. Save: no labels in the .tscn.
 4. Rebuild with the dialog open (assembly reload): no errors, labels come back.
+
+## Release review finding (2026-11-20)
+Board: after Ctrl+Z of a Generate the map shows the previous dungeon, but Preview Layout (with its numbers) still shows the undone one. Cause: undo restored the stored settings, not the open dialog's Seed (since 1.0.x). **Decision (board):** undo/redo restore the Seed only. `ApplySeed` do/undo step in the Generate action: do = the run's seed, undo = the previous stored settings' seed (or the seed before a randomised first Generate); applies only while the dialog edits that GridMap. README and CHANGELOG (1.1.0, Changed) updated. Builds, headless editor load clean; needs the manual re-check.
