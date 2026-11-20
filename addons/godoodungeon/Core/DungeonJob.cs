@@ -87,6 +87,9 @@ public sealed record DungeonResult
     /// <summary>Milliseconds per stage over all layout attempts: layout, rooms, routing, corridors (solve), check.</summary>
     public StageTimes Times { get; init; } = new();
 
+    /// <summary>The dungeon graph (brief §12): rooms, and the corridor routed for each room graph edge. Set with every solved layout.</summary>
+    public DungeonGraphData Graph { get; init; }
+
     /// <summary>The rooms the connectivity check could not reach, with <see cref="DungeonStatus.InternalError"/>.</summary>
     public IReadOnlyList<int> UnreachableRooms { get; init; } = Array.Empty<int>();
 }
@@ -275,6 +278,7 @@ public sealed class DungeonJob
                 Layout = layout, Solves = solves, Attempts = failures, LayoutAttempt = attempt,
                 Backtracks = backtracks, Restarts = restarts,
                 RouteCount = plan.RouteCount, RouteCells = plan.RouteCells, CorridorFaces = plan.Faces, Times = times,
+                Graph = DungeonGraphData.Build(layout, plan, settings.RoomHeight),
             };
         }
         return new DungeonResult { Status = DungeonStatus.Failed, Layout = layout, Attempts = failures };

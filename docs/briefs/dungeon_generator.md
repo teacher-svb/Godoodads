@@ -3,7 +3,7 @@
 ## Sub-project 3: godoodungeon (Dungeon Generator)
 
 **Decisions by:** the board (Syndias)
-**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. WFC Generator has since been renamed godoowave (1.4.0, `addons/godoowave/`, namespace `Godoodads.Wave`; WFC brief §15); this brief keeps the old names and paths where it records M0. M1 (layout core), M2 (solve pipeline), M3 (editor), M4 (demo tile set) and M5 (release) approved on 2026-11-15: version 1.0.0, tagged `godoodungeon-v1.0.0` after merging. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
+**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. WFC Generator has since been renamed godoowave (1.4.0, `addons/godoowave/`, namespace `Godoodads.Wave`; WFC brief §15); this brief keeps the old names and paths where it records M0. M1 (layout core), M2 (solve pipeline), M3 (editor), M4 (demo tile set) and M5 (release) approved on 2026-11-15: version 1.0.0, tagged `godoodungeon-v1.0.0` after merging. Version 1.1.0 (the dungeon graph, §12) planned on 2026-11-20. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
 **Reference material:** the research summary in §11. The demo tile set is created for this project.
 
 ---
@@ -216,3 +216,64 @@ Note further ideas as idea cards in the epic `godoodungeon` with the labels `v2.
 - **Layout first, then WFC:** [CG-WFC](https://blog.ptidej.net/content/files/2025/11/_ICSE_GAS_Laurent____Graph_WFC_Procedural_Gen-1_compressed.pdf), [Growing Graph WFC](https://dl.acm.org/doi/full/10.1145/3807895.3807922). This is the approach chosen here.
 - **Global constraints in WFC:** [DeBroglie path constraints](https://github.com/BorisTheBrave/DeBroglie/blob/master/docs/articles/path_constraints.md). These fix connectivity but not room shapes. Not needed, because the layout gives both.
 - Rejected for v1: a two-level WFC (room archetypes on a coarse grid, then tiles). It needs the same fine-level work, plus a second tile set and its own connectivity handling, and gives uniform grid-aligned rooms.
+
+---
+
+### 12. Version 1.1: Dungeon graph
+
+**Decided by the board on 2026-11-20.** godoodungeon 1.1.0 keeps the room graph after Generate, so gameplay code can use it: rooms are the vertices, the corridors joining them the edges. Tracked in the epic `godoodungeon` with the label `v1.1.0`.
+
+Until now the room graph (§4.3) and the routed corridors (§4.4) exist only while a dungeon is generated. The GridMap keeps cells and the generated record, so a game cannot tell which room a cell belongs to, which rooms are neighbours, or how far apart two rooms are.
+
+#### 12.1 What an edge is
+
+- **One edge per room graph edge** (decided 2026-11-20): the tree edges and the Extra Connections of §4.3, each with the corridor routed for it (§4.4). An edge knows its two rooms, the door each room uses, whether it is a tree edge or a loop, its route cells (lanes included) and its **length**: the number of route cells from door to door.
+- Corridors that meet share cells (§4.4), so a corridor may pass a T or cross piece of another one. Those junctions are **not** edges: the graph is the designed layout, not every walk the map allows. A shared cell belongs to every edge whose route uses it, and its length counts for each. The README says so, because a player can take the shortcut a junction offers.
+- Every edge of a valid dungeon has a route: an edge whose room got no door is a layout error (§4.3), and a corridor that cannot be routed fails the layout attempt. `CorridorRouter` keeps each edge's path (it only kept the path faces until now).
+
+#### 12.2 Data and storage
+
+- New resources in `Resources/`, all `[GlobalClass]` and `[Tool]`, so they load in a game without the plugin enabled (the addon folder must still be in the project, since the C# assembly holds them):
+  - `DungeonGraph`: the rooms, the corridors, the bounds origin and size, and the queries of §12.3.
+  - `DungeonRoom`: index, footprint (GridMap cells: position and size on X and Z, bottom layer and height), centre cell, door cells with their sides, the indices of its corridors, and `Data`.
+  - `DungeonCorridor`: index, rooms A and B, door cells, tree edge or loop, route cells, length, and `Data`.
+- **Generate stores the graph** in the GridMap's metadata under `godoodads_dungeon_graph`, in the same undo action as the cells and the generated record. The scene file saves it as embedded sub-resources, as it already saves `DungeonSettings`. **Clear Dungeon** removes it; undo and redo restore it. A dungeon generated with 1.0.x has no graph until it is generated again.
+- `DungeonGraph.Of(GridMap)` returns the graph, or null when the GridMap has none.
+- **Custom data** (decided 2026-11-20): each room and corridor has a `Data` dictionary (`Godot.Collections.Dictionary`) for gameplay code, such as `{"role": "boss"}` or `{"locked": true}`. The plugin never reads it. Generate replaces the whole graph, so data set in the editor is lost on regenerating, and the dialog says so when the old graph has any.
+- **Room numbers:** status messages and the preview say "room 1" for the first room (§4.8). The API is 0-based like Godot's arrays: `Rooms[0]` is room 1. `DungeonRoom.Number` gives the number a person reads.
+
+#### 12.3 Queries
+
+Every public member uses Variant-compatible types (`int`, `Vector3I`, `Vector3`, `PackedInt32Array`, `PackedVector3Array`, `Godot.Collections.Array` of the resources above), so GDScript calls them as easily as C# (decided 2026-11-20). The algorithms live in `Core/` on plain arrays and are tested without the engine; the resource converts.
+
+- **Distances and paths** (decided 2026-11-20):
+  - `HopDistances(room)`: per room, the number of corridors on the fewest-corridor way from `room` (breadth-first), −1 when unreachable (cannot happen in a valid dungeon, but the API does not rely on it).
+  - `Distances(room)`: per room, the shortest total corridor length from `room` (Dijkstra over corridor lengths). Walking through a room costs nothing in 1.1.
+  - `ShortestPath(from, to)` and `ShortestPathCorridors(from, to)`: the rooms and the corridors of that way, by length, ties broken by fewer hops, then lower indices, so the answer is fixed.
+  - `FarthestRoom(room)` by length, and `Diameter()`: the two rooms farthest apart, for a start and an end.
+- **Spatial lookup** (decided 2026-11-20):
+  - `RoomAtCell(Vector3I)`: the room whose footprint holds the GridMap cell on X and Z (walls included), or −1. The layer is ignored, since 1.1 has one floor, so any layer above a room finds it (decided in `dgn-1-1-graph-core`).
+  - `CorridorsAtCell(Vector3I)`: the corridors whose route holds the cell on X and Z, in index order; more than one at a junction or on a lane shared by two corridors.
+  - `RoomAtPosition(GridMap, Vector3)`: the same for a global position, through the GridMap's transform and cell size, so a character's position finds its room.
+  - `RoomCentre(GridMap, room)`: the global position of a room's centre on its floor, for spawning.
+  - Neighbours: `Neighbours(room)` and `CorridorBetween(a, b)` (−1 when none).
+- Not in 1.1: structure queries (dead ends, bridges, articulation rooms, loop membership). They are a few lines on top of the same Core and can follow when a game needs them.
+
+#### 12.4 Editor
+
+- **Preview Layout** labels each room with its number, so a designer can match the graph to the map.
+- The status after Generate adds "graph: 12 rooms, 14 corridors (3 loops)".
+
+#### 12.5 Demo and docs
+
+- A demo scene with a small GDScript that reads the graph at runtime: it takes `Diameter()` as start and end, marks both rooms and the rooms on the shortest path between them, and prints the hop and corridor distances. A C# version of the same calls goes in the README.
+- README: a "Dungeon graph" section with the data, the junction caveat of §12.1, the API and both examples. CHANGELOG 1.1.0.
+
+#### 12.6 Acceptance
+
+1. After Generate, `DungeonGraph.Of(map)` has as many rooms as the layout and one corridor per room graph edge; every route cell is a corridor cell of the map and every footprint cell a room cell.
+2. Saving and reopening the scene gives the same graph; undo of Generate restores the previous graph (or none); Clear Dungeon removes it and its undo brings it back.
+3. Every query of §12.3 is called from GDScript in an engine test, and gives the same answer as in C#.
+4. Core tests: hop and length distances, paths and diameter on hand-built graphs with loops and ties; `RoomAtCell` and `CorridorsAtCell` on every cell of a generated layout.
+5. The same seed and settings give the same graph.
+6. A dungeon with a graph from a game export (headless, plugin disabled) loads and answers `RoomAtCell`.
