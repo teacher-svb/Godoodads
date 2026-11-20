@@ -72,6 +72,56 @@ public class DungeonGridMapTests
 
     [TestCase]
     [RequireGodotRuntime]
+    public void The_graph_of_a_generated_dungeon_matches_its_cells()
+    {
+        for (long seed = 1; seed <= 3; seed++)
+        {
+            var settings = Settings(seed);
+            var map = Map(settings);
+            var generated = Generate(map, settings);
+            var layout = generated.Result.Layout;
+            var graph = DungeonGridMap.Graph(generated.Result);
+            DungeonGraph.StoreOn(map, graph);
+            graph = DungeonGraph.StoredOn(map);
+            var record = DungeonGridMap.ReadRecord(map).Cells.ToDictionary(c => c.Key, c => c.Value.Item);
+
+            AssertThat(graph.Rooms.Count).IsEqual(layout.Rooms.Count);
+            AssertThat(graph.Corridors.Count).IsEqual(layout.Edges.Count);
+            AssertThat(graph.Origin).IsEqual(settings.BoundsOrigin);
+            foreach (var room in graph.Rooms)
+                for (int z = 0; z < room.Size.Z; z++)
+                    for (int x = 0; x < room.Size.X; x++)
+                    {
+                        var cell = room.Position + new Vector3I(x, 0, z);
+                        AssertThat(record.ContainsKey(cell)).IsTrue();
+                        AssertThat(graph.RoomAtCell(cell)).IsEqual(room.Index);
+                    }
+            foreach (var room in graph.Rooms)
+                foreach (var door in room.DoorCells)
+                    AssertThat(map.GetCellItem(door)).IsEqual(DungeonEngineTiles.Door);
+            foreach (var corridor in graph.Corridors)
+            {
+                AssertThat(corridor.Length > 0).IsTrue();
+                foreach (var cell in corridor.Cells)
+                {
+                    AssertThat(record.ContainsKey(cell)).IsTrue();
+                    AssertThat(map.GetCellItem(cell)).IsEqual(record[cell]);
+                    AssertThat(graph.RoomAtCell(cell)).IsEqual(-1);
+                    AssertThat(graph.CorridorsAtCell(cell).Contains(corridor.Index)).IsTrue();
+                }
+            }
+            AssertThat(DungeonGridMap.EntriesWithData(graph)).IsEqual(0);
+            graph.Rooms[0].Data["role"] = "start";
+            graph.Corridors[0].Data["locked"] = true;
+            graph.Corridors[1].Data["locked"] = false;
+            AssertThat(DungeonGridMap.EntriesWithData(graph)).IsEqual(3);
+            AssertThat(DungeonGridMap.EntriesWithData(null)).IsEqual(0);
+            map.Free();
+        }
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
     public void Hand_placed_cells_are_unchanged()
     {
         var settings = Settings(2);

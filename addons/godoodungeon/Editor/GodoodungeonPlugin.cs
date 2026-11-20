@@ -334,6 +334,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var cells = DungeonGridMap.Cells(result, run.TileSets.Room, run.TileSets.Corridor);
         var (changes, record) = DungeonGridMap.Write(_target, previous, cells);
         var stored = run.Settings;
+        var graph = DungeonGridMap.Graph(result);
+        var previousGraph = DungeonGraph.StoredOn(_target);
+        int replacedData = DungeonGridMap.EntriesWithData(previousGraph);
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
@@ -343,6 +346,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.AddUndoMethod(this, MethodName.ApplySettings, _target, DungeonSettings.StoredOn(_target));
         undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, record.Encode());
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
+        undoRedo.AddDoMethod(this, MethodName.ApplyGraph, _target, graph);
+        undoRedo.AddUndoMethod(this, MethodName.ApplyGraph, _target, previousGraph);
         var markers = AddMarkerChanges(undoRedo, result, run.TileSets, previous, cells.Keys.ToHashSet());
         long? cellsBefore = CellsBeforeWrite();
         undoRedo.CommitAction();
@@ -354,6 +359,12 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         if (result.LayoutAttempt > 0)
             _dialog.AddStatus($"Used layout {result.LayoutAttempt + 1}; the earlier one(s) could not be finished: "
                 + string.Join(" ", result.Attempts.Select(a => a.Message)));
+        if (graph != null)
+            _dialog.AddStatus($"Stored the dungeon graph in the GridMap's metadata ({DungeonGraph.MetaKey}): {graph.Rooms.Count} rooms, "
+                + $"{graph.Corridors.Count} corridors ({graph.Corridors.Count(c => !c.IsTreeEdge)} loops).");
+        if (replacedData > 0)
+            _dialog.AddStatus($"The previous dungeon graph had Data on {replacedData} room(s) and corridor(s); the new graph starts without it. "
+                + "Ctrl+Z brings the previous dungeon and its graph back.", ToolDialog.Severity.Warning);
         foreach (string warning in layout.Warnings.Concat(run.Warnings))
             _dialog.AddStatus(warning, ToolDialog.Severity.Warning);
         if (markers.Placed > 0 || markers.Removed > 0)
@@ -430,7 +441,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var clear = DungeonGridMap.Clear(_target, record);
         var markers = DungeonGridMap.ReplacedMarkers(_target, record, new HashSet<Vector3I>());
         int cleared = clear.Do.Length / CellChanges.Stride;
-        if (cleared == 0 && markers.Count == 0 && record.Count == 0)
+        var graph = DungeonGraph.StoredOn(_target);
+        if (cleared == 0 && markers.Count == 0 && record.Count == 0 && graph == null)
         {
             _dialog.SetStatus("Nothing to clear: this GridMap has no generated dungeon.");
             return;
@@ -442,6 +454,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.AddUndoMethod(this, MethodName.ApplyCells, _target, clear.Undo);
         undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, System.Array.Empty<byte>());
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
+        undoRedo.AddDoMethod(this, MethodName.ApplyGraph, _target, (DungeonGraph)null);
+        undoRedo.AddUndoMethod(this, MethodName.ApplyGraph, _target, graph);
         if (markers.Count > 0)
             AddMarkerRemovals(undoRedo, DungeonGridMap.MarkerContainer(_target), EditorInterface.Singleton.GetEditedSceneRoot() ?? _target, markers);
         long? cellsBefore = CellsBeforeWrite();
@@ -456,6 +470,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _dialog.AddStatus($"Kept {kept:N0} dungeon cells you edited since.");
         if (markers.Count > 0)
             _dialog.AddStatus($"Removed {markers.Count:N0} markers from {DungeonGridMap.MarkerContainerName}.");
+        if (graph != null)
+            _dialog.AddStatus($"Removed the dungeon graph from the GridMap's metadata"
+                + (DungeonGridMap.EntriesWithData(graph) > 0 ? ", with its Data. Ctrl+Z brings it back." : "."));
     }
 
     /// <summary>Do and undo target for GridMap cells.</summary>
@@ -470,6 +487,13 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     {
         if (IsInstanceValid(map))
             DungeonSettings.StoreOn(map, settings);
+    }
+
+    /// <summary>Do and undo target for the dungeon graph stored on the GridMap (brief §12.2). Null removes it.</summary>
+    public void ApplyGraph(GridMap map, DungeonGraph graph)
+    {
+        if (IsInstanceValid(map))
+            DungeonGraph.StoreOn(map, graph);
     }
 
     /// <summary>Do and undo target for the record of what the dungeon wrote.</summary>
