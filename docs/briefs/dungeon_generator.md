@@ -3,7 +3,7 @@
 ## Sub-project 3: godoodungeon (Dungeon Generator)
 
 **Decisions by:** the board (Syndias)
-**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. WFC Generator has since been renamed godoowave (1.4.0, `addons/godoowave/`, namespace `Godoodads.Wave`; WFC brief §15); this brief keeps the old names and paths where it records M0. M1 (layout core), M2 (solve pipeline), M3 (editor), M4 (demo tile set) and M5 (release) approved on 2026-11-15: version 1.0.0, tagged `godoodungeon-v1.0.0` after merging. Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
+**Status:** M0 (foundations) approved on 2026-11-15, with WFC Generator 1.3.3 released alongside it. WFC Generator has since been renamed godoowave (1.4.0, `addons/godoowave/`, namespace `Godoodads.Wave`; WFC brief §15); this brief keeps the old names and paths where it records M0. M1 (layout core), M2 (solve pipeline), M3 (editor), M4 (demo tile set) and M5 (release) approved on 2026-11-15: version 1.0.0, tagged `godoodungeon-v1.0.0` after merging. Version 1.2.0 (room boxes, §13) planned on 2026-11-20, after 1.1.0 (the dungeon graph, §12, on its own branch). Milestones M0–M5 below, tracked in the epic `godoodungeon` with the labels `m0` to `m5`.
 **Reference material:** the research summary in §11. The demo tile set is created for this project.
 
 ---
@@ -216,3 +216,66 @@ Note further ideas as idea cards in the epic `godoodungeon` with the labels `v2.
 - **Layout first, then WFC:** [CG-WFC](https://blog.ptidej.net/content/files/2025/11/_ICSE_GAS_Laurent____Graph_WFC_Procedural_Gen-1_compressed.pdf), [Growing Graph WFC](https://dl.acm.org/doi/full/10.1145/3807895.3807922). This is the approach chosen here.
 - **Global constraints in WFC:** [DeBroglie path constraints](https://github.com/BorisTheBrave/DeBroglie/blob/master/docs/articles/path_constraints.md). These fix connectivity but not room shapes. Not needed, because the layout gives both.
 - Rejected for v1: a two-level WFC (room archetypes on a coarse grid, then tiles). It needs the same fine-level work, plus a second tile set and its own connectivity handling, and gives uniform grid-aligned rooms.
+
+---
+
+### 13. Version 1.2: Room boxes
+
+**Requested by the board on 2026-11-20.** Room boxes are child nodes of the GridMap that fix a room at a place you choose. The dungeon is laid out and connected around them. They combine the fixed-position variant of the room stamps idea card (`dgn-idea-room-stamps`) with the box nodes of godoowave 1.5 (WFC brief §16). Tracked in the epic `godoodungeon` with the label `v1.2.0`, after 1.1.0. Room stamps placed by the layout stay a `v2.0.0` idea.
+
+Decisions (board, 2026-11-20):
+- **Mode per box:** **Generated** fixes a room's position and size, and the room is solved with the room tile set like any other. **Built** keeps the cells you built inside the box, and the dungeon only connects corridors to it.
+- **Doors of a Built room are the door tiles you place** on its wall ring. Your walls are never changed. A Built box without a door is an error.
+- **Room Count includes room boxes:** boxes take places from it, and the layout generates the rest. 12 with one box gives 1 box and 11 generated rooms.
+
+#### 13.1 The room box node
+
+- New node **`DungeonRoomBox`** (`[Tool, GlobalClass]`) in `addons/godoodungeon/Nodes/`, outside `#if TOOLS`. It derives from the box node base that godoowave 1.5 adds to `editor_tools_common` (WFC brief §16.1): Origin, Size, Enabled, the position kept in sync with Origin, and the gizmo with handles. Only enabled direct children of the GridMap count.
+- Exports: **Mode** (Generated, Built; default Generated) and **Data** (`Godot.Collections.Dictionary`, copied to the room in the dungeon graph, 13.4).
+- **Footprint:** X and Z of the box, walls included, as for generated rooms. Its bottom layer must be the bounds' bottom layer. Size Y is the room's height in layers, so a box may be taller than Room Height.
+- The dialog's **Room Boxes** group has an **Add Room Box** button: a Generated box in the middle of the bounds at Max Room Size and Room Height, selected, as one undo step.
+
+#### 13.2 Layout
+
+- **Order:** room boxes first, in child order, then generated rooms. Room 1 is the first box, so the room numbers of boxes stay the same between seeds.
+- **Room Count:** generated rooms fill Room Count minus the number of boxes. With more boxes than Room Count, every box is still used and the status warns. Fewer than 2 rooms in all is a failure, as today.
+- **Checks before the layout** (errors, with red boxes in the viewport): a box outside the bounds or within the Margin; two boxes closer than the Gap; a box smaller than 3 × 3 (Min and Max Room Size do not apply to boxes); a Generated box that covers occupied cells that are not the last dungeon's (make it Built or clear them).
+- Generated rooms keep the Gap from boxes, as from each other. Hand-placed cells outside the boxes stay obstacles (§4.7).
+- **Room graph:** boxes are rooms like any other in the spanning tree and the Extra Connections (§4.3).
+- **Doors of a Generated box:** placed by the door placer as for generated rooms, with Max Doors Per Room.
+- **Doors of a Built box:** the non-corner cells of its wall ring (bottom layer) that hold the Door item. The side is the ring side the cell is on. Max Doors Per Room does not apply. An edge to the room uses its door that faces the other room best. A door that no edge uses gets one more edge, to the nearest other room it does not already join, marked as a loop, so no door opens into nothing. The lane and entry cell rules of §4.3 apply to these doors too, and a blocked one is a layout error naming the box and the door.
+- Layout attempts (§4.5) only vary the generated rooms; boxes stay where they are.
+
+#### 13.3 Solve, write and clear
+
+- **Generated box:** solved as a room (§4.4) with the box's footprint and height; its cells go into the dungeon record, and Generate and Clear Dungeon replace them as usual.
+- **Built box:** not solved. Its cells are excluded from the corridor solve, as room cells are, and never enter the record, so Generate and Clear Dungeon never change them (they are hand-placed cells, §4.7).
+- A disabled box does nothing: a Built box's cells become ordinary hand-placed obstacles.
+- Determinism: the same seed, settings, hand-placed cells and boxes give the same dungeon.
+
+#### 13.4 Graph
+
+- `DungeonRoom` (§12.2) gets **`Box`**: the box's node path relative to the GridMap, empty for generated rooms, and **`IsBuilt`**. Its `Data` starts as a copy of the box's Data, so data set on a box survives regenerating (§12.2 says Generate replaces the graph). The Data warning of §12.2 leaves out rooms whose Data came from a box unchanged.
+
+#### 13.5 Editor
+
+- **Handles:** the GridMap selected with the dialog open shows the bounds and every enabled room box with its handles; a selected room box shows its own handles, dialog open or not; as for godoowave pin boxes (WFC brief §16.3). A drag is one undo step on the node.
+- **Preview Layout** draws room boxes in their own colour (Generated and Built differ), with their room number, and Built doors.
+- Status: "12 rooms (2 room boxes, 1 built)", and errors name the box node ("Room box `BossRoom` (room 2) has no door").
+
+#### 13.6 Demo and docs
+
+- A demo scene with a Built boss room (hand-built, two doors, Data `{"role": "boss"}`) and a Generated entrance room at a bounds edge; the 1.1 graph demo script finds the boss room by its Data.
+- README "Room boxes" section; the README limitation "a hand-built room is not connected to the dungeon" changes to point at Built boxes. CHANGELOG 1.2.0.
+
+#### 13.7 Acceptance
+
+1. Over 50 seeds with two boxes (one of each mode) and 10 rooms in all: every dungeon has 10 rooms, rooms 1 and 2 at the boxes, every door of the Built box joined by a corridor, and the Built cells unchanged.
+2. Generate, regenerate and Clear Dungeon never change a Built box's cells; a Generated box's cells are replaced.
+3. Every check of 13.2 gives its error with the box named.
+4. The graph names the box of each box room and carries its Data after regenerating.
+5. godoowave 1.5 and godoodungeon 1.2 installed together: pin boxes and room boxes share the box node base and both work.
+
+#### 13.8 Not in 1.2
+
+Room stamps placed by the layout, non-rectangular boxes, rotated boxes, boxes on other floors, and forcing which rooms a box connects to (the room roles idea).
