@@ -1,13 +1,13 @@
 ---
 id: "wfc-1-5-pinbox-facts-2026-11-20"
-status: "in-progress"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-20T13:00:00.000Z"
-modified: "2026-11-20T22:30:00.000Z"
-completedAt: null
+modified: "2026-11-20T23:30:00.000Z"
+completedAt: "2026-11-20T23:30:00.000Z"
 labels: ["v1.5.0", "spike", "editor"]
 order: "d1"
 ---
@@ -32,5 +32,6 @@ A first version to check the facts against, which `wfc-1-5-pinbox-node` finishes
 
 ## Results
 3. **Pass (headless).** A `WfcSettings` file with properties the class no longer has loads without an error or warning; the remaining values (Seed, BoundsSize) load, and the resource works as GridMap metadata. Removing `PinOrigin`/`PinSize` is safe. Records with pinned bits: covered by the cells card's decode test.
-2. **Pass so far (headless):** in a running tree, setting the position snaps Origin at once ((10.7, 0.2, 3.1) → cell (5, 0, 2), node at (10, 0, 4)), rotation and scale reset. Undo of a move-tool drag: manual.
-1, 4: manual.
+2. **Pass.** Headless: in a running tree, setting the position snaps Origin at once ((10.7, 0.2, 3.1) → cell (5, 0, 2), node at (10, 0, 4)), rotation and scale reset. Board, in the editor: the move tool moves the box cell by cell with Origin following, Ctrl+Z puts it back, rotate and scale snap back. **Transform sync is kept; no lock fallback.**
+1. **Pass (board, editor).** With a pin box child of the hillside GridMap selected, its six handles drag, snap to cells and undo one drag at a time, with the dialog open or closed: the GridMap editor does not take the input.
+4. **Pass (board, editor).** After a rebuild and assembly reload the outline and handles still work with no errors, and the box keeps Origin, Size and Enabled through a save and reopen.
