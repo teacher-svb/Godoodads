@@ -55,6 +55,38 @@ public class DungeonDemoTests
         root.Free();
     }
 
+    /// <summary>The graph demo (brief §12.5, §12.6 items 5 and 6; card dgn-1-1-demo).</summary>
+    [TestCase]
+    [RequireGodotRuntime]
+    public void The_graph_demo_reads_its_baked_graph_and_marks_the_way()
+    {
+        var root = ResourceLoader.Load<PackedScene>("res://demo/godoodungeon/dungeon_graph.tscn", null, ResourceLoader.CacheMode.Ignore).Instantiate<Node3D>();
+        var map = root.GetNode<GridMap>("GridMap");
+        var graph = DungeonGraph.StoredOn(map);
+        AssertThat(graph).IsNotNull();
+        AssertThat(graph.Rooms.Count).IsEqual(12);
+
+        // The baked graph is the one the stored settings generate.
+        var settings = DungeonSettings.StoredOn(map);
+        var check = DungeonTileSets.Check(settings, map);
+        var result = new DungeonJob(DungeonGridMap.Request(settings, check, new System.Collections.Generic.HashSet<Vector3I>())).RunNow();
+        AssertThat(result.Status).IsEqual(DungeonStatus.Solved);
+        AssertThat(result.Graph.Corridors.Count).IsEqual(graph.Corridors.Count);
+        for (int i = 0; i < graph.Corridors.Count; i++)
+            AssertThat(graph.Corridors[i].Cells.ToArray()).IsEqual(result.Graph.Corridors[i].Cells.ToArray());
+        foreach (var room in graph.Rooms)
+            AssertThat(graph.RoomAtCell(room.CentreCell)).IsEqual(room.Index);
+
+        // Running the scene runs graph_demo.gd: start and goal get their role, and every room plus every path cell a marker.
+        ((SceneTree)Engine.GetMainLoop()).Root.AddChild(root);
+        var ends = graph.Diameter();
+        AssertThat(graph.Rooms[ends.X].Data["role"].AsString()).IsEqual("start");
+        AssertThat(graph.Rooms[ends.Y].Data["role"].AsString()).IsEqual("goal");
+        int pathCells = graph.ShortestPathCorridors(ends.X, ends.Y).Sum(c => graph.Corridors[c].Length);
+        AssertThat(root.GetNode("GraphMarkers").GetChildCount()).IsEqual(graph.Rooms.Count + pathCells);
+        root.QueueFree();
+    }
+
     /// <summary>Brief §8 performance, with the GridMap write (card dgn-m5-performance).</summary>
     [TestCase(64, 20)]
     [TestCase(128, 60)]

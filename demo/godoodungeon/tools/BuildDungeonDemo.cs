@@ -6,6 +6,7 @@ using Godoodads.Common.Wfc;
 using Godoodads.Common.Wfc.Adapters;
 using Godoodads.Common.Wfc.Core;
 using Godoodads.Dungeon.Adapters;
+using Godoodads.Dungeon.Core;
 
 namespace Godoodads.Dungeon.Demo;
 
@@ -149,8 +150,9 @@ public partial class BuildDungeonDemo : Node
                 for (int z = Pool.Position.Y; z < Pool.End.Y; z++)
                     map.SetCellItem(new Vector3I(x, 0, z), items["Pool"]);
         });
+        SaveGraphDemo(library, settings);
         GD.Print($"Dungeon demo: built {library.GetItemList().Length} items, {room.Tiles.Count} room tiles, {corridor.Tiles.Count} corridor tiles "
-            + $"and 2 scenes; {check.Errors.Count} errors.");
+            + $"and 3 scenes; {check.Errors.Count} errors.");
         GetTree().Quit();
     }
 
@@ -166,7 +168,84 @@ public partial class BuildDungeonDemo : Node
         settings.Seed = seed;
         DungeonSettings.StoreOn(map, settings);
         place?.Invoke(map);
+        AddLighting(root);
+        var packed = new PackedScene();
+        Check(packed.Pack(root), name);
+        Check(ResourceSaver.Save(packed, $"{SceneDirectory}/{name}.tscn"), name);
+        root.Free();
+    }
 
+    public const string GraphDemoScript = SceneDirectory + "/graph_demo.gd";
+
+    /// <summary>
+    /// The graph demo (brief godoodungeon §12.5): a dungeon generated here and saved with its cells,
+    /// markers, record and graph, a top-down camera, and graph_demo.gd, which reads the graph when the
+    /// scene runs. Uses the first seed from 1 that solves.
+    /// </summary>
+    private static void SaveGraphDemo(MeshLibrary library, DungeonSettings template)
+    {
+        const string name = "dungeon_graph";
+        var root = new Node3D { Name = "DungeonGraph" };
+        root.SetScript(GD.Load<Script>(GraphDemoScript));
+        var map = new GridMap { Name = "GridMap", MeshLibrary = library };
+        Own(root, map);
+        var settings = (DungeonSettings)template.Duplicate();
+        settings.BoundsSize = new Vector3I(48, 1, 48);
+        settings.RoomCount = 12;
+        settings.ExtraConnections = 0.25f;
+
+        var check = DungeonTileSets.Check(settings, map);
+        DungeonResult result = null;
+        for (long seed = 1; seed <= 20 && result?.Status != DungeonStatus.Solved; seed++)
+        {
+            settings.Seed = seed;
+            result = new DungeonJob(DungeonGridMap.Request(settings, check, new HashSet<Vector3I>())).RunNow();
+        }
+        if (result?.Status != DungeonStatus.Solved)
+        {
+            GD.PushError("Dungeon demo: no seed from 1 to 20 solved the graph demo.");
+            root.Free();
+            return;
+        }
+        var cells = DungeonGridMap.Cells(result, check.Room, check.Corridor);
+        var (changes, record) = DungeonGridMap.Write(map, new GeneratedRecord(), cells);
+        GridMapCells.Apply(map, changes.Do);
+        DungeonGridMap.WriteRecord(map, record.Encode());
+        DungeonSettings.StoreOn(map, settings);
+        DungeonGraph.StoreOn(map, DungeonGridMap.Graph(result));
+
+        var container = new Node3D { Name = DungeonGridMap.MarkerContainerName };
+        Own(map, container);
+        container.Owner = root;
+        foreach (var placement in DungeonGridMap.PlanMarkers(map, result, check.Room, check.Corridor))
+            if (DungeonGridMap.InstantiateMarker(placement) is { } marker)
+            {
+                container.AddChild(marker);
+                marker.Owner = root;
+            }
+
+        // Top-down over the bounds: cells are 2 units wide.
+        var centre = map.MapToLocal(settings.BoundsOrigin + new Vector3I(settings.BoundsSize.X / 2, 0, settings.BoundsSize.Z / 2));
+        Own(root, new Camera3D
+        {
+            Name = "Camera",
+            Projection = Camera3D.ProjectionType.Orthogonal,
+            Size = settings.BoundsSize.Z * map.CellSize.Z * 1.05f,
+            Position = centre + new Vector3(0, 60, 0),
+            RotationDegrees = new Vector3(-90, 0, 0),
+            Far = 200,
+            Current = true,
+        });
+        AddLighting(root);
+        var packed = new PackedScene();
+        Check(packed.Pack(root), name);
+        Check(ResourceSaver.Save(packed, $"{SceneDirectory}/{name}.tscn"), name);
+        GD.Print($"Dungeon demo: {name} uses seed {settings.Seed}: {result.Layout.Rooms.Count} rooms, {result.Graph.Corridors.Count} corridors.");
+        root.Free();
+    }
+
+    private static void AddLighting(Node3D root)
+    {
         Own(root, new DirectionalLight3D { Name = "Sun", ShadowEnabled = true, RotationDegrees = new Vector3(-60, -30, 0), LightEnergy = 0.6f });
         Own(root, new WorldEnvironment
         {
@@ -180,10 +259,6 @@ public partial class BuildDungeonDemo : Node
                 TonemapMode = Godot.Environment.ToneMapper.Filmic,
             },
         });
-        var packed = new PackedScene();
-        Check(packed.Pack(root), name);
-        Check(ResourceSaver.Save(packed, $"{SceneDirectory}/{name}.tscn"), name);
-        root.Free();
     }
 
     private static WfcTileSet TileSet(MeshLibrary library, Module[] modules, Dictionary<string, int> items, Dictionary<string, PackedScene> markers)
