@@ -276,7 +276,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         var record = DungeonGridMap.ReadRecord(_target);
         var handPlaced = DungeonGridMap.ReadHandPlaced(_target, _settings.BoundsOrigin, _settings.BoundsSize, record);
-        var job = new DungeonJob(DungeonGridMap.Request(_settings, tileSets, handPlaced));
+        var job = new DungeonJob(DungeonGridMap.Request(_settings, tileSets, handPlaced,
+            DungeonGridMap.ReadRoomBoxes(_target, _settings.BoundsOrigin, _settings.Door)));
         _run = new ActiveRun(job, tileSets, _settings.Seed, previousSeed, Stopwatch.StartNew(), tileSets.Warnings, (DungeonSettings)_settings.Duplicate());
         _sinceProgress = ProgressInterval;
         SetRunning(true);
@@ -342,9 +343,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var cells = DungeonGridMap.Cells(result, run.TileSets.Room, run.TileSets.Corridor);
         var (changes, record) = DungeonGridMap.Write(_target, previous, cells);
         var stored = run.Settings;
-        var graph = DungeonGridMap.Graph(result);
+        var graph = DungeonGridMap.Graph(result, _target);
         var previousGraph = DungeonGraph.StoredOn(_target);
-        int replacedData = DungeonGridMap.EntriesWithData(previousGraph);
+        int replacedData = DungeonGridMap.EntriesWithData(previousGraph, _target);
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
@@ -485,7 +486,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _dialog.AddStatus($"Removed {markers.Count:N0} markers from {DungeonGridMap.MarkerContainerName}.");
         if (graph != null)
             _dialog.AddStatus($"Removed the dungeon graph from the GridMap's metadata"
-                + (DungeonGridMap.EntriesWithData(graph) > 0 ? ", with its Data. Ctrl+Z brings it back." : "."));
+                + (DungeonGridMap.EntriesWithData(graph, _target) > 0 ? ", with its Data. Ctrl+Z brings it back." : "."));
     }
 
     /// <summary>Do and undo target for GridMap cells.</summary>
@@ -724,6 +725,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             LayoutAttempts = _settings.LayoutAttempts,
             PathWander = _settings.PathWander,
             HandPlaced = DungeonGridMap.ReadHandPlaced(_target, _settings.BoundsOrigin, _settings.BoundsSize, record),
+            RoomBoxes = DungeonGridMap.ReadRoomBoxes(_target, _settings.BoundsOrigin, _settings.Door),
         };
         _preview = DungeonPreview.Plan(request);
         if (_run != null)

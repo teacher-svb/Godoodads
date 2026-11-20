@@ -57,6 +57,8 @@ public partial class DungeonGraph : Resource
                 DoorCells = new Array<Vector3I>(room.Doors.Select(d => data.Doors[d].Cell)),
                 DoorDirections = new Array<Vector3I>(room.Doors.Select(d => Step(data.Doors[d].Side))),
                 Corridors = room.Corridors.ToArray(),
+                Box = new NodePath(room.Box),
+                IsBuilt = room.IsBuilt,
             });
         foreach (var corridor in data.Corridors)
             graph.Corridors.Add(new DungeonCorridor
@@ -92,7 +94,8 @@ public partial class DungeonGraph : Resource
                 indices.Add(doors.Count);
                 doors.Add(new GraphDoor(r, room.DoorCells[d], Side(d < room.DoorDirections.Count ? room.DoorDirections[d] : Vector3I.Zero)));
             }
-            rooms.Add(new GraphRoom(r, room.Position, room.Size, indices, room.Corridors ?? System.Array.Empty<int>()));
+            rooms.Add(new GraphRoom(r, room.Position, room.Size, indices, room.Corridors ?? System.Array.Empty<int>(),
+                room.Box?.ToString() ?? "", room.IsBuilt));
         }
         int DoorAt(int room, Vector3I cell) =>
             room >= 0 && room < rooms.Count ? rooms[room].Doors.FirstOrDefault(d => doors[d].Cell == cell, -1) : -1;

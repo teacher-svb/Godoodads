@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Godot;
+using Godoodads.Common;
 using Godoodads.Common.Wfc;
 using Godoodads.Common.Wfc.Adapters;
 using Godoodads.Common.Wfc.Core;
@@ -24,12 +25,61 @@ public static class DungeonGridMap
     public const string MarkerContainerName = "DungeonMarkers";
     public const string MarkerTag = "godoodads_dungeon_marker";
 
-    /// <summary>The graph resource of a solved result (brief §12), with empty Data; null when the result has no graph.</summary>
-    public static DungeonGraph Graph(DungeonResult result) => result.Graph == null ? null : DungeonGraph.From(result.Graph);
+    /// <summary>
+    /// The graph resource of a solved result (brief §12). Rooms from room boxes start with a copy of
+    /// their box's Data (§13.4), found under <paramref name="map"/> by the box's name; other Data is
+    /// empty. Null when the result has no graph.
+    /// </summary>
+    public static DungeonGraph Graph(DungeonResult result, GridMap map = null)
+    {
+        if (result.Graph == null)
+            return null;
+        var graph = DungeonGraph.From(result.Graph);
+        if (map != null)
+            foreach (var room in graph.Rooms)
+                if (!room.Box.IsEmpty && map.GetNodeOrNull<DungeonRoomBox>(room.Box) is { } box)
+                    room.Data = box.Data.Duplicate(true);
+        return graph;
+    }
 
-    /// <summary>How many rooms and corridors of a graph carry gameplay Data, which Generate would replace. 0 for no graph.</summary>
-    public static int EntriesWithData(DungeonGraph graph) =>
-        graph == null ? 0 : graph.Rooms.Count(r => r?.Data?.Count > 0) + graph.Corridors.Count(c => c?.Data?.Count > 0);
+    /// <summary>
+    /// How many rooms and corridors of a graph carry gameplay Data that Generate would lose. 0 for
+    /// no graph. A room whose Data equals its box's Data on <paramref name="map"/> is left out: the
+    /// next graph copies it again (§13.4).
+    /// </summary>
+    public static int EntriesWithData(DungeonGraph graph, GridMap map = null)
+    {
+        if (graph == null)
+            return 0;
+        bool FromBox(DungeonRoom room) => map != null && !room.Box.IsEmpty
+            && map.GetNodeOrNull<DungeonRoomBox>(room.Box) is { } box && box.Data.RecursiveEqual(room.Data);
+        return graph.Rooms.Count(r => r?.Data?.Count > 0 && !FromBox(r)) + graph.Corridors.Count(c => c?.Data?.Count > 0);
+    }
+
+    /// <summary>
+    /// The enabled room boxes under a GridMap, in child order, as the layout sees them (brief §13):
+    /// footprint on the layout grid, bottom layer relative to the bounds, height, mode, and for Built
+    /// boxes the cells of their bottom layer that hold <paramref name="doorItem"/>.
+    /// </summary>
+    public static List<RoomBoxSpec> ReadRoomBoxes(GridMap map, Vector3I boundsOrigin, int doorItem)
+    {
+        var boxes = new List<RoomBoxSpec>();
+        foreach (var box in GridMapBox.ActiveChildren<DungeonRoomBox>(map))
+        {
+            var rect = new RoomRect(new Vector2I(box.Origin.X - boundsOrigin.X, box.Origin.Z - boundsOrigin.Z), new Vector2I(box.Size.X, box.Size.Z));
+            var doors = new List<Vector2I>();
+            if (box.Mode == RoomBoxMode.Built)
+                for (int z = 0; z < box.Size.Z; z++)
+                    for (int x = 0; x < box.Size.X; x++)
+                    {
+                        var cell = box.Origin + new Vector3I(x, 0, z);
+                        if (doorItem >= 0 && map.GetCellItem(cell) == doorItem)
+                            doors.Add(new Vector2I(cell.X - boundsOrigin.X, cell.Z - boundsOrigin.Z));
+                    }
+            boxes.Add(new RoomBoxSpec(box.Name, rect, box.Origin.Y - boundsOrigin.Y, box.Size.Y, box.Mode, doors));
+        }
+        return boxes;
+    }
 
     public static byte[] StoredRecord(GridMap map) => map.HasMeta(RecordKey) ? map.GetMeta(RecordKey).AsByteArray() : Array.Empty<byte>();
 
@@ -77,8 +127,9 @@ public static class DungeonGridMap
         return handPlaced;
     }
 
-    /// <summary>The job request for these settings, checked tile sets and hand-placed cells.</summary>
-    public static DungeonRequest Request(DungeonSettings settings, DungeonTileSets tileSets, IReadOnlySet<Vector3I> handPlaced) => new()
+    /// <summary>The job request for these settings, checked tile sets, hand-placed cells and room boxes.</summary>
+    public static DungeonRequest Request(DungeonSettings settings, DungeonTileSets tileSets, IReadOnlySet<Vector3I> handPlaced,
+        IReadOnlyList<RoomBoxSpec> roomBoxes = null) => new()
     {
         Layout = settings.ToLayoutSettings(),
         Origin = settings.BoundsOrigin,
@@ -93,6 +144,7 @@ public static class DungeonGridMap
         MaxBacktracks = settings.MaxBacktracks,
         MaxRestarts = settings.MaxRestarts,
         HandPlaced = handPlaced,
+        RoomBoxes = roomBoxes ?? new List<RoomBoxSpec>(),
     };
 
     /// <summary>
