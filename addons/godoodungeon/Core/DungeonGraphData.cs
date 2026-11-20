@@ -192,8 +192,9 @@ public sealed class DungeonGraphData
 
     /// <summary>
     /// The rooms of the shortest way from <paramref name="from"/> to <paramref name="to"/> by corridor
-    /// length, both ends included. Ties go to fewer corridors, then to a fixed order of rooms and
-    /// corridors (lower indices first), so the answer is the same for the same graph. Empty when either room is unknown or unreachable.
+    /// length, both ends included. Ties go to fewer corridors, then to the way whose room list, read
+    /// from <paramref name="from"/>, is lowest (then the lower corridor index). Empty when either room
+    /// is unknown or unreachable.
     /// </summary>
     public int[] ShortestPath(int from, int to) => Path(from, to).Rooms;
 
@@ -234,47 +235,57 @@ public sealed class DungeonGraphData
         return best;
     }
 
+    /// <summary>
+    /// Walks from <paramref name="from"/> towards <paramref name="to"/> over the shortest ways only,
+    /// taking the lowest next room (then the lowest corridor) at every step. All shortest ways have
+    /// the same number of corridors, so this gives the lowest room list.
+    /// </summary>
     private (int[] Rooms, int[] Corridors) Path(int from, int to)
     {
         if (!IsRoom(from) || !IsRoom(to))
             return (Array.Empty<int>(), Array.Empty<int>());
-        var search = Search(from);
-        if (search.Length[to] < 0)
+        var back = Search(to);
+        if (back.Length[from] < 0)
             return (Array.Empty<int>(), Array.Empty<int>());
-        var rooms = new List<int> { to };
+        var rooms = new List<int> { from };
         var corridors = new List<int>();
-        for (int at = to; at != from; at = search.Previous[at])
+        for (int at = from; at != to;)
         {
-            corridors.Add(search.Via[at]);
-            rooms.Add(search.Previous[at]);
+            int bestRoom = -1, bestCorridor = -1;
+            foreach (var (corridor, next) in _adjacent[at])
+            {
+                bool onShortestWay = back.Length[next] >= 0
+                    && back.Length[next] + Corridors[corridor].Length == back.Length[at]
+                    && back.Hops[next] + 1 == back.Hops[at];
+                if (onShortestWay && (bestRoom < 0 || next < bestRoom || (next == bestRoom && corridor < bestCorridor)))
+                    (bestRoom, bestCorridor) = (next, corridor);
+            }
+            rooms.Add(bestRoom);
+            corridors.Add(bestCorridor);
+            at = bestRoom;
         }
-        rooms.Reverse();
-        corridors.Reverse();
         return (rooms.ToArray(), corridors.ToArray());
     }
 
     /// <summary>
-    /// Dijkstra by (length, hops). Rooms leave the queue in key order, then by index; a room's way is
-    /// only replaced by a strictly better one, and corridors are tried in index order, so the
-    /// predecessors are fixed for a graph.
+    /// Dijkstra by (length, hops): per room, the shortest corridor length from <paramref name="source"/>
+    /// (-1 when unreachable) and the fewest corridors among the ways of that length.
     /// </summary>
-    private (int[] Length, int[] Hops, int[] Previous, int[] Via) Search(int source)
+    private (int[] Length, int[] Hops) Search(int source)
     {
         int count = Rooms.Count;
         var length = Enumerable.Repeat(-1, count).ToArray();
         var hops = new int[count];
-        var previous = Enumerable.Repeat(-1, count).ToArray();
-        var via = Enumerable.Repeat(-1, count).ToArray();
         var done = new bool[count];
-        var queue = new PriorityQueue<int, (int Length, int Hops, int Room)>();
+        var queue = new PriorityQueue<int, (int Length, int Hops)>();
         length[source] = 0;
-        queue.Enqueue(source, (0, 0, source));
+        queue.Enqueue(source, (0, 0));
         while (queue.TryDequeue(out int at, out _))
         {
             if (done[at])
                 continue;
             done[at] = true;
-            foreach (var (corridor, next) in _adjacent[at].OrderBy(a => a.Corridor))
+            foreach (var (corridor, next) in _adjacent[at])
             {
                 if (done[next])
                     continue;
@@ -284,11 +295,9 @@ public sealed class DungeonGraphData
                     continue;
                 length[next] = nextLength;
                 hops[next] = nextHops;
-                previous[next] = at;
-                via[next] = corridor;
-                queue.Enqueue(next, (nextLength, nextHops, next));
+                queue.Enqueue(next, (nextLength, nextHops));
             }
         }
-        return (length, hops, previous, via);
+        return (length, hops);
     }
 }

@@ -63,6 +63,18 @@ public class DungeonGraphTests
         Assert.Equal(new[] { 0, 3 }, direct.ShortestPath(0, 3));
         Assert.Equal(new[] { 4 }, direct.ShortestPathCorridors(0, 3));
 
+        // An uneven tie (code review): 0-1-3 is 3 + 7 and 0-2-3 is 2 + 8. Both are 10 cells and 2
+        // corridors, so the lower room list wins, whichever end the way starts from.
+        var uneven = Graph(4, (0, 1, 3), (1, 3, 7), (0, 2, 2), (2, 3, 8));
+        Assert.Equal(new[] { 0, 1, 3 }, uneven.ShortestPath(0, 3));
+        Assert.Equal(new[] { 0, 1 }, uneven.ShortestPathCorridors(0, 3));
+        Assert.Equal(new[] { 3, 1, 0 }, uneven.ShortestPath(3, 0));
+        Assert.Equal(new[] { 1, 0 }, uneven.ShortestPathCorridors(3, 0));
+        // Reversed indices: the way through room 2 is now the lower list from either end.
+        var mirrored = Graph(4, (0, 2, 3), (2, 3, 7), (0, 1, 2), (1, 3, 8));
+        Assert.Equal(new[] { 0, 1, 3 }, mirrored.ShortestPath(0, 3));
+        Assert.Equal(new[] { 3, 1, 0 }, mirrored.ShortestPath(3, 0));
+
         // Diameter ties: every opposite pair is 4 apart; the lowest pair wins.
         Assert.Equal((0, 3), square.Diameter());
         Assert.Equal(3, square.FarthestRoom(0));

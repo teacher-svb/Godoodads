@@ -271,7 +271,7 @@ Every public member uses Variant-compatible types (`int`, `Vector3I`, `Vector3`,
 
 #### 12.6 Acceptance
 
-1. After Generate, `DungeonGraph.Of(map)` has as many rooms as the layout and one corridor per room graph edge; every route cell is a corridor cell of the map and every footprint cell a room cell.
+1. After Generate, `DungeonGraph.StoredOn(map)` has as many rooms as the layout and one corridor per room graph edge; every route cell is a corridor cell of the map and every footprint cell a room cell.
 2. Saving and reopening the scene gives the same graph; undo of Generate restores the previous graph (or none); Clear Dungeon removes it and its undo brings it back.
 3. Every query of §12.3 is called from GDScript in an engine test, and gives the same answer as in C#.
 4. Core tests: hop and length distances, paths and diameter on hand-built graphs with loops and ties; `RoomAtCell` and `CorridorsAtCell` on every cell of a generated layout.
