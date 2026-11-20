@@ -128,6 +128,50 @@ public class WfcPinBoxTests
         root.Free();
     }
 
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Add_pin_box_centres_the_box_in_the_bounds_at_half_size_and_full_height()
+    {
+        AssertThat(WfcPinBox.CentredIn(new Vector3I(10, -2, 4), new Vector3I(24, 8, 16)))
+            .IsEqual((new Vector3I(16, -2, 8), new Vector3I(12, 8, 8)));
+        AssertThat(WfcPinBox.CentredIn(Vector3I.Zero, new Vector3I(5, 3, 7))).IsEqual((new Vector3I(1, 0, 2), new Vector3I(2, 3, 3)));
+        AssertThat(WfcPinBox.CentredIn(Vector3I.Zero, new Vector3I(1, 1, 1))).IsEqual((Vector3I.Zero, Vector3I.One));
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void Adding_a_pin_box_is_one_undo_step_and_the_box_is_saved_with_the_scene()
+    {
+        // The same do and undo pair as the plugin's OnAddPinBoxRequested, on a plain UndoRedo.
+        var root = new Node3D { Name = "Root" };
+        var map = Map();
+        root.AddChild(map);
+        map.Owner = root;
+        var (origin, size) = WfcPinBox.CentredIn(Vector3I.Zero, new Vector3I(8, 2, 8));
+        var box = new WfcPinBox { Name = "PinBox", Origin = origin, Size = size };
+        var undo = new UndoRedo();
+        undo.CreateAction("Add WFC Pin Box");
+        undo.AddDoMethod(Callable.From(() => map.AddChild(box, true)));
+        undo.AddDoMethod(Callable.From(() => box.Owner = root));
+        undo.AddUndoMethod(Callable.From(() => map.RemoveChild(box)));
+        undo.CommitAction();
+
+        AssertThat(GridMapBox.ActiveChildren<WfcPinBox>(map).Single() == box).IsTrue();
+        AssertThat(box.Owner == root).IsTrue();
+        undo.Undo();
+        AssertThat(GridMapBox.ActiveChildren<WfcPinBox>(map).Count).IsEqual(0);
+        undo.Redo();
+        AssertThat(box.GetParent() == map && box.Owner == root).IsTrue();
+
+        var packed = new PackedScene();
+        AssertThat(packed.Pack(root)).IsEqual(Error.Ok);
+        var copy = packed.Instantiate();
+        AssertThat(copy.GetNode<WfcPinBox>("GridMap/PinBox").Origin).IsEqual(new Vector3I(2, 0, 2));
+        copy.Free();
+        undo.Free();
+        root.Free();
+    }
+
 #if TOOLS
     [TestCase]
     [RequireGodotRuntime]

@@ -57,6 +57,19 @@ public partial class WfcSettings : Resource
     [Export] public Vector3I BoundsOrigin { get; set; }
     [Export] public Vector3I BoundsSize { get; set; } = new(24, 8, 24);
 
+    /// <summary>Raised by the Add Pin Box button. The godoowave plugin adds a WfcPinBox child to the GridMap (brief §16.1).</summary>
+    [Signal] public delegate void AddPinBoxRequestedEventHandler();
+
+    /// <summary>
+    /// Adds a pin box to the GridMap: a child node whose cells Generate and Clear never change.
+    /// Drag its handles, add more, or disable or delete one to let Generate replace its cells.
+    /// </summary>
+    [ExportGroup("Pin Boxes")]
+    [ExportToolButton("Add Pin Box", Icon = "Pin")]
+    public Callable AddPinBoxButton => Callable.From(RequestAddPinBox);
+
+    private void RequestAddPinBox() => EmitSignal(SignalName.AddPinBoxRequested);
+
     /// <summary>The origin of a box as the viewport handles number them. Box 0 is the bounds, the only box the settings hold.</summary>
     public Vector3I BoxOrigin(int box) => BoundsOrigin;
 

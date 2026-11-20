@@ -194,6 +194,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         var onClear = new Callable(this, MethodName.OnClearRequested);
         if (!_settings.IsConnected(WfcSettings.SignalName.ClearRequested, onClear))
             _settings.Connect(WfcSettings.SignalName.ClearRequested, onClear);
+        var onAddPinBox = new Callable(this, MethodName.OnAddPinBoxRequested);
+        if (!_settings.IsConnected(WfcSettings.SignalName.AddPinBoxRequested, onAddPinBox))
+            _settings.Connect(WfcSettings.SignalName.AddPinBoxRequested, onAddPinBox);
         _dialog.Edit(_settings);
         _dialog.SetStatus($"Target: {_target.Name}");
         if (_target.MeshLibrary == null)
@@ -656,6 +659,32 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     private List<CellBox> PinBoxes() =>
         GridMapBox.ActiveChildren<WfcPinBox>(_target).Select(box => new CellBox(box.Origin, box.Size)).ToList();
 
+    /// <summary>
+    /// Adds a WfcPinBox child to the target GridMap, owned by the edited scene, centred in the bounds
+    /// (brief §16.1), as one undo step, and selects it.
+    /// </summary>
+    public void OnAddPinBoxRequested()
+    {
+        if (!TargetIsAlive || _run != null)
+            return;
+        var (origin, size) = WfcPinBox.CentredIn(_settings.BoundsOrigin, _settings.BoundsSize);
+        var box = new WfcPinBox { Name = "PinBox", Origin = origin, Size = size };
+        var root = EditorInterface.Singleton.GetEditedSceneRoot() ?? _target;
+        var undoRedo = GetUndoRedo();
+        undoRedo.CreateAction("Add WFC Pin Box", UndoRedo.MergeMode.Disable, _target);
+        undoRedo.AddDoMethod(_target, Node.MethodName.AddChild, box, true);
+        undoRedo.AddDoMethod(box, Node.MethodName.SetOwner, root);
+        undoRedo.AddDoReference(box);
+        undoRedo.AddUndoMethod(_target, Node.MethodName.RemoveChild, box);
+        undoRedo.CommitAction();
+
+        var selection = EditorInterface.Singleton.GetSelection();
+        selection.Clear();
+        selection.AddNode(box);
+        _dialog.SetStatus($"Added {box.Name}: cells {origin} to {origin + size - Vector3I.One}. Generate and Clear keep the cells inside it; "
+            + "drag its handles to resize it, or disable or delete it to free them.", ToolDialog.Severity.Success);
+    }
+
     private static string PinBoxLine(int cells, int boxes) =>
         $"Kept {cells:N0} cells in {boxes} pin box{(boxes == 1 ? "" : "es")} as they were.";
 
@@ -742,7 +771,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         var min = _target.MapToLocal(origin) - half;
         var max = _target.MapToLocal(origin + size - Vector3I.One) + half;
         // The run flag is part of the state, so the handles hide when a solve starts and come back after.
-        string state = $"{min}|{max}|{_run != null}|{string.Join(";", _failedCells)}";
+        // Pin boxes are in the state too, so their handles follow an undo of a pin box resize.
+        string boxes = string.Join(";", HandleBoxes().Select(b => $"{b.Origin}{b.Size}"));
+        string state = $"{min}|{max}|{boxes}|{_run != null}|{string.Join(";", _failedCells)}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -796,6 +827,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     // Boxes with viewport handles (BoundsGizmoPlugin): 0 is the bounds, 1 the pin box.
     private const float HandleRadius = 12f;
     private int _dragHandle = -1;
+    private WfcPinBox _dragPinBox;
     private Vector3I _dragOrigin;
     private Vector3I _dragSize;
 
@@ -818,8 +850,9 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             switch (@event)
             {
                 case InputEventMouseMotion motion:
+                    bool pin = box > 0 && _dragPinBox != null && IsInstanceValid(_dragPinBox);
                     var (origin, size) = BoundsGizmoPlugin.DragFace(map, viewportCamera, motion.Position,
-                        _dragHandle % Directions.Count, BoxOrigin(box), BoxSize(box));
+                        _dragHandle % Directions.Count, pin ? _dragPinBox.Origin : BoxOrigin(box), pin ? _dragPinBox.Size : BoxSize(box));
                     SetBox(box, origin, size);
                     return stop;
                 case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
@@ -841,6 +874,7 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
             if (handle < 0)
                 return pass;
             _dragHandle = handle;
+            _dragPinBox = PinBoxAt(handle / Directions.Count);
             _dragOrigin = BoxOrigin(handle / Directions.Count);
             _dragSize = BoxSize(handle / Directions.Count);
             return stop;
@@ -880,13 +914,23 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     /// </summary>
     public GridMap HandleTarget => _dialog != null && _dialog.Visible && _run == null && TargetIsAlive ? _target : null;
 
-    public int BoxCount => 1;
+    // Box 0 is the bounds; boxes 1 to n are the enabled pin box children in child order (brief §16.3).
+    public int BoxCount => 1 + HandleBoxes().Count;
 
-    public bool BoxVisible(int box) => box == 0;
+    public bool BoxVisible(int box) => box < BoxCount;
 
-    public Vector3I BoxOrigin(int box) => Shown.BoxOrigin(box);
+    public Vector3I BoxOrigin(int box) => box == 0 ? Shown.BoundsOrigin : PinBoxAt(box)?.Origin ?? Vector3I.Zero;
 
-    public Vector3I BoxSize(int box) => Shown.BoxSize(box);
+    public Vector3I BoxSize(int box) => box == 0 ? Shown.BoundsSize : PinBoxAt(box)?.Size ?? Vector3I.Zero;
+
+    private List<WfcPinBox> HandleBoxes() => TargetIsAlive ? GridMapBox.ActiveChildren<WfcPinBox>(_target) : new List<WfcPinBox>();
+
+    /// <summary>The pin box with handle box number <paramref name="box"/> (1 for the first), or null.</summary>
+    private WfcPinBox PinBoxAt(int box)
+    {
+        var boxes = HandleBoxes();
+        return box >= 1 && box <= boxes.Count ? boxes[box - 1] : null;
+    }
 
     /// <summary>The settings the overlay and handles show: the running solve's copy, otherwise the dialog's.</summary>
     private WfcSettings Shown => _run?.Settings ?? _settings;
@@ -894,7 +938,13 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
     /// <summary>Changes a box while its handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
     private void SetBox(int box, Vector3I origin, Vector3I size)
     {
-        _settings.SetBox(box, origin, size);
+        if (box == 0)
+            _settings.SetBox(box, origin, size);
+        else if (_dragPinBox != null && IsInstanceValid(_dragPinBox))
+        {
+            _dragPinBox.Origin = origin;
+            _dragPinBox.Size = size;
+        }
         if (TargetIsAlive)
             _target.UpdateGizmos();
     }
@@ -909,9 +959,25 @@ public partial class WfcGeneratorPlugin : EditorPlugin, ISerializationListener, 
         if (cancel)
         {
             SetBox(box, origin, size);
+            _dragPinBox = null;
             return;
         }
         var undoRedo = GetUndoRedo();
+        if (box > 0)
+        {
+            // A pin box drag is one undo step on the node, not on the settings (brief §16.3).
+            var node = _dragPinBox;
+            _dragPinBox = null;
+            if (node == null || !IsInstanceValid(node))
+                return;
+            undoRedo.CreateAction("Resize WFC Pin Box", UndoRedo.MergeMode.Disable, node);
+            undoRedo.AddDoProperty(node, GridMapBox.PropertyName.Origin, node.Origin);
+            undoRedo.AddDoProperty(node, GridMapBox.PropertyName.Size, node.Size);
+            undoRedo.AddUndoProperty(node, GridMapBox.PropertyName.Origin, origin);
+            undoRedo.AddUndoProperty(node, GridMapBox.PropertyName.Size, size);
+            undoRedo.CommitAction(false);
+            return;
+        }
         undoRedo.CreateAction("Resize WFC Bounds");
         undoRedo.AddDoMethod(_settings, WfcSettings.MethodName.SetBox, box, _settings.BoxOrigin(box), _settings.BoxSize(box));
         undoRedo.AddUndoMethod(_settings, WfcSettings.MethodName.SetBox, box, origin, size);
