@@ -334,15 +334,25 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var cells = DungeonGridMap.Cells(result, run.TileSets.Room, run.TileSets.Corridor);
         var (changes, record) = DungeonGridMap.Write(_target, previous, cells);
         var stored = run.Settings;
+        var graph = DungeonGridMap.Graph(result);
+        var previousGraph = DungeonGraph.StoredOn(_target);
+        int replacedData = DungeonGridMap.EntriesWithData(previousGraph);
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
         undoRedo.AddDoMethod(this, MethodName.ApplyCells, _target, changes.Do);
         undoRedo.AddUndoMethod(this, MethodName.ApplyCells, _target, changes.Undo);
+        var previousSettings = DungeonSettings.StoredOn(_target);
         undoRedo.AddDoMethod(this, MethodName.ApplySettings, _target, stored);
-        undoRedo.AddUndoMethod(this, MethodName.ApplySettings, _target, DungeonSettings.StoredOn(_target));
+        undoRedo.AddUndoMethod(this, MethodName.ApplySettings, _target, previousSettings);
+        // The open dialog's Seed follows the dungeon on the map, so Preview Layout and its room
+        // numbers show that dungeon after undo and redo (decided at the 1.1 release review).
+        undoRedo.AddDoMethod(this, MethodName.ApplySeed, _target, run.Seed);
+        undoRedo.AddUndoMethod(this, MethodName.ApplySeed, _target, previousSettings?.Seed ?? run.PreviousSeed ?? run.Seed);
         undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, record.Encode());
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
+        undoRedo.AddDoMethod(this, MethodName.ApplyGraph, _target, graph);
+        undoRedo.AddUndoMethod(this, MethodName.ApplyGraph, _target, previousGraph);
         var markers = AddMarkerChanges(undoRedo, result, run.TileSets, previous, cells.Keys.ToHashSet());
         long? cellsBefore = CellsBeforeWrite();
         undoRedo.CommitAction();
@@ -354,6 +364,12 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         if (result.LayoutAttempt > 0)
             _dialog.AddStatus($"Used layout {result.LayoutAttempt + 1}; the earlier one(s) could not be finished: "
                 + string.Join(" ", result.Attempts.Select(a => a.Message)));
+        if (graph != null)
+            _dialog.AddStatus($"Stored the dungeon graph in the GridMap's metadata ({DungeonGraph.MetaKey}): {graph.Rooms.Count} rooms, "
+                + $"{graph.Corridors.Count} corridors ({graph.Corridors.Count(c => !c.IsTreeEdge)} loops).");
+        if (replacedData > 0)
+            _dialog.AddStatus($"The previous dungeon graph had Data on {replacedData} room(s) and corridor(s); the new graph starts without it. "
+                + "Ctrl+Z brings the previous dungeon and its graph back.", ToolDialog.Severity.Warning);
         foreach (string warning in layout.Warnings.Concat(run.Warnings))
             _dialog.AddStatus(warning, ToolDialog.Severity.Warning);
         if (markers.Placed > 0 || markers.Removed > 0)
@@ -430,7 +446,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var clear = DungeonGridMap.Clear(_target, record);
         var markers = DungeonGridMap.ReplacedMarkers(_target, record, new HashSet<Vector3I>());
         int cleared = clear.Do.Length / CellChanges.Stride;
-        if (cleared == 0 && markers.Count == 0 && record.Count == 0)
+        var graph = DungeonGraph.StoredOn(_target);
+        if (cleared == 0 && markers.Count == 0 && record.Count == 0 && graph == null)
         {
             _dialog.SetStatus("Nothing to clear: this GridMap has no generated dungeon.");
             return;
@@ -442,6 +459,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         undoRedo.AddUndoMethod(this, MethodName.ApplyCells, _target, clear.Undo);
         undoRedo.AddDoMethod(this, MethodName.ApplyRecord, _target, System.Array.Empty<byte>());
         undoRedo.AddUndoMethod(this, MethodName.ApplyRecord, _target, DungeonGridMap.StoredRecord(_target));
+        undoRedo.AddDoMethod(this, MethodName.ApplyGraph, _target, (DungeonGraph)null);
+        undoRedo.AddUndoMethod(this, MethodName.ApplyGraph, _target, graph);
         if (markers.Count > 0)
             AddMarkerRemovals(undoRedo, DungeonGridMap.MarkerContainer(_target), EditorInterface.Singleton.GetEditedSceneRoot() ?? _target, markers);
         long? cellsBefore = CellsBeforeWrite();
@@ -456,6 +475,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _dialog.AddStatus($"Kept {kept:N0} dungeon cells you edited since.");
         if (markers.Count > 0)
             _dialog.AddStatus($"Removed {markers.Count:N0} markers from {DungeonGridMap.MarkerContainerName}.");
+        if (graph != null)
+            _dialog.AddStatus($"Removed the dungeon graph from the GridMap's metadata"
+                + (DungeonGridMap.EntriesWithData(graph) > 0 ? ", with its Data. Ctrl+Z brings it back." : "."));
     }
 
     /// <summary>Do and undo target for GridMap cells.</summary>
@@ -470,6 +492,25 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     {
         if (IsInstanceValid(map))
             DungeonSettings.StoreOn(map, settings);
+    }
+
+    /// <summary>Do and undo target for the dungeon graph stored on the GridMap (brief §12.2). Null removes it.</summary>
+    public void ApplyGraph(GridMap map, DungeonGraph graph)
+    {
+        if (IsInstanceValid(map))
+            DungeonGraph.StoreOn(map, graph);
+    }
+
+    /// <summary>
+    /// Do and undo target for the open dialog's Seed: when the dialog edits this GridMap, its Seed
+    /// becomes the seed of the dungeon now on the map. Other settings stay as the user left them.
+    /// </summary>
+    public void ApplySeed(GridMap map, long seed)
+    {
+        if (_settings == null || !TargetIsAlive || _target != map || _settings.Seed == seed)
+            return;
+        _settings.Seed = seed;
+        _settings.NotifyPropertyListChanged();
     }
 
     /// <summary>Do and undo target for the record of what the dungeon wrote.</summary>
@@ -580,6 +621,43 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             AddBox(mesh, centre - half * 1.08f, centre + half * 1.08f, FailureColour);
         }
         mesh.SurfaceEnd();
+        UpdateRoomLabels(_settings.PreviewLayout ? _preview?.Layout : null);
+    }
+
+    /// <summary>
+    /// Room numbers above the preview's rooms (brief §12.4): the number status messages use, which
+    /// is <c>DungeonGraph.Rooms[number - 1]</c> after Generate. Children of the overlay, so they have
+    /// no owner either and go with it.
+    /// </summary>
+    private void UpdateRoomLabels(DungeonLayout layout)
+    {
+        foreach (var child in _overlay.GetChildren())
+            if (child is Label3D old)
+            {
+                _overlay.RemoveChild(old);
+                old.QueueFree();
+            }
+        if (layout == null)
+            return;
+        var cell = _target.CellSize;
+        for (int r = 0; r < layout.Rooms.Count; r++)
+        {
+            var room = layout.Rooms[r];
+            var (min, max) = BoundsGizmoPlugin.Extents(_target, layout.GridCell(room.Position),
+                new Vector3I(room.Size.X, _settings.RoomHeight, room.Size.Y));
+            _overlay.AddChild(new Label3D
+            {
+                Text = (r + 1).ToString(),
+                Position = new Vector3((min.X + max.X) / 2, max.Y, (min.Z + max.Z) / 2),
+                Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                NoDepthTest = true,
+                FontSize = 64,
+                OutlineSize = 16,
+                PixelSize = Mathf.Min(cell.X, cell.Z) * 0.025f,
+                Modulate = RoomColour,
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            });
+        }
     }
 
     /// <summary>The settings Preview Layout depends on. The GridMap's cells are in the key too, see <see cref="UpdatePreview"/>.</summary>

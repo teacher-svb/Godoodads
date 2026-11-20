@@ -24,6 +24,13 @@ public static class DungeonGridMap
     public const string MarkerContainerName = "DungeonMarkers";
     public const string MarkerTag = "godoodads_dungeon_marker";
 
+    /// <summary>The graph resource of a solved result (brief §12), with empty Data; null when the result has no graph.</summary>
+    public static DungeonGraph Graph(DungeonResult result) => result.Graph == null ? null : DungeonGraph.From(result.Graph);
+
+    /// <summary>How many rooms and corridors of a graph carry gameplay Data, which Generate would replace. 0 for no graph.</summary>
+    public static int EntriesWithData(DungeonGraph graph) =>
+        graph == null ? 0 : graph.Rooms.Count(r => r?.Data?.Count > 0) + graph.Corridors.Count(c => c?.Data?.Count > 0);
+
     public static byte[] StoredRecord(GridMap map) => map.HasMeta(RecordKey) ? map.GetMeta(RecordKey).AsByteArray() : Array.Empty<byte>();
 
     public static GeneratedRecord ReadRecord(GridMap map) => GeneratedRecord.Decode(StoredRecord(map));

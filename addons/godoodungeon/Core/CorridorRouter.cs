@@ -14,6 +14,14 @@ namespace Godoodads.Dungeon.Core;
 public sealed record CorridorPlan(Vector2I Size, int[] Faces, int RouteCount, int RouteCells, string Error = null, Vector2I? ErrorCell = null)
 {
     public bool IsValid => Error == null;
+
+    /// <summary>
+    /// Per room graph edge (same index as <see cref="DungeonLayout.Edges"/>), the layout cells of its
+    /// corridor in walking order: from the cell outside room A's door, through both lanes, to the cell
+    /// outside room B's door. Null for an edge that was not routed. Cells where corridors meet appear
+    /// in the route of each.
+    /// </summary>
+    public IReadOnlyList<Vector2I[]> Routes { get; init; } = Array.Empty<Vector2I[]>();
 }
 
 /// <summary>
@@ -81,6 +89,7 @@ public static class CorridorRouter
             noise[i] = random.NextDouble() * Math.Clamp(wander, 0, 1) * 2;
 
         int routes = 0;
+        var routeCells = new Vector2I[layout.Edges.Count][];
         for (int e = 0; e < layout.Edges.Count; e++)
         {
             var (doorA, doorB) = layout.EdgeDoors[e];
@@ -105,10 +114,15 @@ public static class CorridorRouter
                 int direction = Steps.First(d => Offset(d) == step);
                 Connect(faces, Index(path[i - 1]), Index(path[i]), direction);
             }
+            routeCells[e] = Lane(a, lane).Concat(path).Concat(Lane(b, lane).Reverse()).ToArray();
             routes++;
         }
-        return new CorridorPlan(size, faces, routes, faces.Count(f => f != 0));
+        return new CorridorPlan(size, faces, routes, faces.Count(f => f != 0)) { Routes = routeCells };
     }
+
+    /// <summary>The lane cells outside a door, from the door outwards, ending next to its entry cell.</summary>
+    private static IEnumerable<Vector2I> Lane(Door door, int length) =>
+        Enumerable.Range(0, length).Select(step => door.Outside + door.Side.Offset() * step);
 
     /// <summary>Adds path faces between two neighbouring cells; <paramref name="direction"/> points from the first to the second.</summary>
     private static void Connect(int[] faces, int from, int to, int direction)
