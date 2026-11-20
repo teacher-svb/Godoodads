@@ -235,10 +235,10 @@ Until now the room graph (§4.3) and the routed corridors (§4.4) exist only whi
 
 - New resources in `Resources/`, all `[GlobalClass]` and `[Tool]`, so they load in a game without the plugin enabled (the addon folder must still be in the project, since the C# assembly holds them):
   - `DungeonGraph`: the rooms, the corridors, the bounds origin and size, and the queries of §12.3.
-  - `DungeonRoom`: index, footprint (GridMap cells: position and size on X and Z, bottom layer and height), centre cell, door cells with their sides, the indices of its corridors, and `Data`.
+  - `DungeonRoom`: index, footprint (GridMap cells: `Position` of the lowest corner and `Size`, Y being the height in layers), centre cell, door cells with the step out of the room through each (`DoorDirections`), the indices of its corridors, and `Data`.
   - `DungeonCorridor`: index, rooms A and B, door cells, tree edge or loop, route cells, length, and `Data`.
 - **Generate stores the graph** in the GridMap's metadata under `godoodads_dungeon_graph`, in the same undo action as the cells and the generated record. The scene file saves it as embedded sub-resources, as it already saves `DungeonSettings`. **Clear Dungeon** removes it; undo and redo restore it. A dungeon generated with 1.0.x has no graph until it is generated again.
-- `DungeonGraph.Of(GridMap)` returns the graph, or null when the GridMap has none.
+- `DungeonGraph.StoredOn(GridMap)` returns the graph, or null when the GridMap has none, and `StoreOn` writes it, as `DungeonSettings` does. GDScript cannot call C# static methods, so it reads `grid_map.get_meta(&"godoodads_dungeon_graph", null)`. GDScript sees the C# member names unchanged (`graph.Rooms`, `graph.ShortestPath(a, b)`), as for every C# script in Godot (decided in `dgn-1-1-graph-resource`).
 - **Custom data** (decided 2026-11-20): each room and corridor has a `Data` dictionary (`Godot.Collections.Dictionary`) for gameplay code, such as `{"role": "boss"}` or `{"locked": true}`. The plugin never reads it. Generate replaces the whole graph, so data set in the editor is lost on regenerating, and the dialog says so when the old graph has any.
 - **Room numbers:** status messages and the preview say "room 1" for the first room (§4.8). The API is 0-based like Godot's arrays: `Rooms[0]` is room 1. `DungeonRoom.Number` gives the number a person reads.
 
@@ -250,12 +250,12 @@ Every public member uses Variant-compatible types (`int`, `Vector3I`, `Vector3`,
   - `HopDistances(room)`: per room, the number of corridors on the fewest-corridor way from `room` (breadth-first), −1 when unreachable (cannot happen in a valid dungeon, but the API does not rely on it).
   - `Distances(room)`: per room, the shortest total corridor length from `room` (Dijkstra over corridor lengths). Walking through a room costs nothing in 1.1.
   - `ShortestPath(from, to)` and `ShortestPathCorridors(from, to)`: the rooms and the corridors of that way, by length, ties broken by fewer hops, then lower indices, so the answer is fixed.
-  - `FarthestRoom(room)` by length, and `Diameter()`: the two rooms farthest apart, for a start and an end.
+  - `FarthestRoom(room)` by length, and `Diameter()`: the two rooms farthest apart (a `Vector2I`, lower index first), for a start and an end.
 - **Spatial lookup** (decided 2026-11-20):
   - `RoomAtCell(Vector3I)`: the room whose footprint holds the GridMap cell on X and Z (walls included), or −1. The layer is ignored, since 1.1 has one floor, so any layer above a room finds it (decided in `dgn-1-1-graph-core`).
   - `CorridorsAtCell(Vector3I)`: the corridors whose route holds the cell on X and Z, in index order; more than one at a junction or on a lane shared by two corridors.
   - `RoomAtPosition(GridMap, Vector3)`: the same for a global position, through the GridMap's transform and cell size, so a character's position finds its room.
-  - `RoomCentre(GridMap, room)`: the global position of a room's centre on its floor, for spawning.
+  - `RoomCentre(GridMap, room)`: the global position of a room's centre, at the height of its bottom layer's cell centres, for spawning.
   - Neighbours: `Neighbours(room)` and `CorridorBetween(a, b)` (−1 when none).
 - Not in 1.1: structure queries (dead ends, bridges, articulation rooms, loop membership). They are a few lines on top of the same Core and can follow when a game needs them.
 
