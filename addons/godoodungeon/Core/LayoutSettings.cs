@@ -19,6 +19,9 @@ public sealed record LayoutSettings
     /// <summary>Room height in GridMap layers. Used by the solve stage, not by the layout.</summary>
     public int RoomHeight { get; init; } = 1;
 
+    /// <summary>The bounds' layers on Y, for the room box height check (§13.2). 0 skips it.</summary>
+    public int BoundsHeight { get; init; }
+
     /// <summary>Cells around each room that corridors may not use, except the lane outside each door. 0 lets corridors run along walls.</summary>
     public int WallClearance { get; init; } = 1;
 

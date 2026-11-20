@@ -192,6 +192,7 @@ public partial class DungeonSettings : Resource
     public LayoutSettings ToLayoutSettings() => new()
     {
         Bounds = new Vector2I(BoundsSize.X, BoundsSize.Z),
+        BoundsHeight = BoundsSize.Y,
         RoomCount = RoomCount,
         MinRoomSize = MinRoomSize,
         MaxRoomSize = MaxRoomSize,

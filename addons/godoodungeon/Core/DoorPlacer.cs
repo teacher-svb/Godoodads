@@ -25,17 +25,58 @@ public static class DoorPlacer
         layout.Doors.Clear();
         layout.EdgeDoors.Clear();
         var bySide = new Dictionary<(int Room, DoorSide Side), int>();
+
+        // Built room boxes bring their own doors (brief §13.2). They go first, so the doors placed
+        // for generated rooms keep their lanes clear of these.
+        for (int room = 0; room < layout.Boxes.Count; room++)
+        {
+            if (!layout.IsBuilt(room))
+                continue;
+            foreach (var (cell, side) in RoomBoxes.BuiltDoors(layout.Boxes[room]))
+            {
+                if (!LaneIsFree(layout, settings, occupied, room, cell, side))
+                    layout.Errors.Add($"{layout.Describe(room)}: the door at {layout.GridCell(cell)} has no free way out. Its corridor needs "
+                        + $"{LaneLength(settings) + 1} free cell(s) straight out of it, inside the bounds and clear of other rooms, their Wall Clearance, "
+                        + "hand-placed cells and other doors' lanes.");
+                layout.Doors.Add(new Door(room, cell, side));
+            }
+        }
+
         foreach (var edge in layout.Edges)
         {
             int a = DoorFor(layout, settings, occupied, bySide, edge.A, edge.B);
             int b = DoorFor(layout, settings, occupied, bySide, edge.B, edge.A);
             layout.EdgeDoors.Add((a, b));
         }
+
+        // A Built door no edge uses gets an edge of its own, a loop to the nearest room it does not
+        // join yet, so no door opens into nothing.
+        for (int door = 0; door < layout.Doors.Count; door++)
+        {
+            var built = layout.Doors[door];
+            if (!layout.IsBuilt(built.Room) || layout.EdgeDoors.Any(e => e.A == door || e.B == door))
+                continue;
+            var joined = layout.Edges.Where(e => e.A == built.Room || e.B == built.Room).Select(e => e.A == built.Room ? e.B : e.A).ToHashSet();
+            var outside = new Vector2(built.Outside.X + 0.5f, built.Outside.Y + 0.5f);
+            int nearest = Enumerable.Range(0, layout.Rooms.Count).Where(r => r != built.Room && !joined.Contains(r))
+                .OrderBy(r => layout.Rooms[r].Centre.DistanceSquaredTo(outside)).ThenBy(r => r).DefaultIfEmpty(-1).First();
+            if (nearest < 0)
+            {
+                layout.Warnings.Add($"{layout.Describe(built.Room)}: the door at {layout.GridCell(built.Cell)} gets no corridor, because the room is already joined to every other room.");
+                continue;
+            }
+            int other = DoorFor(layout, settings, occupied, bySide, nearest, built.Room);
+            layout.Edges.Add(new RoomEdge(Math.Min(built.Room, nearest), Math.Max(built.Room, nearest), false));
+            layout.EdgeDoors.Add(built.Room < nearest ? (door, other) : (other, door));
+        }
+
         for (int room = 0; room < layout.Rooms.Count; room++)
-            if (!layout.Doors.Any(d => d.Room == room))
-                layout.Errors.Add($"Room {room + 1} at {layout.GridCell(layout.Rooms[room].Position)} has no wall where a corridor can leave it: "
+            if (!layout.IsBuilt(room) && !layout.Doors.Any(d => d.Room == room))
+                layout.Errors.Add($"{Capitalise(layout.Describe(room))} at {layout.GridCell(layout.Rooms[room].Position)} has no wall where a corridor can leave it: "
                     + "every side faces the bounds edge, a hand-placed cell or another room too closely.");
     }
+
+    private static string Capitalise(string text) => text.Length == 0 ? text : char.ToUpperInvariant(text[0]) + text[1..];
 
     /// <summary>Cells outside a door that must be free: the lane through the Wall Clearance, then one more.</summary>
     public static int LaneLength(LayoutSettings settings) => Math.Max(settings.WallClearance, 1);
@@ -45,6 +86,11 @@ public static class DoorPlacer
     {
         var rect = layout.Rooms[room];
         var towards = layout.Rooms[other].Centre - rect.Centre;
+
+        // A Built room uses the door you built that faces the other room best (lowest index on ties).
+        if (layout.IsBuilt(room))
+            return layout.Doors.Select((door, index) => (door, index)).Where(d => d.door.Room == room)
+                .OrderByDescending(d => Score(d.door.Side, towards)).ThenBy(d => d.index).Select(d => d.index).DefaultIfEmpty(-1).First();
         // Sides facing the other room, best aligned first; X wins ties, so the order is fixed.
         var facing = DoorSides.All.Select(side => (Side: side, Score: Score(side, towards)))
             .Where(s => s.Score > 0).OrderByDescending(s => s.Score).Select(s => s.Side).ToList();

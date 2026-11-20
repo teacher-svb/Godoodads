@@ -1,6 +1,6 @@
 ---
 id: "dgn-1-2-room-box-node-2026-11-20"
-status: "in-progress"
+status: "review"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"

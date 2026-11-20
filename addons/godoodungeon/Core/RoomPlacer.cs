@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Collections.Generic;
 using Godot;
 using Godoodads.Common.Wfc.Core;
@@ -14,14 +15,19 @@ namespace Godoodads.Dungeon.Core;
 public static class RoomPlacer
 {
     /// <summary>
-    /// Places up to <see cref="LayoutSettings.RoomCount"/> rooms into <paramref name="layout"/>.
+    /// Places up to <see cref="LayoutSettings.RoomCount"/> rooms into <paramref name="layout"/>: the
+    /// room boxes of <see cref="DungeonLayout.Boxes"/> first, where they are, then generated rooms
+    /// for the rest of Room Count (brief §13.2), which keep the Gap from the boxes too.
     /// <paramref name="occupied"/> holds the hand-placed cells to avoid; null means none. It is not changed.
     /// </summary>
     public static void Place(DungeonLayout layout, LayoutSettings settings, long seed, OccupancyGrid occupied = null)
     {
         var random = new WfcRandom(seed, 0);
-        var placed = new List<RoomRect>();
-        for (int room = 0; room < settings.RoomCount; room++)
+        var placed = layout.Boxes.Select(box => box.Rect).ToList();
+        int generated = System.Math.Max(settings.RoomCount - layout.Boxes.Count, 0);
+        if (layout.Boxes.Count > settings.RoomCount)
+            layout.Warnings.Add($"There are {layout.Boxes.Count} room boxes but Room Count is {settings.RoomCount}: every box is used, and no room is generated.");
+        for (int room = 0; room < generated; room++)
         {
             RoomRect? found = null;
             for (int attempt = 0; attempt < settings.AttemptsPerRoom && found == null; attempt++)
@@ -35,8 +41,9 @@ public static class RoomPlacer
         }
 
         layout.Rooms.AddRange(placed);
-        if (placed.Count < settings.RoomCount)
-            layout.Warnings.Add($"Placed {placed.Count} of {settings.RoomCount} rooms: {settings.RoomCount - placed.Count} found no free place. "
+        int wanted = layout.Boxes.Count + generated;
+        if (placed.Count < wanted)
+            layout.Warnings.Add($"Placed {placed.Count} of {wanted} rooms: {wanted - placed.Count} found no free place. "
                 + "Enlarge the bounds, or lower the room count, the room sizes or the gap.");
     }
 
