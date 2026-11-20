@@ -87,6 +87,60 @@ public class DungeonDemoTests
         root.QueueFree();
     }
 
+    /// <summary>The room box demo (brief §13.6; card dgn-1-2-demo).</summary>
+    [TestCase]
+    [RequireGodotRuntime]
+    public void The_room_box_demo_keeps_its_boss_room_joins_both_boxes_and_the_script_heads_for_the_boss()
+    {
+        var root = ResourceLoader.Load<PackedScene>("res://demo/godoodungeon/dungeon_rooms.tscn", null, ResourceLoader.CacheMode.Ignore).Instantiate<Node3D>();
+        var map = root.GetNode<GridMap>("GridMap");
+        var settings = DungeonSettings.StoredOn(map);
+        var boxes = DungeonGridMap.ReadRoomBoxes(map, settings.BoundsOrigin, settings.Door);
+        AssertThat(boxes.Select(b => b.Name).ToArray()).IsEqual(new[] { "Entrance", "BossRoom" });
+        AssertThat(boxes[1].IsBuilt).IsTrue();
+        var graph = DungeonGraph.StoredOn(map);
+        AssertThat(graph.Rooms[1].Box.ToString()).IsEqual("BossRoom");
+        AssertThat(graph.Rooms[1].Data["role"].AsString()).IsEqual("boss");
+
+        var bossCells = new System.Collections.Generic.Dictionary<Vector3I, (int, int)>();
+        var bossBox = map.GetNode<DungeonRoomBox>("BossRoom");
+        for (int x = 0; x < bossBox.Size.X; x++)
+            for (int z = 0; z < bossBox.Size.Z; z++)
+            {
+                var cell = bossBox.Origin + new Vector3I(x, 0, z);
+                bossCells[cell] = (map.GetCellItem(cell), map.GetCellItemOrientation(cell));
+            }
+        AssertThat(bossCells.Values.Count(v => v.Item1 == settings.Door)).IsEqual(2);
+
+        var check = DungeonTileSets.Check(settings, map);
+        foreach (long seed in new long[] { 11, 12, 13 })
+        {
+            settings.Seed = seed;
+            var record = DungeonGridMap.ReadRecord(map);
+            var handPlaced = DungeonGridMap.ReadHandPlaced(map, settings.BoundsOrigin, settings.BoundsSize, record);
+            var result = new DungeonJob(DungeonGridMap.Request(settings, check, handPlaced, boxes)).RunNow();
+            AssertThat(result.Status).IsEqual(DungeonStatus.Solved);
+            var layout = result.Layout;
+            var bossDoors = Enumerable.Range(0, layout.Doors.Count).Where(d => layout.Doors[d].Room == 1).ToList();
+            AssertThat(bossDoors.Count).IsEqual(2);
+            AssertThat(bossDoors.All(d => layout.EdgeDoors.Any(e => e.A == d || e.B == d))).IsTrue();
+            AssertThat(layout.Doors.Any(d => d.Room == 0)).IsTrue();
+            var (changes, written) = DungeonGridMap.Write(map, record, DungeonGridMap.Cells(result, check.Room, check.Corridor));
+            GridMapCells.Apply(map, changes.Do);
+            DungeonGridMap.WriteRecord(map, written.Encode());
+            foreach (var (cell, value) in bossCells)
+                AssertThat((map.GetCellItem(cell), map.GetCellItemOrientation(cell))).IsEqual(value);
+        }
+
+        // Running the scene: graph_demo.gd takes the boss room as its goal.
+        ((SceneTree)Engine.GetMainLoop()).Root.AddChild(root);
+        AssertThat(graph.Rooms[1].Data["role"].AsString()).IsEqual("boss");
+        AssertThat(graph.Rooms.Count(r => r.Data.ContainsKey("role") && r.Data["role"].AsString() == "start")).IsEqual(1);
+        int start = graph.Rooms.First(r => r.Data.ContainsKey("role") && r.Data["role"].AsString() == "start").Index;
+        AssertThat(start).IsEqual(graph.FarthestRoom(1));
+        root.QueueFree();
+    }
+
     /// <summary>Brief §8 performance, with the GridMap write (card dgn-m5-performance).</summary>
     [TestCase(64, 20)]
     [TestCase(128, 60)]

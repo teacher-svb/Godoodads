@@ -151,6 +151,7 @@ public partial class BuildDungeonDemo : Node
                     map.SetCellItem(new Vector3I(x, 0, z), items["Pool"]);
         });
         SaveGraphDemo(library, settings);
+        SaveRoomBoxDemo(library, settings);
         GD.Print($"Dungeon demo: built {library.GetItemList().Length} items, {room.Tiles.Count} room tiles, {corridor.Tiles.Count} corridor tiles "
             + $"and 3 scenes; {check.Errors.Count} errors.");
         GetTree().Quit();
@@ -184,26 +185,83 @@ public partial class BuildDungeonDemo : Node
     /// </summary>
     private static void SaveGraphDemo(MeshLibrary library, DungeonSettings template)
     {
-        const string name = "dungeon_graph";
-        var root = new Node3D { Name = "DungeonGraph" };
-        root.SetScript(GD.Load<Script>(GraphDemoScript));
-        var map = new GridMap { Name = "GridMap", MeshLibrary = library };
-        Own(root, map);
         var settings = (DungeonSettings)template.Duplicate();
         settings.BoundsSize = new Vector3I(48, 1, 48);
         settings.RoomCount = 12;
         settings.ExtraConnections = 0.25f;
+        SaveGeneratedDemo("dungeon_graph", "DungeonGraph", library, settings, null);
+    }
 
+    /// <summary>
+    /// The room box demo (brief §13.6): a Built boss room (solved once here with two fixed doors,
+    /// then kept as built, Data role = boss) at the far side and a Generated entrance room at the
+    /// left edge, with the rest of 10 rooms generated around them and graph_demo.gd attached, which
+    /// heads for the boss room.
+    /// </summary>
+    private static void SaveRoomBoxDemo(MeshLibrary library, DungeonSettings template)
+    {
+        var settings = (DungeonSettings)template.Duplicate();
+        settings.BoundsSize = new Vector3I(48, 1, 48);
+        settings.RoomCount = 10;
+        settings.ExtraConnections = 0.2f;
+        SaveGeneratedDemo("dungeon_rooms", "DungeonRooms", library, settings, (map, check) =>
+        {
+            // The boss room's cells: one room solve with the doors where we want them.
+            var bossRect = new RoomRect(new Vector2I(36, 18), new Vector2I(10, 10));
+            var layout = new DungeonLayout { Origin = settings.BoundsOrigin };
+            layout.Rooms.Add(bossRect);
+            layout.Doors.Add(new Door(0, new Vector2I(36, 22), DoorSide.NegX));
+            layout.Doors.Add(new Door(0, new Vector2I(40, 18), DoorSide.NegY));
+            var input = SolveInputs.Room(layout, 0, 1, check.Room.Compiled, check.DoorTile, settings.RoomEdgeSocket);
+            var solved = new WfcSolver(input.Grid, check.Room.Compiled, input.Initial).Solve(new SolveOptions { Seed = 7, Boundary = input.Boundary });
+            if (solved.Status != SolveStatus.Solved)
+                GD.PushError("Dungeon demo: the boss room did not solve.");
+            var built = new DungeonResult { Solves = new[] { new DungeonSolve(input, solved.Cells, false) } };
+            foreach (var (cell, value) in DungeonGridMap.Cells(built, check.Room, check.Corridor))
+                map.SetCellItem(cell, value.Item, value.Orientation);
+
+            var entrance = new DungeonRoomBox { Name = "Entrance", Origin = new Vector3I(1, 0, 19), Size = new Vector3I(7, 1, 7) };
+            var boss = new DungeonRoomBox
+            {
+                Name = "BossRoom", Mode = RoomBoxMode.Built,
+                Origin = layout.GridCell(bossRect.Position), Size = new Vector3I(bossRect.Size.X, 1, bossRect.Size.Y),
+            };
+            boss.Data["role"] = "boss";
+            map.AddChild(entrance);
+            map.AddChild(boss);
+            return DungeonGridMap.PlanMarkers(map, built, check.Room, check.Corridor);
+        });
+    }
+
+    /// <summary>
+    /// A demo scene with a dungeon generated here: <paramref name="prepare"/> may build cells and add
+    /// room boxes first (returning marker placements for what it built), then the first seed from 1
+    /// that solves is generated and saved with its cells, record, markers, settings and graph, a
+    /// top-down camera and graph_demo.gd.
+    /// </summary>
+    private static void SaveGeneratedDemo(string name, string rootName, MeshLibrary library, DungeonSettings settings,
+        Func<GridMap, DungeonTileSets, List<MarkerPlacement>> prepare)
+    {
+        var root = new Node3D { Name = rootName };
+        root.SetScript(GD.Load<Script>(GraphDemoScript));
+        var map = new GridMap { Name = "GridMap", MeshLibrary = library };
+        Own(root, map);
         var check = DungeonTileSets.Check(settings, map);
+        var placed = prepare?.Invoke(map, check) ?? new List<MarkerPlacement>();
+        foreach (var child in map.GetChildren())
+            child.Owner = root;
+        var handPlaced = DungeonGridMap.ReadHandPlaced(map, settings.BoundsOrigin, settings.BoundsSize, new GeneratedRecord());
+        var boxes = DungeonGridMap.ReadRoomBoxes(map, settings.BoundsOrigin, settings.Door);
+
         DungeonResult result = null;
         for (long seed = 1; seed <= 20 && result?.Status != DungeonStatus.Solved; seed++)
         {
             settings.Seed = seed;
-            result = new DungeonJob(DungeonGridMap.Request(settings, check, new HashSet<Vector3I>())).RunNow();
+            result = new DungeonJob(DungeonGridMap.Request(settings, check, handPlaced, boxes)).RunNow();
         }
         if (result?.Status != DungeonStatus.Solved)
         {
-            GD.PushError("Dungeon demo: no seed from 1 to 20 solved the graph demo.");
+            GD.PushError($"Dungeon demo: no seed from 1 to 20 solved {name}: {string.Join(" ", result?.Errors ?? Array.Empty<string>())}");
             root.Free();
             return;
         }
@@ -212,12 +270,12 @@ public partial class BuildDungeonDemo : Node
         GridMapCells.Apply(map, changes.Do);
         DungeonGridMap.WriteRecord(map, record.Encode());
         DungeonSettings.StoreOn(map, settings);
-        DungeonGraph.StoreOn(map, DungeonGridMap.Graph(result));
+        DungeonGraph.StoreOn(map, DungeonGridMap.Graph(result, map));
 
         var container = new Node3D { Name = DungeonGridMap.MarkerContainerName };
         Own(map, container);
         container.Owner = root;
-        foreach (var placement in DungeonGridMap.PlanMarkers(map, result, check.Room, check.Corridor))
+        foreach (var placement in placed.Concat(DungeonGridMap.PlanMarkers(map, result, check.Room, check.Corridor)))
             if (DungeonGridMap.InstantiateMarker(placement) is { } marker)
             {
                 container.AddChild(marker);

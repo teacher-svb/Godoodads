@@ -25,9 +25,18 @@ func _ready() -> void:
 		return
 
 	# Room indices start at 0; Number is the room number the editor shows (index + 1).
-	var ends: Vector2i = graph.Diameter()
-	var start: int = ends.x
-	var goal: int = ends.y
+	# A room whose Data says "boss" (from a room box, godoodungeon 1.2) is the goal, and the start is
+	# the room farthest from it. Without one, the two rooms farthest apart are start and goal.
+	var start := -1
+	var goal := -1
+	for room in graph.Rooms:
+		if room.Data.get("role", "") == "boss":
+			goal = room.Index
+			start = graph.FarthestRoom(goal)
+	if goal < 0:
+		var ends: Vector2i = graph.Diameter()
+		start = ends.x
+		goal = ends.y
 	var path: PackedInt32Array = graph.ShortestPath(start, goal)
 	var path_corridors: PackedInt32Array = graph.ShortestPathCorridors(start, goal)
 	var hops: PackedInt32Array = graph.HopDistances(start)
@@ -39,7 +48,8 @@ func _ready() -> void:
 
 	# Data is free for gameplay: here it records the roles this script chose.
 	graph.Rooms[start].Data["role"] = "start"
-	graph.Rooms[goal].Data["role"] = "goal"
+	if graph.Rooms[goal].Data.get("role", "") != "boss":
+		graph.Rooms[goal].Data["role"] = "goal"
 
 	for room in graph.Rooms:
 		var colour := OTHER
@@ -49,7 +59,8 @@ func _ready() -> void:
 			colour = GOAL
 		elif room.Index in path:
 			colour = PATH
-		var text := "Room %d\n%d hops · %d cells" % [room.Number, hops[room.Index], lengths[room.Index]]
+		var text := "Room %d%s\n%d hops · %d cells" % [room.Number, " (boss)" if room.Data.get("role", "") == "boss" else "",
+			hops[room.Index], lengths[room.Index]]
 		_mark(graph.RoomCentre(grid_map, room.Index), colour, 0.9, text)
 
 	for corridor in path_corridors:
