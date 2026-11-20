@@ -22,11 +22,11 @@ public class DungeonRoomBoxSolveTests
     private sealed record Scene(GridMap Map, DungeonSettings Settings, DungeonRoomBox Entrance, DungeonRoomBox Boss, Dictionary<Vector3I, int> BossCells);
 
     /// <summary>A GridMap with a Generated entrance box and a Built boss room: filler cells and two Door tiles.</summary>
-    private static Scene Build(int roomCount = 6)
+    private static Scene Build(int roomCount = 10)
     {
         var settings = DungeonEngineTiles.Valid();
         settings.BoundsOrigin = Vector3I.Zero;
-        settings.BoundsSize = new Vector3I(40, 1, 40);
+        settings.BoundsSize = new Vector3I(64, 1, 64);   // the brief's target size (§3)
         settings.RoomCount = roomCount;
         var map = new GridMap { MeshLibrary = settings.RoomTileSet.Library };
         var entrance = new DungeonRoomBox { Name = "Entrance", Origin = new Vector3I(2, 0, 2), Size = new Vector3I(6, 1, 5) };
@@ -72,14 +72,14 @@ public class DungeonRoomBoxSolveTests
 
     [TestCase(Timeout = 120000)]
     [RequireGodotRuntime]
-    public void Over_50_seeds_both_boxes_are_rooms_1_and_2_and_every_built_door_gets_a_corridor()
+    public void Over_50_seeds_with_10_rooms_both_boxes_are_rooms_1_and_2_and_every_built_door_gets_a_corridor()
     {
         var scene = Build();
         for (long seed = 1; seed <= 50; seed++)
         {
             var result = Generate(scene, seed);   // each one regenerates over the last
             var layout = result.Layout;
-            AssertThat(layout.Rooms.Count).IsEqual(6);
+            AssertThat(layout.Rooms.Count).IsEqual(10);
             AssertThat(layout.Rooms[0]).IsEqual(new RoomRect(new Vector2I(2, 2), new Vector2I(6, 5)));
             AssertThat(layout.Rooms[1]).IsEqual(new RoomRect(new Vector2I(28, 28), new Vector2I(8, 8)));
             var bossDoors = Enumerable.Range(0, layout.Doors.Count).Where(d => layout.Doors[d].Room == 1).ToList();
@@ -87,7 +87,7 @@ public class DungeonRoomBoxSolveTests
             foreach (int door in bossDoors)
                 AssertThat(layout.EdgeDoors.Any(e => e.A == door || e.B == door)).IsTrue();
             // The connectivity check passed (Solved), and nothing was written into the boss room.
-            AssertThat(result.Solves.Count(s => !s.IsCorridor)).IsEqual(5);
+            AssertThat(result.Solves.Count(s => !s.IsCorridor)).IsEqual(9);
             AssertThat(DungeonGridMap.Cells(result, DungeonTileSets.Check(scene.Settings, scene.Map).Room,
                 DungeonTileSets.Check(scene.Settings, scene.Map).Corridor).Keys.Any(c => scene.BossCells.ContainsKey(c))).IsFalse();
             AssertBossUnchanged(scene);
