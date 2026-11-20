@@ -1,12 +1,12 @@
 ---
 id: "dgn-1-2-room-box-node-2026-11-20"
-status: "todo"
+status: "in-progress"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-20T14:00:00.000Z"
-modified: "2026-11-20T14:00:00.000Z"
+modified: "2026-11-20T12:00:00.000Z"
 completedAt: null
 labels: ["v1.2.0", "resources", "editor"]
 order: "h1"

@@ -56,6 +56,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private ActiveRun _run;
     private double _sinceProgress;
     private BoundsGizmoPlugin _gizmo;
+    private RoomBoxGizmoPlugin _roomBoxGizmo;
     private MeshInstance3D _overlay;
     private string _overlayState;
     private string _previewKey;
@@ -87,6 +88,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         AddInspectorPlugin(_dialogFilter);
         _gizmo = new BoundsGizmoPlugin { Owner = this, GizmoName = "godoodungeon bounds" };
         AddNode3DGizmoPlugin(_gizmo);
+        _roomBoxGizmo = new RoomBoxGizmoPlugin();
+        AddNode3DGizmoPlugin(_roomBoxGizmo);
         // Forwarded input reaches this plugin before the GridMap editor, which would take handle drags.
         SetInputEventForwardingAlwaysEnabled();
 
@@ -110,6 +113,11 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _gizmo.Owner = null;
             RemoveNode3DGizmoPlugin(_gizmo);
             _gizmo = null;
+        }
+        if (_roomBoxGizmo != null)
+        {
+            RemoveNode3DGizmoPlugin(_roomBoxGizmo);
+            _roomBoxGizmo = null;
         }
         _menu?.Remove();
         _menu = null;
