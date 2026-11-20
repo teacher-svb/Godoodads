@@ -604,6 +604,43 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             AddBox(mesh, centre - half * 1.08f, centre + half * 1.08f, FailureColour);
         }
         mesh.SurfaceEnd();
+        UpdateRoomLabels(_settings.PreviewLayout ? _preview?.Layout : null);
+    }
+
+    /// <summary>
+    /// Room numbers above the preview's rooms (brief §12.4): the number status messages use, which
+    /// is <c>DungeonGraph.Rooms[number - 1]</c> after Generate. Children of the overlay, so they have
+    /// no owner either and go with it.
+    /// </summary>
+    private void UpdateRoomLabels(DungeonLayout layout)
+    {
+        foreach (var child in _overlay.GetChildren())
+            if (child is Label3D old)
+            {
+                _overlay.RemoveChild(old);
+                old.QueueFree();
+            }
+        if (layout == null)
+            return;
+        var cell = _target.CellSize;
+        for (int r = 0; r < layout.Rooms.Count; r++)
+        {
+            var room = layout.Rooms[r];
+            var (min, max) = BoundsGizmoPlugin.Extents(_target, layout.GridCell(room.Position),
+                new Vector3I(room.Size.X, _settings.RoomHeight, room.Size.Y));
+            _overlay.AddChild(new Label3D
+            {
+                Text = (r + 1).ToString(),
+                Position = new Vector3((min.X + max.X) / 2, max.Y, (min.Z + max.Z) / 2),
+                Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+                NoDepthTest = true,
+                FontSize = 64,
+                OutlineSize = 16,
+                PixelSize = Mathf.Min(cell.X, cell.Z) * 0.025f,
+                Modulate = RoomColour,
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
+            });
+        }
     }
 
     /// <summary>The settings Preview Layout depends on. The GridMap's cells are in the key too, see <see cref="UpdatePreview"/>.</summary>
