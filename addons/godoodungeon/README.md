@@ -50,7 +50,7 @@ Close Godot, delete `addons/godoodungeon/`, then extract the new zip as above, a
 2. Select the `GridMap`.
 3. In the 3D viewport toolbar, open **GridMap → Generate Dungeon (GDDS)**. GDDS is short for Godoodads, the suite this addon belongs to.
 4. Choose the **Room Tile Set**, the **Corridor Tile Set** and the **Door**, and set the **Bounds**, which are drawn in violet in the viewport. Drag the handles on its faces to resize it.
-5. Tick **Preview Layout** to see the rooms (cyan), doors (yellow) and corridors (green) that Generate will make, and tune the numbers or the seed until you like the layout.
+5. Tick **Preview Layout** to see the rooms (cyan, with their numbers), doors (yellow) and corridors (green) that Generate will make, and tune the numbers or the seed until you like the layout.
 6. Press **Generate**.
 
 <img src="docs/dialog.png" alt="The Generate Dungeon dialog with every setting shown" width="360">
@@ -59,6 +59,7 @@ Generate runs in the background and takes a fraction of a second for a 64 × 64 
 
 ```
 Generated 19 rooms, 31 doors and 21 corridors in 0.1 s, written in 0.0 s. Seed 1.
+Stored the dungeon graph in the GridMap's metadata (godoodads_dungeon_graph): 19 rooms, 21 corridors (3 loops).
 Placed 19 of 20 rooms: 1 found no free place. Enlarge the bounds, or lower the room count, the room sizes or the gap.
 Placed 66 markers in DungeonMarkers.
 ```
@@ -72,6 +73,52 @@ Occupied cells inside the bounds that the last dungeon did not write are yours. 
 ### Markers
 
 A tile can carry a **Marker** scene (a light, a spawn point), as in godoowave. After Generate, it is placed at every cell where that tile was generated, in a `DungeonMarkers` node under the GridMap. The next Generate or Clear Dungeon replaces the markers on the cells it changes. Move a marker out of `DungeonMarkers` to keep it.
+
+### Dungeon graph
+
+Generate also stores the dungeon's **graph** on the GridMap, for gameplay: the rooms are its vertices and the corridors its edges. A game can ask which room the player is in, which rooms are neighbours, how far apart two rooms are, or which two rooms are farthest apart, for a start and an exit. The graph is a `DungeonGraph` resource in the GridMap's metadata (`godoodads_dungeon_graph`), saved with the scene. It needs no plugin at runtime, but `addons/godoodungeon/` must stay in the exported project, because the C# assembly holds the resource classes. Generate replaces the graph, Clear Dungeon removes it, and Ctrl+Z restores it with the cells. A dungeon generated before 1.1 gets its graph when it is generated again.
+
+**What an edge is:** one corridor per room graph connection (the spanning tree plus the Extra Connections), from one room's door to the other room's door. Corridors that meet share cells, so a player can turn off one corridor into another at a T piece. That shortcut is **not** an edge: the graph is the layout as designed, with one route per connection. `CorridorsAtCell` returns every corridor through a shared cell.
+
+**Room numbers:** the status messages and the room labels of Preview Layout count from 1. The API counts from 0, like every Godot array: room 1 is `Rooms[0]`, and `DungeonRoom.Number` gives the number people see.
+
+| Member | Returns |
+|---|---|
+| `Rooms`, `Corridors` | The `DungeonRoom` and `DungeonCorridor` resources. |
+| `DungeonRoom`: `Index`, `Number`, `Position`, `Size`, `CentreCell`, `DoorCells`, `DoorDirections`, `Corridors`, `HasCell(cell)`, `Data` | Footprint in GridMap cells (walls included, `Size.Y` is the room height), its doors with the step out of the room, the indices of its corridors, and a free `Dictionary`. |
+| `DungeonCorridor`: `Index`, `RoomA`, `RoomB`, `DoorA`, `DoorB`, `IsTreeEdge`, `Cells`, `Length`, `Other(room)`, `Data` | Its two rooms and their door cells, whether it is a loop, its cells in walking order from door A to door B, and a free `Dictionary`. |
+| `RoomAtCell(cell)`, `RoomAtPosition(grid_map, global_position)` | The room holding a GridMap cell or a global position, or -1. Only X and Z count, since a dungeon has one floor. |
+| `CorridorsAtCell(cell)` | The corridors through a cell (several where corridors meet). |
+| `RoomCentre(grid_map, room)` | A room's centre as a global position, for spawning. |
+| `Neighbours(room)`, `CorridorBetween(a, b)` | The rooms one corridor away; the corridor joining two rooms, or -1. |
+| `HopDistances(room)`, `Distances(room)` | Per room, the number of corridors, or the number of corridor cells, on the shortest way from `room`. Walking through a room costs nothing. |
+| `ShortestPath(from, to)`, `ShortestPathCorridors(from, to)` | The rooms and the corridors of the shortest way by corridor cells (fewer corridors on a tie). |
+| `FarthestRoom(room)`, `Diameter()` | The room farthest from `room`; the two rooms farthest apart, as a `Vector2i`. |
+
+`Data` on every room and corridor is yours, for example `{"role": "boss"}` or `{"locked": true}`. godoodungeon never reads it. Generate replaces the whole graph, so Data you set in the editor is lost when you generate again (the status warns, and Ctrl+Z brings it back); setting it from code at runtime avoids that.
+
+GDScript sees the C# names as they are (`Rooms`, `ShortestPath`):
+
+```gdscript
+var graph = $GridMap.get_meta(&"godoodads_dungeon_graph", null)
+var ends: Vector2i = graph.Diameter()
+var start: int = ends.x
+graph.Rooms[ends.y].Data["role"] = "exit"
+player.global_position = graph.RoomCentre($GridMap, start)
+var here: int = graph.RoomAtPosition($GridMap, player.global_position)
+if here >= 0:  # -1 in a corridor
+	print("Room %d is %d rooms from the start." % [graph.Rooms[here].Number, graph.HopDistances(start)[here]])
+```
+
+`var graph: DungeonGraph` also works once the editor has scanned the project. In C#:
+
+```csharp
+var graph = DungeonGraph.StoredOn(gridMap);
+Vector2I ends = graph.Diameter();
+graph.Rooms[ends.Y].Data["role"] = "exit";
+player.GlobalPosition = graph.RoomCentre(gridMap, ends.X);
+int[] way = graph.ShortestPath(ends.X, ends.Y);
+```
 
 ## Options
 
@@ -148,7 +195,7 @@ In every case the GridMap is left unchanged. With Randomise Seed on, a failed se
 5. **Corridors** are routed along the room graph, one per connection, from door to door, around rooms and their clearance. Corridors that meet merge into T pieces; corridors avoid running side by side.
 6. The **corridor** cells are solved with WFC: routed cells may only use corridor pieces with exactly their openings, other cells only pieces without openings.
 7. A **connectivity check** walks from the first room through doors and corridors and must reach every room.
-8. The cells, markers and settings are written as one undoable action.
+8. The cells, markers, settings and the [dungeon graph](#dungeon-graph) are written as one undoable action.
 
 Steps 1 to 7 run on a background thread. A room or corridor that cannot be solved starts the next layout attempt.
 
@@ -156,12 +203,12 @@ Steps 1 to 7 run on a background thread. A room or corridor that cannot be solve
 
 ## Demo
 
-`demo/godoodungeon/dungeon_free.tscn` is an empty 64 × 64 GridMap set up for 20 rooms. `dungeon_obstacles.tscn` is the same with five statues and a pool placed by hand, which the dungeon works around. Select the GridMap, open the dialog and press Generate. Both use the dungeon tile sets in `demo/godoodungeon/assets/`, with torch markers on some walls and corridors and spawn markers in some rooms. `demo/godoodungeon/tools/build_demo.tscn` rebuilds the MeshLibrary, the tile sets and both scenes.
+`demo/godoodungeon/dungeon_free.tscn` is an empty 64 × 64 GridMap set up for 20 rooms. `dungeon_obstacles.tscn` is the same with five statues and a pool placed by hand, which the dungeon works around. Select the GridMap, open the dialog and press Generate. Both use the dungeon tile sets in `demo/godoodungeon/assets/`, with torch markers on some walls and corridors and spawn markers in some rooms. `dungeon_graph.tscn` holds a generated 12-room dungeon with its graph; run it (F6) and `graph_demo.gd` reads the graph, takes the two rooms farthest apart as start and goal, marks the shortest way between them and labels every room with its distance from the start. `demo/godoodungeon/tools/build_demo.tscn` rebuilds the MeshLibrary, the tile sets and the three scenes.
 
 ## Limitations
 
 - Editor-only. There is no runtime generation yet.
 - One floor: rooms stand on the bottom layer of the bounds, and corridors do not climb.
 - Rooms are rectangles, generated from the room tile set. Cells you place by hand are obstacles; a hand-built room is not connected to the dungeon.
-- No room roles (start, boss, treasure) or progression such as locks and keys.
+- No room roles (start, boss, treasure) or progression such as locks and keys. The [dungeon graph](#dungeon-graph) gives the distances to choose them in your own code, and `Data` to store them.
 - 3D `GridMap` only.
