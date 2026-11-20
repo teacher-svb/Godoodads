@@ -115,6 +115,7 @@ public partial class BuildWfcDemo : Node
         SaveScene("hillside_free", library, tileSet, 1, false);
         SaveScene("hillside_ground", library, tileSet, 2, true);
         SaveScene("hillside_paths", library, pathTileSet, 3, true, map => PlacePathEnds(map, items));
+        SavePinScene(library, tileSet);
         GD.Print("WFC demo: built.");
         GetTree().Quit();
     }
@@ -163,6 +164,96 @@ public partial class BuildWfcDemo : Node
             });
         }
         return tileSet;
+    }
+
+    /// <summary>The ruin pieces, for choosing where the demo's pin boxes go.</summary>
+    public static readonly string[] RuinPieces =
+    {
+        "Paving", "Wall", "Wall Arch", "Broken Wall", "Wall End", "Wall Corner", "Tower Base", "Tower Top",
+        "Pillar", "Stairs", "Plinth", "Bridge Head", "Bridge Deck",
+    };
+
+    /// <summary>The side of the demo's pin boxes on X and Z, in cells.</summary>
+    public const int PinBoxSide = 8;
+
+    /// <summary>
+    /// The pin box demo (brief §16.7): a hillside generated here and saved with its cells, record and
+    /// markers, plus two full-height pin boxes: one around the most ruin pieces, one over a clearing
+    /// without any. Generate with any seed keeps the ruin and the clearing as they are. Uses the
+    /// first seed from 4 that has a ruin of at least 20 pieces and a clearing.
+    /// </summary>
+    private static void SavePinScene(MeshLibrary library, WfcTileSet tileSet)
+    {
+        const string name = "hillside_pins";
+        var grid = GridTopology.Create3D(DemoBounds);
+        var binding = TileSetBinding.Create(tileSet, grid.ActiveDirections);
+        var ruin = RuinPieces.Select(n => binding.TileForItem(library.FindItemByName(n))).Where(t => t >= 0).ToHashSet();
+        var boundary = new Socket?[Directions.Count];
+        Socket.TryParse("rock", true, out var rock, out _);
+        boundary[Directions.NegY] = rock;
+        var free = GridMapCells.AllFree(grid);
+
+        for (long seed = 4; seed < 40; seed++)
+        {
+            var result = new WfcSolver(grid, binding.Compiled, free.Initial).Solve(new SolveOptions { Seed = seed, Boundary = boundary });
+            if (result.Status != SolveStatus.Solved)
+                continue;
+            // Ruin pieces per column, then the best and the emptiest 8 × 8 windows that do not overlap.
+            var pieces = new int[DemoBounds.X, DemoBounds.Z];
+            for (int cell = 0; cell < grid.CellCount; cell++)
+                if (ruin.Contains(binding.Compiled.Variants[result.Cells[cell]].TileIndex))
+                {
+                    var at = grid.Coordinates(cell);
+                    pieces[at.X, at.Z]++;
+                }
+            int Window(int x0, int z0)
+            {
+                int sum = 0;
+                for (int x = x0; x < x0 + PinBoxSide; x++)
+                    for (int z = z0; z < z0 + PinBoxSide; z++)
+                        sum += pieces[x, z];
+                return sum;
+            }
+            var windows = new List<(int X, int Z, int Pieces)>();
+            for (int x = 0; x + PinBoxSide <= DemoBounds.X; x += 2)
+                for (int z = 0; z + PinBoxSide <= DemoBounds.Z; z += 2)
+                    windows.Add((x, z, Window(x, z)));
+            var best = windows.OrderByDescending(w => w.Pieces).First();
+            var clearings = windows.Where(w => w.Pieces == 0
+                && (Math.Abs(w.X - best.X) >= PinBoxSide || Math.Abs(w.Z - best.Z) >= PinBoxSide)).ToList();
+            if (best.Pieces < 20 || clearings.Count == 0)
+                continue;
+            var clearing = clearings.OrderByDescending(w => Math.Abs(w.X - best.X) + Math.Abs(w.Z - best.Z)).First();
+
+            var settings = new WfcSettings { TileSet = tileSet, Seed = seed, BoundsSize = DemoBounds, BoundaryNegY = "rock" };
+            SaveScene(name, library, tileSet, seed, true, map =>
+            {
+                WfcSettings.StoreOn(map, settings);
+                GridMapCells.Apply(map, GridMapCells.Diff(map, Vector3I.Zero, grid, binding, free.Initial, result.Cells).Do);
+                GridMapCells.WriteRecord(map, GridMapCells.RecordAfter(null, Vector3I.Zero, grid, binding, free.Initial, result.Cells).Encode());
+                var container = new Node3D { Name = GridMapMarkers.ContainerName };
+                map.AddChild(container);
+                container.Owner = map.Owner;
+                foreach (var placement in GridMapMarkers.Plan(map, Vector3I.Zero, grid, binding, free.Initial, result.Cells))
+                    if (GridMapMarkers.Instantiate(placement) is { } marker)
+                    {
+                        container.AddChild(marker);
+                        marker.Owner = map.Owner;
+                    }
+                foreach (var (boxName, window) in new[] { ("RuinPin", best), ("ClearingPin", clearing) })
+                {
+                    var box = new Godoodads.Wave.WfcPinBox
+                    {
+                        Name = boxName, Origin = new Vector3I(window.X, 0, window.Z), Size = new Vector3I(PinBoxSide, DemoBounds.Y, PinBoxSide),
+                    };
+                    map.AddChild(box);
+                    box.Owner = map.Owner;
+                }
+            });
+            GD.Print($"WFC demo: {name} uses seed {seed}: {best.Pieces} ruin pieces pinned at ({best.X}, {best.Z}), clearing at ({clearing.X}, {clearing.Z}).");
+            return;
+        }
+        GD.PushError($"WFC demo: no seed gave {name} a ruin and a clearing.");
     }
 
     private static void SaveScene(string name, MeshLibrary library, WfcTileSet tileSet, long seed, bool ground, Action<GridMap> place = null)
