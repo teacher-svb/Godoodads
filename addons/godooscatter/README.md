@@ -13,14 +13,14 @@ Fill a `MultiMeshInstance3D` with instances placed on a surface mesh, straight f
 Requires the **.NET edition** of Godot 4.7 or later and the .NET SDK 8.0 or later.
 
 1. Download `godooscatter-<version>.zip` (releases up to 1.2.0 are named `multimesh_scatter`) from the [Releases](https://github.com/teacher-svb/Godoodads/releases) page.
-2. Extract it into your project's root folder, next to `project.godot`. It contains `addons/godooscatter/`, `addons/multimesh_scatter/` (only a small class that keeps settings from older versions loading) and the shared `addons/editor_tools_common/`; if another Godoodads addon already installed an older `editor_tools_common`, let the newer one replace it.
+2. Extract it into your project's root folder, next to `project.godot`. It contains `addons/godooscatter/` and the shared `addons/editor_tools_common/`; if another Godoodads addon already installed an older `editor_tools_common`, let the newer one replace it.
 3. If your project has no C# solution yet, create one with *Project → Tools → C# → Create C# solution*.
 4. Build the C# project (the hammer icon, or `dotnet build`).
 5. Enable **godooscatter** in *Project → Project Settings → Plugins*.
 
 If the addon is missing from the plugin list, the zip was extracted one folder too deep: the file must be at `addons/godooscatter/plugin.cfg`. If enabling it reports "Unable to load addon script", build first and check the MSBuild panel for errors. To update, close Godot, delete `addons/godooscatter/` and `addons/multimesh_scatter/`, extract the new zip and build.
 
-**Updating from MultiMesh Scatter (1.2.0 or older):** from 1.3.0 the addon is called godooscatter and lives in `addons/godooscatter/`. Delete the whole `addons/multimesh_scatter/` folder before you extract the zip; the zip puts back only the small class in `addons/multimesh_scatter/Resources/`. Build, then enable **godooscatter** in the plugin list: Godot drops the old **MultiMesh Scatter** entry because its folder is gone. Settings stored on your MultiMeshInstance3D nodes and saved presets keep loading. If the menu shows two **Populate Surface (GDDS)** items, the old folder is still there.
+**Updating from MultiMesh Scatter (1.2.0 or older):** from 1.3.0 the addon is called godooscatter and lives in `addons/godooscatter/`. Delete the whole `addons/multimesh_scatter/` folder before you extract the zip. Build, then enable **godooscatter** in the plugin list: Godot drops the old **MultiMesh Scatter** entry because its folder is gone. Settings stored on your MultiMeshInstance3D nodes and presets saved in the editor keep loading. A preset saved without a uid (by your own script) names the old script path: up to 1.3.1 a small class at that path kept it loading; from 1.3.2 on, open it in a text editor and replace `res://addons/multimesh_scatter/Resources/` with `res://addons/godooscatter/Resources/`. If the menu shows two **Populate Surface (GDDS)** items, the old folder is still there.
 
 ## Use
 

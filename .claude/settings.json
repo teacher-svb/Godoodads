@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__blender__get_screenshot_of_area_as_image",
+      "Bash(unzip -l *)",
+      "Bash(ffprobe *)",
+      "Bash(gh run watch *)",
+      "mcp__claude-in-chrome__tabs_context_mcp",
+      "Bash(blender --version)",
+      "Bash(identify *)",
+      "Bash(pacman -Q *)"
+    ]
+  }
+}

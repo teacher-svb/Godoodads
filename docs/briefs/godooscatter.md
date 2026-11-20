@@ -272,3 +272,4 @@ Requested on 2026-11-15, to match the `godoo<name>` scheme of godoodungeon. Trac
 - `addons/multimesh_scatter/Resources/ScatterSettings.cs` stays as an empty legacy subclass (`Godoodads.Scatter.Legacy`, new uid, not a global class) for files that name the old path without a uid, and ships in the godooscatter zip (`tools/package_addon.sh`). `PresetTests` checks both cases.
 - The dialog size is stored under `godooscatter_dialog_size`, so the dialog opens at its default size once.
 - Updating needs the old folder deleted and **godooscatter** enabled in the plugin list (README, CHANGELOG).
+- **1.3.2** (2026-11-16): the legacy class in `addons/multimesh_scatter/Resources/` is removed, with its folder in the zip. The only project using the addon had no file that needed it, and release downloads showed no other users. `PresetTests` keeps checking that a file saved in the editor at the old path loads by uid.

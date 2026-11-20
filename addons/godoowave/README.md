@@ -11,14 +11,13 @@ Fill a `GridMap` with modules using wave function collapse, straight from the Go
 ## Install
 
 1. **Download** `godoowave-<version>.zip` from the [Releases page](https://github.com/teacher-svb/Godoodads/releases). Pick the newest release whose name starts with `godoowave` (releases up to 1.3.4 start with `wfc_generator`).
-2. **Extract it into your project's root folder**, the folder that holds `project.godot`. The zip contains three folders, which end up as:
+2. **Extract it into your project's root folder**, the folder that holds `project.godot`. The zip contains two folders, which end up as:
    ```
    your_project/
    ├── project.godot
    └── addons/
        ├── editor_tools_common/   shared helpers of the Godoodads addons
-       ├── godoowave/
-       └── wfc_generator/         only small classes that keep files from older versions loading
+       └── godoowave/
    ```
    If your project already has `addons/editor_tools_common/` from another Godoodads addon, let the newer copy replace it.
 3. **Create a C# solution** if your project has none yet: *Project → Tools → C# → Create C# solution*. Skip this if your project already has a `.csproj` file.
@@ -32,7 +31,7 @@ To try it straight away, the demo scenes are in this repository under `demo/godo
 
 Close Godot, delete `addons/godoowave/` and `addons/wfc_generator/`, then extract the new zip as above, so files removed in the new version do not linger. Let the zip's `editor_tools_common` replace yours. Build again before you reopen the dialog. Scenes and tile sets from older versions keep working; the CHANGELOG lists what changed.
 
-**Updating from WFC Generator (1.3.4 or older):** from 1.4.0 the addon is called godoowave and lives in `addons/godoowave/`. Delete the whole `addons/wfc_generator/` folder before you extract the zip; the zip puts back only the small classes in `addons/wfc_generator/Resources/`. Build, then enable **godoowave** in the plugin list: Godot drops the old **WFC Generator** entry because its folder is gone. Open the project in the editor once, so tile sets and scenes saved in the editor find the moved scripts by uid. Files that your own scripts saved name the old script paths, and keep loading through the small classes.
+**Updating from WFC Generator (1.3.4 or older):** from 1.4.0 the addon is called godoowave and lives in `addons/godoowave/`. Delete the whole `addons/wfc_generator/` folder before you extract the zip. Build, then enable **godoowave** in the plugin list: Godot drops the old **WFC Generator** entry because its folder is gone. Open the project in the editor once, so tile sets and scenes saved in the editor find the moved scripts by uid. Files saved without a uid (by your own scripts, or tile sets from 1.3.2 or older) name the old script paths. Up to 1.4.2 small classes at those paths kept them loading; from 1.4.3 on, open such a file in a text editor and replace `res://addons/wfc_generator/Resources/` with `res://addons/editor_tools_common/Wfc/Resources/`.
 
 **Updating from 1.3.2 or older:** since 1.3.3 the solver and the tile set resources live in `addons/editor_tools_common/Wfc/`, shared with [godoodungeon](../godoodungeon/README.md). Files left over from 1.3.2 cause build errors and "UID duplicate detected" warnings, so deleting the old folder first matters here too.
 

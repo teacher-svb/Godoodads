@@ -38,7 +38,7 @@ addons/editor_tools_common/
                This folder is a code library, not a plugin, and has no plugin.cfg.
 ```
 
-Moving a script that saved resources reference breaks files that name it by path only, which is every file `ResourceSaver.Save` writes outside the editor. Keep an empty `[Tool]` subclass at the old path, in a `.Legacy` namespace with a new `.uid` and without `[GlobalClass]` (see `addons/wfc_generator/Resources/`). When an addon folder is renamed, the old folder keeps only these classes and ships in the addon's zip; add it to the legacy list in `tools/package_addon.sh`.
+Moving a script that saved resources reference breaks files that name it by path only, which is every file `ResourceSaver.Save` writes outside the editor. Keep an empty `[Tool]` subclass at the old path, in a `.Legacy` namespace with a new `.uid` and without `[GlobalClass]`. Remove these classes once no user project needs them: godoowave 1.4.3 and godooscatter 1.3.2 removed the ones from the 1.3.3 move and the renames. A zip only ships `addons/<addon>/` and `addons/editor_tools_common/`, so a kept old folder must be added to `tools/package_addon.sh`.
 
 Namespaces: `Godoodads.Common` for shared code, `Godoodads.Common.Wfc` (with `.Core`, `.Adapters` and `.Editor`) for the shared WFC solver, `Godoodads.<Addon>` for resources, `Godoodads.<Addon>.Core` for pure logic, `Godoodads.<Addon>.Adapters` for engine glue, and `Godoodads.<Addon>.Editor` for editor code.
 

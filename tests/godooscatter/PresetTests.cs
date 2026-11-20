@@ -53,32 +53,31 @@ public class PresetTests
         AssertThat(GD.Load<ScatterSettings>(dir.PathJoin("grass_on_terrain.tres")).MinDistance).IsEqual(0.15f);
     }
 
-    // Brief §11: settings saved before the move to addons/godooscatter keep loading. Files saved in
-    // the editor carry the script's uid and find the moved class; files without one load the legacy
-    // subclass left at the old path.
+    // Brief §11: settings saved in the editor before the move to addons/godooscatter name the old
+    // path, but carry the script's uid and find the moved class. (Files without a uid needed the
+    // legacy subclass at the old path, removed in 1.3.2.)
     private const string OldPathFile = """
         [gd_resource type="Resource" script_class="ScatterSettings" format=3]
 
-        [ext_resource type="Script" {0}path="res://addons/multimesh_scatter/Resources/ScatterSettings.cs" id="1"]
+        [ext_resource type="Script" uid="uid://ch36n85vf88pf" path="res://addons/multimesh_scatter/Resources/ScatterSettings.cs" id="1"]
 
         [resource]
         script = ExtResource("1")
         Amount = 77
         """;
 
-    [TestCase("", typeof(Godoodads.Scatter.Legacy.ScatterSettings))]
-    [TestCase("uid=\"uid://ch36n85vf88pf\" ", typeof(ScatterSettings))]
+    [TestCase]
     [RequireGodotRuntime]
-    public void Settings_saved_at_the_old_path_load(string uid, System.Type expected)
+    public void Settings_saved_in_the_editor_at_the_old_path_load_by_uid()
     {
         const string path = "user://scatter_old_path.tres";
         using (var file = FileAccess.Open(path, FileAccess.ModeFlags.Write))
-            file.StoreString(string.Format(OldPathFile, uid));
+            file.StoreString(OldPathFile);
 
         var settings = ResourceLoader.Load<ScatterSettings>(path, null, ResourceLoader.CacheMode.Ignore);
         DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(path));
         AssertThat(settings).IsNotNull();
-        AssertThat(settings.GetType()).IsEqual(expected);
+        AssertThat(settings.GetType()).IsEqual(typeof(ScatterSettings));
         AssertThat(settings.Amount).IsEqual(77);
     }
 }
