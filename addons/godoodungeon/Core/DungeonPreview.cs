@@ -24,6 +24,9 @@ public static class DungeonPreview
             return new PreviewResult(null, null, 0, Array.Empty<AttemptFailure>(), errors);
 
         var occupied = DungeonJob.OccupiedGrid(request);
+        var boxErrors = RoomBoxes.Validate(request.Layout, request.RoomBoxes, occupied);
+        if (boxErrors.Count > 0)
+            return new PreviewResult(null, null, 0, Array.Empty<AttemptFailure>(), boxErrors);
         var failures = new List<AttemptFailure>();
         DungeonLayout layout = null;
         for (int attempt = 0; attempt < Math.Max(1, request.LayoutAttempts); attempt++)

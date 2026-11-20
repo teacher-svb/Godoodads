@@ -31,6 +31,18 @@ public partial class DungeonRoomBox : GridMapBox
     /// <summary>Copied to the room's Data in the dungeon graph on every Generate, such as <c>{"role": "boss"}</c>.</summary>
     [Export] public Dictionary Data { get; set; } = new();
 
+    /// <summary>
+    /// Where Add Room Box puts a new box (brief §13.1): centred in the bounds at Max Room Size on X
+    /// and Z (at most the bounds) and Room Height.
+    /// </summary>
+    public static (Vector3I Origin, Vector3I Size) CentredIn(Vector3I boundsOrigin, Vector3I boundsSize, Vector2I maxRoomSize, int roomHeight)
+    {
+        var size = new Vector3I(Mathf.Clamp(maxRoomSize.X, 1, Mathf.Max(boundsSize.X, 1)), Mathf.Clamp(roomHeight, 1, Mathf.Max(boundsSize.Y, 1)),
+            Mathf.Clamp(maxRoomSize.Y, 1, Mathf.Max(boundsSize.Z, 1)));
+        var origin = boundsOrigin + new Vector3I((boundsSize.X - size.X) / 2, 0, (boundsSize.Z - size.Z) / 2);
+        return (origin, size);
+    }
+
     /// <summary>Generated boxes in the preview's room colour, Built ones in a warm stone colour.</summary>
     public override Color BoxColour => Mode == RoomBoxMode.Built ? new Color(1f, 0.6f, 0.25f) : new Color(0.3f, 0.8f, 1f);
 }

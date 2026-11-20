@@ -186,6 +186,10 @@ public sealed class DungeonJob
             return new DungeonResult { Status = DungeonStatus.Invalid, Errors = errors };
 
         var occupied = OccupiedGrid(request);
+        // Room box checks do not depend on the seed, so they fail once instead of every attempt (§13.2).
+        errors.AddRange(RoomBoxes.Validate(settings, request.RoomBoxes, occupied));
+        if (errors.Count > 0)
+            return new DungeonResult { Status = DungeonStatus.Invalid, Errors = errors };
         var times = new StageTimes();
         var clock = System.Diagnostics.Stopwatch.StartNew();
         double Lap()
