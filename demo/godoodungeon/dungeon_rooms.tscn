@@ -1,0 +1,425 @@
+[gd_scene format=4]
+
+[ext_resource type="Script" path="res://demo/godoodungeon/graph_demo.gd" id="1_55lep"]
+[ext_resource type="MeshLibrary" path="res://demo/godoodungeon/assets/dungeon_library.tres" id="2_eenfd"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/assets/dungeon_corridor_tileset.tres" id="3_ymmkm"]
+[ext_resource type="Resource" path="res://demo/godoodungeon/assets/dungeon_room_tileset.tres" id="4_ux37t"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Resources/DungeonSettings.cs" id="5_6h71s"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Resources/DungeonCorridor.cs" id="6_tco5a"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Resources/DungeonRoom.cs" id="7_gjbe3"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Resources/DungeonGraph.cs" id="8_adr6s"]
+[ext_resource type="Script" path="res://addons/godoodungeon/Nodes/DungeonRoomBox.cs" id="9_4ym13"]
+[ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/torch.tscn" id="10_t0ke5"]
+[ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/spawn_point.tscn" id="11_a8a7m"]
+[ext_resource type="PackedScene" path="res://demo/godoodungeon/assets/corridor_torch.tscn" id="12_yju0q"]
+
+[sub_resource type="Resource" id="Resource_amfbc"]
+script = ExtResource("5_6h71s")
+Seed = 1
+RoomTileSet = ExtResource("4_ux37t")
+CorridorTileSet = ExtResource("3_ymmkm")
+Door = 10
+RoomCount = 10
+ExtraConnections = 0.2
+
+[sub_resource type="Resource" id="Resource_mlt0m"]
+script = ExtResource("6_tco5a")
+RoomB = 4
+DoorA = Vector3i(7, 0, 20)
+DoorB = Vector3i(11, 0, 18)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(8, 0, 20), Vector3i(9, 0, 20), Vector3i(9, 0, 19), Vector3i(9, 0, 18), Vector3i(10, 0, 18)])
+
+[sub_resource type="Resource" id="Resource_m3q2w"]
+script = ExtResource("6_tco5a")
+Index = 1
+RoomB = 8
+DoorA = Vector3i(7, 0, 20)
+DoorB = Vector3i(7, 0, 29)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(8, 0, 20), Vector3i(9, 0, 20), Vector3i(9, 0, 21), Vector3i(9, 0, 22), Vector3i(9, 0, 23), Vector3i(9, 0, 24), Vector3i(9, 0, 25), Vector3i(9, 0, 26), Vector3i(9, 0, 27), Vector3i(8, 0, 27), Vector3i(7, 0, 27), Vector3i(7, 0, 28)])
+
+[sub_resource type="Resource" id="Resource_18gnl"]
+script = ExtResource("6_tco5a")
+Index = 2
+RoomA = 2
+RoomB = 8
+DoorA = Vector3i(9, 0, 42)
+DoorB = Vector3i(10, 0, 37)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(9, 0, 41), Vector3i(9, 0, 40), Vector3i(9, 0, 39), Vector3i(10, 0, 39), Vector3i(10, 0, 38)])
+
+[sub_resource type="Resource" id="Resource_ceyfr"]
+script = ExtResource("6_tco5a")
+Index = 3
+RoomA = 4
+RoomB = 9
+DoorA = Vector3i(11, 0, 18)
+DoorB = Vector3i(9, 0, 7)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(10, 0, 18), Vector3i(9, 0, 18), Vector3i(9, 0, 17), Vector3i(9, 0, 16), Vector3i(9, 0, 15), Vector3i(9, 0, 14), Vector3i(9, 0, 13), Vector3i(9, 0, 12), Vector3i(9, 0, 11), Vector3i(9, 0, 10), Vector3i(9, 0, 9), Vector3i(9, 0, 8)])
+
+[sub_resource type="Resource" id="Resource_uogni"]
+script = ExtResource("6_tco5a")
+Index = 4
+RoomA = 4
+RoomB = 5
+DoorA = Vector3i(17, 0, 12)
+DoorB = Vector3i(28, 0, 14)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(18, 0, 12), Vector3i(19, 0, 12), Vector3i(19, 0, 13), Vector3i(19, 0, 14), Vector3i(20, 0, 14), Vector3i(21, 0, 14), Vector3i(22, 0, 14), Vector3i(23, 0, 14), Vector3i(24, 0, 14), Vector3i(25, 0, 14), Vector3i(26, 0, 14), Vector3i(27, 0, 14)])
+
+[sub_resource type="Resource" id="Resource_58gft"]
+script = ExtResource("6_tco5a")
+Index = 5
+RoomA = 5
+RoomB = 7
+DoorA = Vector3i(32, 0, 8)
+DoorB = Vector3i(41, 0, 6)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(33, 0, 8), Vector3i(34, 0, 8), Vector3i(35, 0, 8), Vector3i(36, 0, 8), Vector3i(37, 0, 8), Vector3i(38, 0, 8), Vector3i(39, 0, 8), Vector3i(39, 0, 7), Vector3i(39, 0, 6), Vector3i(40, 0, 6)])
+
+[sub_resource type="Resource" id="Resource_alnew"]
+script = ExtResource("6_tco5a")
+Index = 6
+RoomA = 1
+RoomB = 5
+DoorA = Vector3i(40, 0, 18)
+DoorB = Vector3i(32, 0, 8)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(40, 0, 17), Vector3i(40, 0, 16), Vector3i(39, 0, 16), Vector3i(39, 0, 15), Vector3i(39, 0, 14), Vector3i(39, 0, 13), Vector3i(39, 0, 12), Vector3i(39, 0, 11), Vector3i(39, 0, 10), Vector3i(39, 0, 9), Vector3i(39, 0, 8), Vector3i(38, 0, 8), Vector3i(37, 0, 8), Vector3i(36, 0, 8), Vector3i(35, 0, 8), Vector3i(34, 0, 8), Vector3i(33, 0, 8)])
+
+[sub_resource type="Resource" id="Resource_sgi32"]
+script = ExtResource("6_tco5a")
+Index = 7
+RoomA = 1
+RoomB = 6
+DoorA = Vector3i(36, 0, 22)
+DoorB = Vector3i(31, 0, 29)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(35, 0, 22), Vector3i(34, 0, 22), Vector3i(33, 0, 22), Vector3i(33, 0, 23), Vector3i(33, 0, 24), Vector3i(33, 0, 25), Vector3i(33, 0, 26), Vector3i(33, 0, 27), Vector3i(33, 0, 28), Vector3i(33, 0, 29), Vector3i(32, 0, 29)])
+
+[sub_resource type="Resource" id="Resource_23q3g"]
+script = ExtResource("6_tco5a")
+Index = 8
+RoomA = 3
+RoomB = 6
+DoorA = Vector3i(36, 0, 41)
+DoorB = Vector3i(31, 0, 29)
+IsTreeEdge = true
+Cells = Array[Vector3i]([Vector3i(36, 0, 40), Vector3i(36, 0, 39), Vector3i(36, 0, 38), Vector3i(36, 0, 37), Vector3i(36, 0, 36), Vector3i(36, 0, 35), Vector3i(35, 0, 35), Vector3i(34, 0, 35), Vector3i(34, 0, 34), Vector3i(34, 0, 33), Vector3i(34, 0, 32), Vector3i(34, 0, 31), Vector3i(34, 0, 30), Vector3i(34, 0, 29), Vector3i(33, 0, 29), Vector3i(32, 0, 29)])
+
+[sub_resource type="Resource" id="Resource_lk4a3"]
+script = ExtResource("6_tco5a")
+Index = 9
+RoomA = 1
+RoomB = 7
+DoorA = Vector3i(40, 0, 18)
+DoorB = Vector3i(41, 0, 6)
+Cells = Array[Vector3i]([Vector3i(40, 0, 17), Vector3i(40, 0, 16), Vector3i(39, 0, 16), Vector3i(39, 0, 15), Vector3i(39, 0, 14), Vector3i(39, 0, 13), Vector3i(39, 0, 12), Vector3i(39, 0, 11), Vector3i(39, 0, 10), Vector3i(39, 0, 9), Vector3i(39, 0, 8), Vector3i(39, 0, 7), Vector3i(39, 0, 6), Vector3i(40, 0, 6)])
+
+[sub_resource type="Resource" id="Resource_vbuyc"]
+script = ExtResource("6_tco5a")
+Index = 10
+RoomB = 9
+DoorA = Vector3i(7, 0, 20)
+DoorB = Vector3i(9, 0, 7)
+Cells = Array[Vector3i]([Vector3i(8, 0, 20), Vector3i(9, 0, 20), Vector3i(9, 0, 19), Vector3i(9, 0, 18), Vector3i(9, 0, 17), Vector3i(9, 0, 16), Vector3i(9, 0, 15), Vector3i(9, 0, 14), Vector3i(9, 0, 13), Vector3i(9, 0, 12), Vector3i(9, 0, 11), Vector3i(9, 0, 10), Vector3i(9, 0, 9), Vector3i(9, 0, 8)])
+
+[sub_resource type="Resource" id="Resource_m6bjv"]
+script = ExtResource("7_gjbe3")
+Position = Vector3i(1, 0, 19)
+Size = Vector3i(7, 1, 7)
+DoorCells = Array[Vector3i]([Vector3i(7, 0, 20)])
+DoorDirections = Array[Vector3i]([Vector3i(1, 0, 0)])
+Corridors = PackedInt32Array(0, 1, 10)
+Box = NodePath("Entrance")
+
+[sub_resource type="Resource" id="Resource_yvxiu"]
+script = ExtResource("7_gjbe3")
+Index = 1
+Position = Vector3i(36, 0, 18)
+Size = Vector3i(10, 1, 10)
+DoorCells = Array[Vector3i]([Vector3i(40, 0, 18), Vector3i(36, 0, 22)])
+DoorDirections = Array[Vector3i]([Vector3i(0, 0, -1), Vector3i(-1, 0, 0)])
+Corridors = PackedInt32Array(6, 7, 9)
+Box = NodePath("BossRoom")
+IsBuilt = true
+Data = {
+"role": "boss"
+}
+
+[sub_resource type="Resource" id="Resource_brg3y"]
+script = ExtResource("7_gjbe3")
+Index = 2
+Position = Vector3i(8, 0, 42)
+Size = Vector3i(5, 1, 5)
+DoorCells = Array[Vector3i]([Vector3i(9, 0, 42)])
+DoorDirections = Array[Vector3i]([Vector3i(0, 0, -1)])
+Corridors = PackedInt32Array(2)
+
+[sub_resource type="Resource" id="Resource_hkyrq"]
+script = ExtResource("7_gjbe3")
+Index = 3
+Position = Vector3i(35, 0, 41)
+Size = Vector3i(9, 1, 6)
+DoorCells = Array[Vector3i]([Vector3i(36, 0, 41)])
+DoorDirections = Array[Vector3i]([Vector3i(0, 0, -1)])
+Corridors = PackedInt32Array(8)
+
+[sub_resource type="Resource" id="Resource_xsyku"]
+script = ExtResource("7_gjbe3")
+Index = 4
+Position = Vector3i(11, 0, 11)
+Size = Vector3i(7, 1, 9)
+DoorCells = Array[Vector3i]([Vector3i(11, 0, 18), Vector3i(17, 0, 12)])
+DoorDirections = Array[Vector3i]([Vector3i(-1, 0, 0), Vector3i(1, 0, 0)])
+Corridors = PackedInt32Array(0, 3, 4)
+
+[sub_resource type="Resource" id="Resource_ggrgw"]
+script = ExtResource("7_gjbe3")
+Index = 5
+Position = Vector3i(28, 0, 7)
+Size = Vector3i(5, 1, 9)
+DoorCells = Array[Vector3i]([Vector3i(28, 0, 14), Vector3i(32, 0, 8)])
+DoorDirections = Array[Vector3i]([Vector3i(-1, 0, 0), Vector3i(1, 0, 0)])
+Corridors = PackedInt32Array(4, 5, 6)
+
+[sub_resource type="Resource" id="Resource_je480"]
+script = ExtResource("7_gjbe3")
+Index = 6
+Position = Vector3i(26, 0, 28)
+Size = Vector3i(6, 1, 6)
+DoorCells = Array[Vector3i]([Vector3i(31, 0, 29)])
+DoorDirections = Array[Vector3i]([Vector3i(1, 0, 0)])
+Corridors = PackedInt32Array(7, 8)
+
+[sub_resource type="Resource" id="Resource_8s4to"]
+script = ExtResource("7_gjbe3")
+Index = 7
+Position = Vector3i(41, 0, 3)
+Size = Vector3i(5, 1, 5)
+DoorCells = Array[Vector3i]([Vector3i(41, 0, 6)])
+DoorDirections = Array[Vector3i]([Vector3i(-1, 0, 0)])
+Corridors = PackedInt32Array(5, 9)
+
+[sub_resource type="Resource" id="Resource_hmxo8"]
+script = ExtResource("7_gjbe3")
+Index = 8
+Position = Vector3i(6, 0, 29)
+Size = Vector3i(8, 1, 9)
+DoorCells = Array[Vector3i]([Vector3i(7, 0, 29), Vector3i(10, 0, 37)])
+DoorDirections = Array[Vector3i]([Vector3i(0, 0, -1), Vector3i(0, 0, 1)])
+Corridors = PackedInt32Array(1, 2)
+
+[sub_resource type="Resource" id="Resource_kmwf0"]
+script = ExtResource("7_gjbe3")
+Index = 9
+Position = Vector3i(3, 0, 1)
+Size = Vector3i(8, 1, 7)
+DoorCells = Array[Vector3i]([Vector3i(9, 0, 7)])
+DoorDirections = Array[Vector3i]([Vector3i(0, 0, 1)])
+Corridors = PackedInt32Array(3, 10)
+
+[sub_resource type="Resource" id="Resource_ie3mr"]
+script = ExtResource("8_adr6s")
+Size = Vector2i(48, 48)
+Rooms = Array[ExtResource("7_gjbe3")]([SubResource("Resource_m6bjv"), SubResource("Resource_yvxiu"), SubResource("Resource_brg3y"), SubResource("Resource_hkyrq"), SubResource("Resource_xsyku"), SubResource("Resource_ggrgw"), SubResource("Resource_je480"), SubResource("Resource_8s4to"), SubResource("Resource_hmxo8"), SubResource("Resource_kmwf0")])
+Corridors = Array[ExtResource("6_tco5a")]([SubResource("Resource_mlt0m"), SubResource("Resource_m3q2w"), SubResource("Resource_18gnl"), SubResource("Resource_ceyfr"), SubResource("Resource_uogni"), SubResource("Resource_58gft"), SubResource("Resource_alnew"), SubResource("Resource_sgi32"), SubResource("Resource_23q3g"), SubResource("Resource_lk4a3"), SubResource("Resource_vbuyc")])
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_xbovb"]
+
+[sub_resource type="Sky" id="Sky_yesrf"]
+sky_material = SubResource("ProceduralSkyMaterial_xbovb")
+
+[sub_resource type="Environment" id="Environment_u86e5"]
+background_mode = 2
+sky = SubResource("Sky_yesrf")
+ambient_light_source = 3
+ambient_light_energy = 0.5
+tonemap_mode = 2
+
+[node name="DungeonRooms" type="Node3D" unique_id=1384000442]
+script = ExtResource("1_55lep")
+
+[node name="GridMap" type="GridMap" parent="." unique_id=94663385]
+mesh_library = ExtResource("2_eenfd")
+data = {
+"cells": PackedInt32Array(36, 18, 655369, 37, 18, 1048584, 38, 18, 1048582, 39, 18, 1048584, 40, 18, 1048586, 41, 18, 1048582, 42, 18, 1048582, 43, 18, 1048582, 44, 18, 1048582, 45, 18, 1048585, 36, 19, 655366, 37, 19, 0, 38, 19, 0, 39, 19, 0, 40, 19, 0, 41, 19, 3, 42, 19, 0, 43, 19, 0, 44, 19, 0, 45, 19, 7, 36, 20, 655366, 37, 20, 0, 38, 20, 0, 39, 20, 0, 40, 20, 0, 41, 20, 0, 42, 20, 4, 43, 20, 4, 44, 20, 0, 45, 20, 6, 36, 21, 655366, 37, 21, 0, 38, 21, 0, 39, 21, 0, 40, 21, 0, 41, 21, 1, 42, 21, 1, 43, 21, 0, 44, 21, 0, 45, 21, 6, 36, 22, 655370, 37, 22, 0, 38, 22, 1, 39, 22, 0, 40, 22, 0, 41, 22, 0, 42, 22, 0, 43, 22, 1, 44, 22, 0, 45, 22, 6, 36, 23, 655366, 37, 23, 0, 38, 23, 0, 39, 23, 0, 40, 23, 0, 41, 23, 4, 42, 23, 4, 43, 23, 0, 44, 23, 1, 45, 23, 6, 36, 24, 655368, 37, 24, 0, 38, 24, 0, 39, 24, 3, 40, 24, 4, 41, 24, 4, 42, 24, 0, 43, 24, 0, 44, 24, 0, 45, 24, 6, 36, 25, 655368, 37, 25, 1, 38, 25, 1, 39, 25, 0, 40, 25, 0, 41, 25, 1, 42, 25, 0, 43, 25, 4, 44, 25, 0, 45, 25, 6, 36, 26, 655366, 37, 26, 0, 38, 26, 1, 39, 26, 4, 40, 26, 4, 41, 26, 0, 42, 26, 0, 43, 26, 0, 44, 26, 0, 45, 26, 6, 36, 27, 1441801, 37, 27, 1441799, 38, 27, 1441798, 39, 27, 1441798, 40, 27, 1441798, 41, 27, 1441798, 42, 27, 1441798, 43, 27, 1441798, 44, 27, 1441798, 45, 27, 9, 3, 1, 655369, 4, 1, 1048582, 5, 1, 1048582, 6, 1, 1048584, 7, 1, 1048584, 8, 1, 1048582, 9, 1, 1048582, 10, 1, 1048585, 3, 2, 655366, 4, 2, 0, 5, 2, 0, 6, 2, 0, 7, 2, 0, 8, 2, 4, 9, 2, 0, 10, 2, 6, 3, 3, 655368, 4, 3, 0, 5, 3, 0, 6, 3, 1, 7, 3, 0, 8, 3, 0, 9, 3, 0, 10, 3, 8, 41, 3, 655369, 42, 3, 1048583, 43, 3, 1048582, 44, 3, 1048582, 45, 3, 1048585, 3, 4, 655367, 4, 4, 0, 5, 4, 1, 6, 4, 0, 7, 4, 0, 8, 4, 0, 9, 4, 1, 10, 4, 6, 41, 4, 655366, 42, 4, 0, 43, 4, 0, 44, 4, 0, 45, 4, 6, 3, 5, 655366, 4, 5, 1, 5, 5, 0, 6, 5, 0, 7, 5, 0, 8, 5, 0, 9, 5, 1, 10, 5, 6, 41, 5, 655366, 42, 5, 0, 43, 5, 0, 44, 5, 0, 45, 5, 6, 3, 6, 655366, 4, 6, 0, 5, 6, 2, 6, 6, 0, 7, 6, 0, 8, 6, 2, 9, 6, 0, 10, 6, 7, 39, 6, 13, 40, 6, 11, 41, 6, 655370, 42, 6, 0, 43, 6, 0, 44, 6, 0, 45, 6, 6, 3, 7, 1441801, 4, 7, 1441798, 5, 7, 1441798, 6, 7, 1441798, 7, 7, 1441798, 8, 7, 1441799, 9, 7, 1441802, 10, 7, 9, 28, 7, 655369, 29, 7, 1048584, 30, 7, 1048584, 31, 7, 1048582, 32, 7, 1048585, 39, 7, 1048587, 41, 7, 1441801, 42, 7, 1441798, 43, 7, 1441798, 44, 7, 1441798, 45, 7, 9, 9, 8, 1048587, 28, 8, 655367, 29, 8, 0, 30, 8, 1, 31, 8, 0, 32, 8, 10, 33, 8, 11, 34, 8, 11, 35, 8, 11, 36, 8, 11, 37, 8, 11, 38, 8, 11, 39, 8, 1441806, 9, 9, 1048587, 28, 9, 655366, 29, 9, 0, 30, 9, 0, 31, 9, 0, 32, 9, 7, 39, 9, 1048588, 9, 10, 1048588, 28, 10, 655368, 29, 10, 1, 30, 10, 0, 31, 10, 0, 32, 10, 6, 39, 10, 1048587, 9, 11, 1048587, 11, 11, 655369, 12, 11, 1048582, 13, 11, 1048582, 14, 11, 1048582, 15, 11, 1048582, 16, 11, 1048582, 17, 11, 1048585, 28, 11, 655366, 29, 11, 0, 30, 11, 0, 31, 11, 4, 32, 11, 6, 39, 11, 1048587, 9, 12, 1048587, 11, 12, 655366, 12, 12, 0, 13, 12, 5, 14, 12, 0, 15, 12, 3, 16, 12, 0, 17, 12, 10, 18, 12, 11, 19, 12, 1441805, 28, 12, 655366, 29, 12, 0, 30, 12, 0, 31, 12, 0, 32, 12, 6, 39, 12, 1048587, 9, 13, 1048587, 11, 13, 655366, 12, 13, 1, 13, 13, 0, 14, 13, 3, 15, 13, 0, 16, 13, 0, 17, 13, 6, 19, 13, 1048587, 28, 13, 655366, 29, 13, 0, 30, 13, 0, 31, 13, 0, 32, 13, 6, 39, 13, 1048587, 9, 14, 1048587, 11, 14, 655366, 12, 14, 3, 13, 14, 1, 14, 14, 4, 15, 14, 3, 16, 14, 0, 17, 14, 7, 19, 14, 1048589, 20, 14, 11, 21, 14, 11, 22, 14, 11, 23, 14, 11, 24, 14, 11, 25, 14, 11, 26, 14, 11, 27, 14, 11, 28, 14, 655370, 29, 14, 0, 30, 14, 1, 31, 14, 1, 32, 14, 8, 39, 14, 1048587, 9, 15, 1048587, 11, 15, 655366, 12, 15, 0, 13, 15, 4, 14, 15, 2, 15, 15, 0, 16, 15, 0, 17, 15, 6, 28, 15, 1441801, 29, 15, 1441798, 30, 15, 1441798, 31, 15, 1441798, 32, 15, 9, 39, 15, 1048587, 9, 16, 1048587, 11, 16, 655367, 12, 16, 0, 13, 16, 0, 14, 16, 0, 15, 16, 0, 16, 16, 0, 17, 16, 6, 39, 16, 1048589, 40, 16, 1441805, 9, 17, 1048587, 11, 17, 655366, 12, 17, 0, 13, 17, 0, 14, 17, 0, 15, 17, 4, 16, 17, 3, 17, 17, 6, 40, 17, 1048588, 9, 18, 1048590, 10, 18, 11, 11, 18, 655370, 12, 18, 0, 13, 18, 5, 14, 18, 0, 15, 18, 0, 16, 18, 0, 17, 18, 6, 1, 19, 655369, 2, 19, 1048582, 3, 19, 1048582, 4, 19, 1048582, 5, 19, 1048582, 6, 19, 1048583, 7, 19, 1048585, 9, 19, 1048587, 11, 19, 1441801, 12, 19, 1441798, 13, 19, 1441799, 14, 19, 1441800, 15, 19, 1441798, 16, 19, 1441799, 17, 19, 9, 1, 20, 655368, 2, 20, 0, 3, 20, 0, 4, 20, 4, 5, 20, 1, 6, 20, 0, 7, 20, 10, 8, 20, 11, 9, 20, 1441806, 1, 21, 655366, 2, 21, 0, 3, 21, 0, 4, 21, 1, 5, 21, 1, 6, 21, 0, 7, 21, 6, 9, 21, 1048588, 1, 22, 655366, 2, 22, 1, 3, 22, 0, 4, 22, 0, 5, 22, 1, 6, 22, 0, 7, 22, 6, 9, 22, 1048587, 33, 22, 13, 34, 22, 11, 35, 22, 11, 1, 23, 655366, 2, 23, 1, 3, 23, 0, 4, 23, 4, 5, 23, 0, 6, 23, 1, 7, 23, 6, 9, 23, 1048587, 33, 23, 1048587, 1, 24, 655366, 2, 24, 1, 3, 24, 0, 4, 24, 0, 5, 24, 0, 6, 24, 0, 7, 24, 6, 9, 24, 1048587, 33, 24, 1048587, 1, 25, 1441801, 2, 25, 1441798, 3, 25, 1441798, 4, 25, 1441799, 5, 25, 1441798, 6, 25, 1441798, 7, 25, 9, 9, 25, 1048587, 33, 25, 1048587, 9, 26, 1048587, 33, 26, 1048588, 7, 27, 13, 8, 27, 11, 9, 27, 655373, 33, 27, 1048587, 7, 28, 1048587, 26, 28, 655369, 27, 28, 1048582, 28, 28, 1048582, 29, 28, 1048582, 30, 28, 1048582, 31, 28, 1048585, 33, 28, 1048588, 6, 29, 655369, 7, 29, 1048586, 8, 29, 1048582, 9, 29, 1048582, 10, 29, 1048582, 11, 29, 1048582, 12, 29, 1048582, 13, 29, 1048585, 26, 29, 655366, 27, 29, 1, 28, 29, 0, 29, 29, 0, 30, 29, 0, 31, 29, 10, 32, 29, 11, 33, 29, 655374, 34, 29, 1441805, 6, 30, 655366, 7, 30, 1, 8, 30, 0, 9, 30, 0, 10, 30, 0, 11, 30, 1, 12, 30, 0, 13, 30, 6, 26, 30, 655368, 27, 30, 0, 28, 30, 5, 29, 30, 0, 30, 30, 3, 31, 30, 6, 34, 30, 1048587, 6, 31, 655366, 7, 31, 0, 8, 31, 0, 9, 31, 0, 10, 31, 0, 11, 31, 0, 12, 31, 1, 13, 31, 7, 26, 31, 655366, 27, 31, 0, 28, 31, 1, 29, 31, 0, 30, 31, 0, 31, 31, 6, 34, 31, 1048587, 6, 32, 655366, 7, 32, 0, 8, 32, 0, 9, 32, 1, 10, 32, 1, 11, 32, 0, 12, 32, 0, 13, 32, 6, 26, 32, 655367, 27, 32, 0, 28, 32, 0, 29, 32, 1, 30, 32, 0, 31, 32, 6, 34, 32, 1048587, 6, 33, 655367, 7, 33, 4, 8, 33, 0, 9, 33, 1, 10, 33, 0, 11, 33, 0, 12, 33, 1, 13, 33, 6, 26, 33, 1441801, 27, 33, 1441798, 28, 33, 1441798, 29, 33, 1441798, 30, 33, 1441798, 31, 33, 9, 34, 33, 1048588, 6, 34, 655367, 7, 34, 0, 8, 34, 4, 9, 34, 0, 10, 34, 0, 11, 34, 0, 12, 34, 0, 13, 34, 6, 34, 34, 1048587, 6, 35, 655366, 7, 35, 1, 8, 35, 3, 9, 35, 0, 10, 35, 1, 11, 35, 0, 12, 35, 0, 13, 35, 6, 34, 35, 1048589, 35, 35, 12, 36, 35, 1441805, 6, 36, 655366, 7, 36, 0, 8, 36, 0, 9, 36, 0, 10, 36, 0, 11, 36, 3, 12, 36, 3, 13, 36, 8, 36, 36, 1048587, 6, 37, 1441801, 7, 37, 1441800, 8, 37, 1441798, 9, 37, 1441798, 10, 37, 1441802, 11, 37, 1441800, 12, 37, 1441798, 13, 37, 9, 36, 37, 1048588, 10, 38, 1048587, 36, 38, 1048587, 9, 39, 13, 10, 39, 655373, 36, 39, 1048588, 9, 40, 1048587, 36, 40, 1048587, 9, 41, 1048587, 35, 41, 655369, 36, 41, 1048586, 37, 41, 1048582, 38, 41, 1048582, 39, 41, 1048582, 40, 41, 1048582, 41, 41, 1048582, 42, 41, 1048582, 43, 41, 1048585, 8, 42, 655369, 9, 42, 1048586, 10, 42, 1048582, 11, 42, 1048582, 12, 42, 1048585, 35, 42, 655366, 36, 42, 4, 37, 42, 0, 38, 42, 0, 39, 42, 0, 40, 42, 4, 41, 42, 0, 42, 42, 1, 43, 42, 6, 8, 43, 655366, 9, 43, 2, 10, 43, 0, 11, 43, 0, 12, 43, 6, 35, 43, 655366, 36, 43, 1, 37, 43, 0, 38, 43, 0, 39, 43, 0, 40, 43, 0, 41, 43, 1, 42, 43, 1, 43, 43, 6, 8, 44, 655368, 9, 44, 0, 10, 44, 0, 11, 44, 1, 12, 44, 6, 35, 44, 655366, 36, 44, 3, 37, 44, 0, 38, 44, 0, 39, 44, 0, 40, 44, 0, 41, 44, 0, 42, 44, 0, 43, 44, 6, 8, 45, 655366, 9, 45, 4, 10, 45, 0, 11, 45, 0, 12, 45, 8, 35, 45, 655366, 36, 45, 0, 37, 45, 0, 38, 45, 0, 39, 45, 0, 40, 45, 0, 41, 45, 3, 42, 45, 4, 43, 45, 6, 8, 46, 1441801, 9, 46, 1441800, 10, 46, 1441798, 11, 46, 1441798, 12, 46, 9, 35, 46, 1441801, 36, 46, 1441800, 37, 46, 1441799, 38, 46, 1441800, 39, 46, 1441798, 40, 46, 1441799, 41, 46, 1441799, 42, 46, 1441798, 43, 46, 9)
+}
+metadata/godoodads_dungeon_generated = PackedByteArray("Ae1V6XLiMAz+DMGOE0LpRe9tA7TQa9//8XYwcirLB+3Ozu6Prb7RONZlRVIcjIAxKkygYVDDojm4f8YLXvGG9z+i2WBb0N7iDj9wjwdsmJVl8h5LrLDGI56wCTSbaNdiig4zHGGO46LuBKdF/ekB7RnOscAFLnGFa9z8dh4bbCPZ1lWmDWQKI1Y7W9TWsJG9EvveVVVFUvUJiUVPp/Qwwdv3rLOty/A6qE2PZdFi+Re1y4RkhXUkXSckDdZuv4Z1vBrmc0tTXA/2q3+u+6Zv+qb/l5TASGCcRZXFJAtdhPkU6ixsgCZAW8D0ALoiZl/CUQHzBI4jnEQ4LeIswrnAIomLCJcRriJcuz/rjcOtwN1B/CjivoiHIvoilhFWSawjPEZ4cv/XjfvHbvGcwEsBrwW8FfBewM8CLABNXBNrYkurpIpWTfaeFEKqKYYRMU3GXjE7TppYIaZDPjsa4YP8swHQAWgBNAiJv7tmbMjWEtesXpZiWeFjSW4otqK1IXmb4BmtWuRlAEyJa1EPzfxtIned6Gcl/DTJJ7SORa5dps4t81fCl9tohCR9x+RfMX/D+tQWuCF7RVwn3qsSs6AL/WpZzyRpyqnLvFdF+Wvq1UzkOPnCvFnRU8NmzrA55Gcr0beZyFExG005ajFPiulb0QPN9BWz1xkbfGJOTaYHLeXXJfKwmRmf0toc+A5UkBmCenUZG8Xeo058LzozE9zfML0aNEj6qoSNEXrua0RPIPpjCzUzZFshJp6bYt+nEjYd65dOxBkT16yHNculEXfqlPW7Y/FbMQdNptea3ddNYgYqkZ+c5x3LO6P0L/J+8r/o/fi9mKqxzMnXIkW7WP4Ol3Xk/yh5Z/j5czWZ78nfTcMaCZMbelrsiaK5x8F5p95vKOB8Tody4c4q3Av1PDhwEO/PGozopJ2Bz9G/oU8xOM0fs48/+A4P5LTzd5F85mHVGh+MIohq5rYU228/HobkQAm4DKgndPT+YShy2JXSzoWjsAv8Ag==")
+metadata/godoodads_dungeon_settings = SubResource("Resource_amfbc")
+metadata/godoodads_dungeon_graph = SubResource("Resource_ie3mr")
+
+[node name="Entrance" type="Node3D" parent="GridMap" unique_id=1527122214]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2, 0, 38)
+script = ExtResource("9_4ym13")
+Origin = Vector3i(1, 0, 19)
+Size = Vector3i(7, 1, 7)
+
+[node name="BossRoom" type="Node3D" parent="GridMap" unique_id=1714181319]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 72, 0, 36)
+script = ExtResource("9_4ym13")
+Mode = 1
+Data = {
+"role": "boss"
+}
+Origin = Vector3i(36, 0, 18)
+Size = Vector3i(10, 1, 10)
+
+[node name="DungeonMarkers" type="Node3D" parent="GridMap" unique_id=1801149978]
+
+[node name="Torch" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=194407216 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 91, 1, 39)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@38" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1798324284 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75, 1, 55)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@39" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=76529396 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 13, 1, 39)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@40" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1435797056 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 9, 1, 51)
+metadata/godoodads_dungeon_marker = true
+
+[node name="SpawnPoint" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=971712291 instance=ExtResource("11_a8a7m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 1, 87)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@41" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1897372041 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 75, 1, 93)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@42" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1140548766 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 81, 1, 93)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@43" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1569034913 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 83, 1, 93)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@44" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1625230177 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35, 1, 29)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@45" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=972767922 instance=ExtResource("11_a8a7m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 29, 1, 31)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@46" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=299252059 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 23, 1, 33)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@47" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=158141054 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 27, 1, 39)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@48" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1602654563 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 33, 1, 39)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@49" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1416164094 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 57, 1, 17)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@50" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1811235867 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 65, 1, 19)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@51" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1920556809 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 53, 1, 65)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@52" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1263056685 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 85, 1, 7)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@53" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1222062544 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 27, 1, 63)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@54" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=467767845 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 13, 1, 67)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@55" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=538288224 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 13, 1, 69)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@56" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=2055604620 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 7, 1, 9)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@57" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=696616568 instance=ExtResource("11_a8a7m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11, 1, 13)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@58" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1899466596 instance=ExtResource("11_a8a7m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17, 1, 13)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@59" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1509192587 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 1, 13)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@60" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1667015159 instance=ExtResource("10_t0ke5")]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 17, 1, 15)
+metadata/godoodads_dungeon_marker = true
+
+[node name="CorridorTorch" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1818730877 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 79, 1, 19)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@61" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1951918893 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 19, 1, 21)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@62" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=12913010 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 81, 1, 35)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@63" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=148655485 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 19, 1, 43)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@64" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=1707906499 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 67, 1, 53)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@65" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=999272972 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 67, 1, 57)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@66" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=354419319 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 69, 1, 67)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@67" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=381129086 instance=ExtResource("12_yju0q")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 71, 1, 71)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@68" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=618444125 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 73, 1, 75)
+metadata/godoodads_dungeon_marker = true
+
+[node name="@Node3D@69" type="Node3D" parent="GridMap/DungeonMarkers" unique_id=49159796 instance=ExtResource("12_yju0q")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 73, 1, 79)
+metadata/godoodads_dungeon_marker = true
+
+[node name="Camera" type="Camera3D" parent="." unique_id=1352028542]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 49, 61, 49)
+projection = 1
+current = true
+size = 100.799995
+far = 200.0
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=83216759]
+transform = Transform3D(0.8660254, 0.43301272, -0.24999999, 0, 0.49999997, 0.86602545, 0.5, -0.75, 0.43301266, 0, 0, 0)
+light_energy = 0.6
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1804656049]
+environment = SubResource("Environment_u86e5")

@@ -27,7 +27,7 @@ To try it straight away, the demo scenes are in this repository under `demo/godo
 
 ### With godoowave
 
-godoodungeon uses the same solver and tile set resources as [godoowave](../godoowave/README.md) (called WFC Generator up to 1.3.4), from `addons/editor_tools_common/Wfc/`. You do not need godoowave, but both can be enabled at once: their items share the **GridMap** menu, and a tile set shows one preview. If the older WFC Generator is installed instead, it must be **1.3.3 or later**. Older versions keep their own copy of the tile set classes, so tile sets would load as types godoodungeon cannot use. godoodungeon warns when it finds an older version.
+godoodungeon uses the same solver and tile set resources as [godoowave](../godoowave/README.md) (called WFC Generator up to 1.3.4), from `addons/editor_tools_common/Wfc/`. You do not need godoowave, but both can be enabled at once: their items share the **GridMap** menu, and a tile set shows one preview. If the older WFC Generator is installed instead, it must be **1.3.3 or later**. Older versions keep their own copy of the tile set classes, so tile sets would load as types godoodungeon cannot use. godoodungeon warns when it finds an older version. Room boxes (1.2) use the box node that godoowave 1.5 shares for its pin boxes (`addons/editor_tools_common/Nodes/`): with both installed, use godoowave **1.5 or later**, and extract the newer zip last, so `editor_tools_common` is the newest copy.
 
 ### Updating
 
@@ -68,7 +68,20 @@ Generate again, with another seed or other settings, to replace the dungeon. **C
 
 ### Cells you place yourself
 
-Occupied cells inside the bounds that the last dungeon did not write are yours. Rooms keep the **Gap** away from them, corridors go around them, and Generate and Clear Dungeon never change them. Use this for set pieces such as a statue or a pool. They are obstacles: the dungeon goes around them and does not connect to them. A generated cell that you edit afterwards becomes yours too, so the next Generate keeps it.
+Occupied cells inside the bounds that the last dungeon did not write are yours. Rooms keep the **Gap** away from them, corridors go around them, and Generate and Clear Dungeon never change them. Use this for set pieces such as a statue or a pool. They are obstacles: the dungeon goes around them and does not connect to them; to connect a room you built, put a Built [room box](#room-boxes) around it. A generated cell that you edit afterwards becomes yours too, so the next Generate keeps it.
+
+### Room boxes
+
+A **room box** fixes a room where you put it, and the dungeon is laid out and connected around it: an entrance at the edge of the map, a boss room you built by hand. Room boxes are child nodes of the GridMap (`DungeonRoomBox`), saved with the scene.
+
+- Press **Room Boxes → Add Room Box** in the dialog, or add a `DungeonRoomBox` child to the GridMap with *Add Child Node*. The new box sits in the middle of the bounds at Max Room Size; drag its handles (with the box or the GridMap selected) or move it, and it snaps to cells.
+- **Mode → Generated** (the default) fixes the room's position and size, walls included, and Generate fills it with the room tile set like any other room. Its cells are replaced on every Generate and removed by Clear Dungeon.
+- **Mode → Built** keeps the cells you built inside the box: the dungeon never changes them, and only joins corridors to the **Door** tiles you placed on its wall ring (not in a corner, on its bottom layer). Every door gets a corridor. A Built box without a door is an error.
+- Boxes count towards **Room Count**: with 12 and two boxes, 10 rooms are generated around them. Boxes come first, in child order, so the first box is always room 1, whatever the seed.
+- A box stands on the bottom layer of the bounds, inside them and at least the Margin from their edge, at least 3 × 3 cells, and at least the Gap from other boxes; a Generated box may not cover cells you placed. Generate names a box that breaks a rule and draws it in red.
+- Only enabled direct children count. Untick **Enabled** to leave a box out; the cells of a Built box then are ordinary cells you placed.
+- **Data** on a box (for example `{"role": "boss"}`) is copied to its room in the [dungeon graph](#dungeon-graph) on every Generate, together with the room's `Box` and `IsBuilt`, so a game can find the boss room. Data set on a box survives regenerating; Data set on the graph does not.
+- The status counts the boxes: `Generated 10 rooms (2 room boxes, 1 built), …`. Room boxes are drawn pink (Generated) or orange (Built), in the viewport and in Preview Layout, where generated rooms are cyan.
 
 ### Markers
 
@@ -85,7 +98,7 @@ Generate also stores the dungeon's **graph** on the GridMap, for gameplay: the r
 | Member | Returns |
 |---|---|
 | `Rooms`, `Corridors` | The `DungeonRoom` and `DungeonCorridor` resources. |
-| `DungeonRoom`: `Index`, `Number`, `Position`, `Size`, `CentreCell`, `DoorCells`, `DoorDirections`, `Corridors`, `HasCell(cell)`, `Data` | Footprint in GridMap cells (walls included, `Size.Y` is the room height), its doors with the step out of the room, the indices of its corridors, and a free `Dictionary`. |
+| `DungeonRoom`: `Index`, `Number`, `Position`, `Size`, `CentreCell`, `DoorCells`, `DoorDirections`, `Corridors`, `HasCell(cell)`, `Box`, `IsBuilt`, `Data` | Footprint in GridMap cells (walls included, `Size.Y` is the room height), its doors with the step out of the room, the indices of its corridors, the [room box](#room-boxes) it comes from (its name, empty for a generated room) and whether it is Built, and a free `Dictionary` (a copy of the box's Data for box rooms). |
 | `DungeonCorridor`: `Index`, `RoomA`, `RoomB`, `DoorA`, `DoorB`, `IsTreeEdge`, `Cells`, `Length`, `Other(room)`, `Data` | Its two rooms and their door cells, whether it is a loop, its cells in walking order from door A to door B, and a free `Dictionary`. |
 | `RoomAtCell(cell)`, `RoomAtPosition(grid_map, global_position)` | The room holding a GridMap cell or a global position, or -1. Only X and Z count, since a dungeon has one floor. |
 | `CorridorsAtCell(cell)` | The corridors through a cell (several where corridors meet). |
@@ -203,12 +216,12 @@ Steps 1 to 7 run on a background thread. A room or corridor that cannot be solve
 
 ## Demo
 
-`demo/godoodungeon/dungeon_free.tscn` is an empty 64 × 64 GridMap set up for 20 rooms. `dungeon_obstacles.tscn` is the same with five statues and a pool placed by hand, which the dungeon works around. Select the GridMap, open the dialog and press Generate. Both use the dungeon tile sets in `demo/godoodungeon/assets/`, with torch markers on some walls and corridors and spawn markers in some rooms. `dungeon_graph.tscn` holds a generated 12-room dungeon with its graph; run it (F6) and `graph_demo.gd` reads the graph, takes the two rooms farthest apart as start and goal, marks the shortest way between them and labels every room with its distance from the start. `demo/godoodungeon/tools/build_demo.tscn` rebuilds the MeshLibrary, the tile sets and the three scenes.
+`demo/godoodungeon/dungeon_free.tscn` is an empty 64 × 64 GridMap set up for 20 rooms. `dungeon_obstacles.tscn` is the same with five statues and a pool placed by hand, which the dungeon works around. Select the GridMap, open the dialog and press Generate. Both use the dungeon tile sets in `demo/godoodungeon/assets/`, with torch markers on some walls and corridors and spawn markers in some rooms. `dungeon_graph.tscn` holds a generated 12-room dungeon with its graph; run it (F6) and `graph_demo.gd` reads the graph, takes the two rooms farthest apart as start and goal, marks the shortest way between them and labels every room with its distance from the start. `dungeon_rooms.tscn` has two room boxes: a Built boss room (built from the room tiles, with two doors and Data `{"role": "boss"}`) and a Generated entrance at the left edge; Generate with any seed keeps the boss room and joins both its doors, and running it (F6) marks the way from the farthest room to the boss. `demo/godoodungeon/tools/build_demo.tscn` rebuilds the MeshLibrary, the tile sets and the four scenes.
 
 ## Limitations
 
 - Editor-only. There is no runtime generation yet.
 - One floor: rooms stand on the bottom layer of the bounds, and corridors do not climb.
-- Rooms are rectangles, generated from the room tile set. Cells you place by hand are obstacles; a hand-built room is not connected to the dungeon.
+- Rooms are rectangles. Cells you place by hand are obstacles; to connect a room you built, put a Built [room box](#room-boxes) around it. Room boxes are not rotated and cannot choose which rooms they connect to.
 - No room roles (start, boss, treasure) or progression such as locks and keys. The [dungeon graph](#dungeon-graph) gives the distances to choose them in your own code, and `Data` to store them.
 - 3D `GridMap` only.

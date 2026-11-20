@@ -11,12 +11,13 @@ public static class LayoutValidator
 {
     public const int MinimumRoomSide = 3;
 
-    public static List<string> Validate(LayoutSettings settings)
+    /// <param name="boxes">The number of room boxes; they count as rooms even beyond Room Count (§13.2).</param>
+    public static List<string> Validate(LayoutSettings settings, int boxes = 0)
     {
         var errors = new List<string>();
         if (settings.Bounds.X < 1 || settings.Bounds.Y < 1)
             errors.Add("The bounds are empty. Give them at least one cell on X and Z.");
-        if (settings.RoomCount < 2)
+        if (System.Math.Max(settings.RoomCount, boxes) < 2)
             errors.Add($"Room Count is {settings.RoomCount}. A dungeon needs at least 2 rooms.");
         if (settings.RoomHeight < 1)
             errors.Add($"Room Height is {settings.RoomHeight}. Rooms need at least 1 layer.");
@@ -64,12 +65,19 @@ public static class LayoutGenerator
     /// <param name="attempt">The layout attempt, from 0. A retry after a failed solve uses the next one.</param>
     /// <param name="origin">The GridMap cell of the bounds origin, for messages.</param>
     /// <param name="occupied">Hand-placed cells to avoid, on the layout grid. Null means none.</param>
-    public static DungeonLayout Generate(LayoutSettings settings, long seed, int attempt = 0, Vector3I origin = default, OccupancyGrid occupied = null)
+    /// <param name="boxes">Room boxes (brief §13), in child order; they become the first rooms. Null means none.</param>
+    public static DungeonLayout Generate(LayoutSettings settings, long seed, int attempt = 0, Vector3I origin = default, OccupancyGrid occupied = null,
+        IReadOnlyList<RoomBoxSpec> boxes = null)
     {
-        var layout = new DungeonLayout { Origin = origin };
-        layout.Errors.AddRange(LayoutValidator.Validate(settings));
+        var layout = new DungeonLayout { Origin = origin, RoomHeight = settings.RoomHeight };
+        layout.Errors.AddRange(LayoutValidator.Validate(settings, boxes?.Count ?? 0));
         if (!layout.IsValid)
             return layout;
+        layout.Errors.AddRange(RoomBoxes.Validate(settings, boxes, occupied));
+        if (!layout.IsValid)
+            return layout;
+        if (boxes != null)
+            layout.Boxes.AddRange(boxes);
 
         long layoutSeed = LayoutSeeds.Layout(seed, attempt);
         RoomPlacer.Place(layout, settings, layoutSeed, occupied);

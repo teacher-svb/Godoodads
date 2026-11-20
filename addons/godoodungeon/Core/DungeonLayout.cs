@@ -55,6 +55,24 @@ public sealed class DungeonLayout
     /// <summary>The GridMap cell of the layout grid's (0, 0): the bounds origin. Layout Y is GridMap Z.</summary>
     public Vector3I Origin { get; init; }
 
+    /// <summary>The room boxes (brief §13): rooms 0 to Boxes.Count − 1 are these boxes, in this order; the rest are generated.</summary>
+    public List<RoomBoxSpec> Boxes { get; } = new();
+
+    /// <summary>The height of generated rooms in layers (Room Height).</summary>
+    public int RoomHeight { get; init; } = 1;
+
+    /// <summary>The room box of a room, or null for a generated room.</summary>
+    public RoomBoxSpec BoxOf(int room) => room >= 0 && room < Boxes.Count ? Boxes[room] : null;
+
+    /// <summary>True for a Built room box: not solved, doors given (§13.3).</summary>
+    public bool IsBuilt(int room) => BoxOf(room)?.IsBuilt == true;
+
+    /// <summary>A room's height in layers: its box's, or Room Height.</summary>
+    public int Height(int room) => BoxOf(room)?.Height ?? RoomHeight;
+
+    /// <summary>How messages name a room: "room 3", or "Room box `BossRoom` (room 2)".</summary>
+    public string Describe(int room) => BoxOf(room) is { } box ? RoomBoxes.Label(box, room) : $"room {room + 1}";
+
     /// <summary>The GridMap cell of a layout cell, on the bottom layer of the bounds, for messages.</summary>
     public Vector3I GridCell(Vector2I cell) => new(Origin.X + cell.X, Origin.Y, Origin.Z + cell.Y);
 }

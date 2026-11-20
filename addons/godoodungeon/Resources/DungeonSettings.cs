@@ -52,6 +52,20 @@ public partial class DungeonSettings : Resource
     /// </summary>
     [Export] public bool PreviewLayout { get; set; }
 
+    /// <summary>Raised by the Add Room Box button. The godoodungeon plugin adds a DungeonRoomBox child to the GridMap (brief §13.1).</summary>
+    [Signal] public delegate void AddRoomBoxRequestedEventHandler();
+
+    /// <summary>
+    /// Adds a room box: a child node of the GridMap that fixes a room where you put it. Generated
+    /// boxes are solved like other rooms; Built ones keep the cells you built and get corridors to
+    /// their Door tiles. Boxes count towards Room Count.
+    /// </summary>
+    [ExportGroup("Room Boxes")]
+    [ExportToolButton("Add Room Box", Icon = "Add")]
+    public Callable AddRoomBoxButton => Callable.From(RequestAddRoomBox);
+
+    private void RequestAddRoomBox() => EmitSignal(SignalName.AddRoomBoxRequested);
+
     // ---- Tile sets -------------------------------------------------------------------------
 
     private WfcTileSet _roomTileSet;
@@ -192,6 +206,7 @@ public partial class DungeonSettings : Resource
     public LayoutSettings ToLayoutSettings() => new()
     {
         Bounds = new Vector2I(BoundsSize.X, BoundsSize.Z),
+        BoundsHeight = BoundsSize.Y,
         RoomCount = RoomCount,
         MinRoomSize = MinRoomSize,
         MaxRoomSize = MaxRoomSize,

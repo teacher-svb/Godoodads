@@ -28,6 +28,12 @@ public partial class DungeonRoom : Resource
     /// <summary>The corridors that start or end at this room, as indices in <see cref="DungeonGraph.Corridors"/>.</summary>
     [Export] public int[] Corridors { get; set; } = System.Array.Empty<int>();
 
+    /// <summary>The room box this room comes from, relative to the GridMap (its name), or empty for a generated room (brief §13.4).</summary>
+    [Export] public NodePath Box { get; set; } = new();
+
+    /// <summary>True for a Built room box: you built its cells, the dungeon only joined corridors to its doors.</summary>
+    [Export] public bool IsBuilt { get; set; }
+
     /// <summary>Free data for gameplay, such as <c>{"role": "boss"}</c>. The plugin never reads it; Generate replaces the whole graph.</summary>
     [Export] public Dictionary Data { get; set; } = new();
 

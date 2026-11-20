@@ -12,7 +12,8 @@ public sealed record GraphDoor(int Room, Vector3I Cell, DoorSide Side);
 /// A room of the graph. <see cref="Position"/> is the GridMap cell of its lowest corner and
 /// <see cref="Size"/> its extent in cells, walls included (Y is the room height in layers).
 /// </summary>
-public sealed record GraphRoom(int Index, Vector3I Position, Vector3I Size, IReadOnlyList<int> Doors, IReadOnlyList<int> Corridors)
+public sealed record GraphRoom(int Index, Vector3I Position, Vector3I Size, IReadOnlyList<int> Doors, IReadOnlyList<int> Corridors,
+    string Box = "", bool IsBuilt = false)
 {
     /// <summary>The cell nearest the room's centre on its bottom layer (rounded down on even sizes).</summary>
     public Vector3I CentreCell => new(Position.X + Size.X / 2, Position.Y, Position.Z + Size.Z / 2);
@@ -118,9 +119,11 @@ public sealed class DungeonGraphData
         for (int r = 0; r < layout.Rooms.Count; r++)
         {
             var rect = layout.Rooms[r];
-            rooms.Add(new GraphRoom(r, Cell(rect.Position), new Vector3I(rect.Size.X, Math.Max(roomHeight, 1), rect.Size.Y),
+            var box = layout.BoxOf(r);
+            rooms.Add(new GraphRoom(r, Cell(rect.Position), new Vector3I(rect.Size.X, Math.Max(box?.Height ?? roomHeight, 1), rect.Size.Y),
                 Enumerable.Range(0, doors.Count).Where(d => doors[d].Room == r).ToArray(),
-                corridors.Where(c => c.RoomA == r || c.RoomB == r).Select(c => c.Index).ToArray()));
+                corridors.Where(c => c.RoomA == r || c.RoomB == r).Select(c => c.Index).ToArray(),
+                box?.Name ?? "", box?.IsBuilt == true));
         }
         return new DungeonGraphData(origin, plan.Size, rooms, doors, corridors);
     }

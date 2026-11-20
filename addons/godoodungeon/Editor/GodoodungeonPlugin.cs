@@ -33,6 +33,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     // the first violet as yellow: linear colours are brightened, and the demo scene tonemaps).
     private static readonly Color BoundsColour = new(0.55f, 0.2f, 0.95f);
     private static readonly Color RoomColour = new(0.3f, 0.8f, 1f);
+    private static readonly Color GeneratedBoxColour = new(1f, 0.45f, 0.8f);   // as DungeonRoomBox.BoxColour
+    private static readonly Color BuiltBoxColour = new(1f, 0.6f, 0.25f);
     private static readonly Color DoorColour = new(1f, 0.85f, 0.2f);
     private static readonly Color CorridorColour = new(0.45f, 1f, 0.45f);
     private static readonly Color FailureColour = new(1f, 0.15f, 0.15f);
@@ -56,6 +58,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     private ActiveRun _run;
     private double _sinceProgress;
     private BoundsGizmoPlugin _gizmo;
+    private RoomBoxGizmoPlugin _roomBoxGizmo;
     private MeshInstance3D _overlay;
     private string _overlayState;
     private string _previewKey;
@@ -68,6 +71,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
     /// <summary>Cells where the last Generate failed, drawn in red until the next Generate or dialog open.</summary>
     private Godot.Collections.Array<Vector3I> _failedCells = new();
+
+    /// <summary>Names of room boxes the last errors were about, drawn in red.</summary>
+    private Godot.Collections.Array<string> _failedBoxes = new();
 
     /// <summary>True while the status shows a result the preview should add to rather than replace.</summary>
     private bool _keepStatus;
@@ -87,6 +93,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         AddInspectorPlugin(_dialogFilter);
         _gizmo = new BoundsGizmoPlugin { Owner = this, GizmoName = "godoodungeon bounds" };
         AddNode3DGizmoPlugin(_gizmo);
+        _roomBoxGizmo = new RoomBoxGizmoPlugin();
+        AddNode3DGizmoPlugin(_roomBoxGizmo);
         // Forwarded input reaches this plugin before the GridMap editor, which would take handle drags.
         SetInputEventForwardingAlwaysEnabled();
 
@@ -110,6 +118,11 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _gizmo.Owner = null;
             RemoveNode3DGizmoPlugin(_gizmo);
             _gizmo = null;
+        }
+        if (_roomBoxGizmo != null)
+        {
+            RemoveNode3DGizmoPlugin(_roomBoxGizmo);
+            _roomBoxGizmo = null;
         }
         _menu?.Remove();
         _menu = null;
@@ -198,16 +211,18 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         // A drag whose mouse release was lost (released over the dialog) ends on the settings it started on.
         if (_dragHandle >= 0)
-            CommitBox(_dragOrigin, _dragSize, true);
+            CommitBox(_dragHandle / Directions.Count, _dragOrigin, _dragSize, true);
         _dragHandle = -1;
         _failedSeeds.Clear();
         _failedCells.Clear();
+        _failedBoxes.Clear();
         _keepStatus = false;
         _previewKey = null;
         DisconnectSettings();
         _target = _selected;
         _settings = DungeonSettings.StoredOn(_target) is { } stored ? (DungeonSettings)stored.Duplicate() : new DungeonSettings();
         _settings.Connect(DungeonSettings.SignalName.ClearRequested, new Callable(this, MethodName.OnClearRequested));
+        _settings.Connect(DungeonSettings.SignalName.AddRoomBoxRequested, new Callable(this, MethodName.OnAddRoomBoxRequested));
         _dialog.Edit(_settings);
         _dialog.SetStatus($"Target: {_target.Name}");
         if (_target.MeshLibrary == null)
@@ -225,6 +240,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var onClear = new Callable(this, MethodName.OnClearRequested);
         if (_settings != null && _settings.IsConnected(DungeonSettings.SignalName.ClearRequested, onClear))
             _settings.Disconnect(DungeonSettings.SignalName.ClearRequested, onClear);
+        var onAdd = new Callable(this, MethodName.OnAddRoomBoxRequested);
+        if (_settings != null && _settings.IsConnected(DungeonSettings.SignalName.AddRoomBoxRequested, onAdd))
+            _settings.Disconnect(DungeonSettings.SignalName.AddRoomBoxRequested, onAdd);
     }
 
     private void OnDialogClosed()
@@ -245,6 +263,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         _dialog.ClearStatus();
         _failedCells.Clear();
+        _failedBoxes.Clear();
         _keepStatus = true;
         if (!TargetIsAlive)
         {
@@ -268,7 +287,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
 
         var record = DungeonGridMap.ReadRecord(_target);
         var handPlaced = DungeonGridMap.ReadHandPlaced(_target, _settings.BoundsOrigin, _settings.BoundsSize, record);
-        var job = new DungeonJob(DungeonGridMap.Request(_settings, tileSets, handPlaced));
+        var job = new DungeonJob(DungeonGridMap.Request(_settings, tileSets, handPlaced,
+            DungeonGridMap.ReadRoomBoxes(_target, _settings.BoundsOrigin, _settings.Door)));
         _run = new ActiveRun(job, tileSets, _settings.Seed, previousSeed, Stopwatch.StartNew(), tileSets.Warnings, (DungeonSettings)_settings.Duplicate());
         _sinceProgress = ProgressInterval;
         SetRunning(true);
@@ -300,6 +320,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
                 return;
             case DungeonStatus.Invalid:
                 ReportErrors("The dungeon cannot be generated with these settings.", result.Errors);
+                MarkFailedBoxes(result.Errors);
                 RestoreSeed(run);
                 return;
             case DungeonStatus.InternalError:
@@ -313,6 +334,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             default:
                 Notify.Report(_dialog, $"No layout could be generated in {result.Attempts.Count} attempt(s). The GridMap was not changed.",
                     ToolDialog.Severity.Error);
+                MarkFailedBoxes(result.Attempts.Select(a => a.Message));
                 foreach (var failure in result.Attempts.Take(MaxReportedErrors))
                 {
                     _dialog.AddStatus($"Layout {failure.Attempt + 1}: {failure.Message}", ToolDialog.Severity.Error);
@@ -334,9 +356,9 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var cells = DungeonGridMap.Cells(result, run.TileSets.Room, run.TileSets.Corridor);
         var (changes, record) = DungeonGridMap.Write(_target, previous, cells);
         var stored = run.Settings;
-        var graph = DungeonGridMap.Graph(result);
+        var graph = DungeonGridMap.Graph(result, _target);
         var previousGraph = DungeonGraph.StoredOn(_target);
-        int replacedData = DungeonGridMap.EntriesWithData(previousGraph);
+        int replacedData = DungeonGridMap.EntriesWithData(previousGraph, _target);
 
         var undoRedo = GetUndoRedo();
         undoRedo.CreateAction(ToolName, UndoRedo.MergeMode.Disable, _target);
@@ -359,7 +381,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         KeepPreviewAfterWrite(cellsBefore);
 
         var layout = result.Layout;
-        _dialog.SetStatus($"Generated {layout.Rooms.Count} rooms, {layout.Doors.Count} doors and {result.RouteCount} corridors "
+        _dialog.SetStatus($"Generated {layout.Rooms.Count} rooms{BoxCounts(layout)}, {layout.Doors.Count} doors and {result.RouteCount} corridors "
             + $"in {generated:F1} s, written in {writing.Elapsed.TotalSeconds:F1} s. Seed {run.Seed}.", ToolDialog.Severity.Success);
         if (result.LayoutAttempt > 0)
             _dialog.AddStatus($"Used layout {result.LayoutAttempt + 1}; the earlier one(s) could not be finished: "
@@ -431,6 +453,52 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         }
     }
 
+    /// <summary>
+    /// Adds a Generated room box to the target GridMap, owned by the edited scene, centred in the
+    /// bounds at Max Room Size and Room Height (brief §13.1), as one undo step, and selects it.
+    /// </summary>
+    public void OnAddRoomBoxRequested()
+    {
+        if (!TargetIsAlive || _run != null)
+            return;
+        var (origin, size) = DungeonRoomBox.CentredIn(_settings.BoundsOrigin, _settings.BoundsSize, _settings.MaxRoomSize, _settings.RoomHeight);
+        var box = new DungeonRoomBox { Name = "RoomBox", Origin = origin, Size = size };
+        var root = EditorInterface.Singleton.GetEditedSceneRoot() ?? _target;
+        var undoRedo = GetUndoRedo();
+        undoRedo.CreateAction("Add Room Box", UndoRedo.MergeMode.Disable, _target);
+        undoRedo.AddDoMethod(_target, Node.MethodName.AddChild, box, true);
+        undoRedo.AddDoMethod(box, Node.MethodName.SetOwner, root);
+        undoRedo.AddDoReference(box);
+        undoRedo.AddUndoMethod(_target, Node.MethodName.RemoveChild, box);
+        undoRedo.CommitAction();
+
+        var selection = EditorInterface.Singleton.GetSelection();
+        selection.Clear();
+        selection.AddNode(box);
+        _keepStatus = true;
+        _dialog.SetStatus($"Added {box.Name} (room {HandleBoxes().IndexOf(box) + 1}): cells {origin} to {origin + size - Vector3I.One}. "
+            + "Set its Mode to Built to keep cells you build in it, drag its handles to move its walls.", ToolDialog.Severity.Success);
+    }
+
+    /// <summary>" (2 room boxes, 1 built)", or empty without boxes.</summary>
+    private static string BoxCounts(DungeonLayout layout)
+    {
+        int boxes = layout.Boxes.Count;
+        if (boxes == 0)
+            return "";
+        int built = layout.Boxes.Count(b => b.IsBuilt);
+        return $" ({boxes} room box{(boxes == 1 ? "" : "es")}" + (built > 0 ? $", {built} built)" : ")");
+    }
+
+    /// <summary>Marks the room boxes the messages name, so the overlay draws them in red.</summary>
+    private void MarkFailedBoxes(IEnumerable<string> messages)
+    {
+        var text = string.Join("\n", messages);
+        foreach (var box in HandleBoxes())
+            if (text.Contains($"`{box.Name}`") && !_failedBoxes.Contains(box.Name))
+                _failedBoxes.Add(box.Name);
+    }
+
     /// <summary>Removes the cells the last dungeon wrote, as one undo step. Cells placed or edited by hand stay.</summary>
     public void OnClearRequested()
     {
@@ -470,6 +538,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         int kept = record.Count - cleared;
         _keepStatus = true;
         _failedCells.Clear();
+        _failedBoxes.Clear();
         _dialog.SetStatus($"Cleared {cleared:N0} cells of the dungeon.", ToolDialog.Severity.Success);
         if (kept > 0)
             _dialog.AddStatus($"Kept {kept:N0} dungeon cells you edited since.");
@@ -477,7 +546,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             _dialog.AddStatus($"Removed {markers.Count:N0} markers from {DungeonGridMap.MarkerContainerName}.");
         if (graph != null)
             _dialog.AddStatus($"Removed the dungeon graph from the GridMap's metadata"
-                + (DungeonGridMap.EntriesWithData(graph) > 0 ? ", with its Data. Ctrl+Z brings it back." : "."));
+                + (DungeonGridMap.EntriesWithData(graph, _target) > 0 ? ", with its Data. Ctrl+Z brings it back." : "."));
     }
 
     /// <summary>Do and undo target for GridMap cells.</summary>
@@ -581,7 +650,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         var (min, max) = BoundsGizmoPlugin.Extents(_target, _settings.BoundsOrigin, _settings.BoundsSize);
         UpdatePreview();
         // The run flag is part of the state, so the handles hide when a generation starts and come back after.
-        string state = $"{min}|{max}|{(_settings.PreviewLayout ? _previewKey : "")}|{_run != null}|{string.Join(";", _failedCells)}";
+        string boxes = string.Join(";", HandleBoxes().Select(b => $"{b.Origin}{b.Size}{b.Mode}"));
+        string state = $"{min}|{max}|{boxes}|{(_settings.PreviewLayout ? _previewKey : "")}|{_run != null}|{string.Join(";", _failedCells)}|{string.Join(";", _failedBoxes)}";
         if (state != _overlayState)
             _target.UpdateGizmos();
 
@@ -620,6 +690,12 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             var centre = _target.MapToLocal(cell);
             AddBox(mesh, centre - half * 1.08f, centre + half * 1.08f, FailureColour);
         }
+        foreach (var box in HandleBoxes())
+            if (_failedBoxes.Contains(box.Name))
+            {
+                var (boxMin, boxMax) = BoundsGizmoPlugin.Extents(_target, box.Origin, box.Size);
+                AddBox(mesh, boxMin - half * 0.1f, boxMax + half * 0.1f, FailureColour);
+            }
         mesh.SurfaceEnd();
         UpdateRoomLabels(_settings.PreviewLayout ? _preview?.Layout : null);
     }
@@ -661,7 +737,8 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     }
 
     /// <summary>The settings Preview Layout depends on. The GridMap's cells are in the key too, see <see cref="UpdatePreview"/>.</summary>
-    private string PreviewKey() => string.Join("|", _settings.BoundsOrigin, _settings.BoundsSize, _settings.RoomCount, _settings.MinRoomSize,
+    private string PreviewKey() => string.Join("|", string.Join(";", HandleBoxes().Select(b => $"{b.Name}{b.Origin}{b.Size}{b.Mode}")),
+        _settings.Door, _settings.BoundsOrigin, _settings.BoundsSize, _settings.RoomCount, _settings.MinRoomSize,
         _settings.MaxRoomSize, _settings.RoomHeight, _settings.Gap, _settings.Margin, _settings.WallClearance, _settings.ExtraConnections,
         _settings.MaxDoorsPerRoom, _settings.PathWander, _settings.Seed, _settings.LayoutAttempts, _settings.AttemptsPerRoom);
 
@@ -716,8 +793,11 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             LayoutAttempts = _settings.LayoutAttempts,
             PathWander = _settings.PathWander,
             HandPlaced = DungeonGridMap.ReadHandPlaced(_target, _settings.BoundsOrigin, _settings.BoundsSize, record),
+            RoomBoxes = DungeonGridMap.ReadRoomBoxes(_target, _settings.BoundsOrigin, _settings.Door),
         };
         _preview = DungeonPreview.Plan(request);
+        _failedBoxes.Clear();
+        MarkFailedBoxes(_preview.Errors.Concat(_preview.Failures.Select(f => f.Message)));
         if (_run != null)
             return;
         // Right after a result (or a seed put back after a failure), add the preview below it.
@@ -731,7 +811,7 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
                 _dialog.SetStatus(text, severity);
         }
         if (_preview.IsValid)
-            Line($"Preview: {_preview.Layout.Rooms.Count} rooms, {_preview.Layout.Doors.Count} doors, {_preview.Corridors.RouteCount} corridors"
+            Line($"Preview: {_preview.Layout.Rooms.Count} rooms{BoxCounts(_preview.Layout)}, {_preview.Layout.Doors.Count} doors, {_preview.Corridors.RouteCount} corridors"
                 + (_preview.LayoutAttempt > 0 ? $" (layout {_preview.LayoutAttempt + 1})" : "") + $". Seed {_settings.Seed}.");
         else
             Line("Preview: " + string.Join(" ", _preview.Errors.Concat(_preview.Failures.Select(f => $"Layout {f.Attempt + 1}: {f.Message}"))),
@@ -745,11 +825,13 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     {
         var origin = _settings.BoundsOrigin;
         var cell = _target.CellSize;
-        foreach (var room in layout.Rooms)
+        for (int r = 0; r < layout.Rooms.Count; r++)
         {
+            var room = layout.Rooms[r];
             var (min, max) = BoundsGizmoPlugin.Extents(_target, layout.GridCell(room.Position),
-                new Vector3I(room.Size.X, _settings.RoomHeight, room.Size.Y));
-            AddBox(mesh, min + cell * 0.04f, max - cell * 0.04f, RoomColour);
+                new Vector3I(room.Size.X, layout.Height(r), room.Size.Y));
+            var colour = layout.BoxOf(r) is { } box ? (box.IsBuilt ? BuiltBoxColour : GeneratedBoxColour) : RoomColour;
+            AddBox(mesh, min + cell * 0.04f, max - cell * 0.04f, colour);
         }
         foreach (var door in layout.Doors)
         {
@@ -809,26 +891,29 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
         {
             // A drag that loses its target (deselected, dialog closed, generation started) is cancelled.
             if (_dragHandle >= 0)
-                CommitBox(_dragOrigin, _dragSize, true);
+                CommitBox(_dragHandle / Directions.Count, _dragOrigin, _dragSize, true);
             _dragHandle = -1;
             return pass;
         }
 
         if (_dragHandle >= 0)
         {
+            int box = _dragHandle / Directions.Count;
             switch (@event)
             {
                 case InputEventMouseMotion motion:
-                    var (origin, size) = BoundsGizmoPlugin.DragFace(map, viewportCamera, motion.Position, _dragHandle, BoxOrigin(0), BoxSize(0));
-                    SetBox(origin, size);
+                    bool room = box > 0 && _dragRoomBox != null && IsInstanceValid(_dragRoomBox);
+                    var (origin, size) = BoundsGizmoPlugin.DragFace(map, viewportCamera, motion.Position, _dragHandle % Directions.Count,
+                        room ? _dragRoomBox.Origin : BoxOrigin(box), room ? _dragRoomBox.Size : BoxSize(box));
+                    SetBox(box, origin, size);
                     return stop;
                 case InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false }:
-                    CommitBox(_dragOrigin, _dragSize, false);
+                    CommitBox(box, _dragOrigin, _dragSize, false);
                     _dragHandle = -1;
                     return stop;
                 case InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true }:
                 case InputEventKey { Keycode: Key.Escape, Pressed: true }:
-                    CommitBox(_dragOrigin, _dragSize, true);
+                    CommitBox(box, _dragOrigin, _dragSize, true);
                     _dragHandle = -1;
                     return stop;
             }
@@ -841,29 +926,33 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
             if (handle < 0)
                 return pass;
             _dragHandle = handle;
-            _dragOrigin = BoxOrigin(0);
-            _dragSize = BoxSize(0);
+            _dragRoomBox = RoomBoxAt(handle / Directions.Count);
+            _dragOrigin = BoxOrigin(handle / Directions.Count);
+            _dragSize = BoxSize(handle / Directions.Count);
             return stop;
         }
         return pass;
     }
 
-    /// <summary>The face of the bounds whose handle is under the mouse, or -1.</summary>
+    /// <summary>The handle id (box × 6 + face) under the mouse, or -1. The nearest one wins when handles overlap.</summary>
     private int HandleAt(GridMap map, Camera3D camera, Vector2 mouse)
     {
         int best = -1;
         float bestDistance = HandleRadius;
-        var positions = BoundsGizmoPlugin.HandlePositions(map, BoxOrigin(0), BoxSize(0));
-        for (int direction = 0; direction < Directions.Count; direction++)
+        for (int box = 0; box < BoxCount; box++)
         {
-            var world = map.GlobalTransform * positions[direction];
-            if (camera.IsPositionBehind(world))
-                continue;
-            float distance = camera.UnprojectPosition(world).DistanceTo(mouse);
-            if (distance < bestDistance)
+            var positions = BoundsGizmoPlugin.HandlePositions(map, BoxOrigin(box), BoxSize(box));
+            for (int direction = 0; direction < Directions.Count; direction++)
             {
-                bestDistance = distance;
-                best = direction;
+                var world = map.GlobalTransform * positions[direction];
+                if (camera.IsPositionBehind(world))
+                    continue;
+                float distance = camera.UnprojectPosition(world).DistanceTo(mouse);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = box * Directions.Count + direction;
+                }
             }
         }
         return best;
@@ -875,18 +964,36 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     /// </summary>
     public GridMap HandleTarget => _dialog != null && _dialog.Visible && _run == null && TargetIsAlive ? _target : null;
 
-    public int BoxCount => 1;
+    // Box 0 is the bounds; boxes 1 to n are the enabled room box children in child order (§13.5).
+    public int BoxCount => 1 + HandleBoxes().Count;
 
-    public bool BoxVisible(int box) => box == 0;
+    public bool BoxVisible(int box) => box < BoxCount;
 
-    public Vector3I BoxOrigin(int box) => _settings.BoundsOrigin;
+    public Vector3I BoxOrigin(int box) => box == 0 ? _settings.BoundsOrigin : RoomBoxAt(box)?.Origin ?? Vector3I.Zero;
 
-    public Vector3I BoxSize(int box) => _settings.BoundsSize;
+    public Vector3I BoxSize(int box) => box == 0 ? _settings.BoundsSize : RoomBoxAt(box)?.Size ?? Vector3I.Zero;
 
-    /// <summary>Changes the bounds while a handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
-    private void SetBox(Vector3I origin, Vector3I size)
+    private DungeonRoomBox _dragRoomBox;
+
+    private List<DungeonRoomBox> HandleBoxes() => TargetIsAlive ? GridMapBox.ActiveChildren<DungeonRoomBox>(_target) : new List<DungeonRoomBox>();
+
+    /// <summary>The room box with handle box number <paramref name="box"/> (1 for the first), or null.</summary>
+    private DungeonRoomBox RoomBoxAt(int box)
     {
-        _settings.SetBounds(origin, size);
+        var boxes = HandleBoxes();
+        return box >= 1 && box <= boxes.Count ? boxes[box - 1] : null;
+    }
+
+    /// <summary>Changes a box while its handle is dragged. Undo is added in <see cref="CommitBox"/>.</summary>
+    private void SetBox(int box, Vector3I origin, Vector3I size)
+    {
+        if (box == 0)
+            _settings.SetBounds(origin, size);
+        else if (_dragRoomBox != null && IsInstanceValid(_dragRoomBox))
+        {
+            _dragRoomBox.Origin = origin;
+            _dragRoomBox.Size = size;
+        }
         if (TargetIsAlive)
             _target.UpdateGizmos();
     }
@@ -896,14 +1003,30 @@ public partial class GodoodungeonPlugin : EditorPlugin, ISerializationListener, 
     /// targets the settings resource that was dragged, so undoing it after the dialog was opened for
     /// another GridMap leaves that GridMap's settings alone.
     /// </summary>
-    private void CommitBox(Vector3I origin, Vector3I size, bool cancel)
+    private void CommitBox(int box, Vector3I origin, Vector3I size, bool cancel)
     {
         if (cancel)
         {
-            SetBox(origin, size);
+            SetBox(box, origin, size);
+            _dragRoomBox = null;
             return;
         }
         var undoRedo = GetUndoRedo();
+        if (box > 0)
+        {
+            // A room box drag is one undo step on the node, not on the settings (§13.5).
+            var node = _dragRoomBox;
+            _dragRoomBox = null;
+            if (node == null || !IsInstanceValid(node))
+                return;
+            undoRedo.CreateAction("Resize Room Box", UndoRedo.MergeMode.Disable, node);
+            undoRedo.AddDoProperty(node, GridMapBox.PropertyName.Origin, node.Origin);
+            undoRedo.AddDoProperty(node, GridMapBox.PropertyName.Size, node.Size);
+            undoRedo.AddUndoProperty(node, GridMapBox.PropertyName.Origin, origin);
+            undoRedo.AddUndoProperty(node, GridMapBox.PropertyName.Size, size);
+            undoRedo.CommitAction(false);
+            return;
+        }
         undoRedo.CreateAction("Resize Dungeon Bounds");
         undoRedo.AddDoMethod(_settings, DungeonSettings.MethodName.SetBounds, _settings.BoundsOrigin, _settings.BoundsSize);
         undoRedo.AddUndoMethod(_settings, DungeonSettings.MethodName.SetBounds, origin, size);

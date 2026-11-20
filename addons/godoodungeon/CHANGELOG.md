@@ -2,6 +2,16 @@
 
 All notable changes to godoodungeon are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.0] - 2026-11-20
+
+### Added
+- **Room boxes** (`DungeonRoomBox`): child nodes of the GridMap that fix a room where you put it; the dungeon is laid out and connected around them. **Generated** boxes fix a room's position and size and are filled with the room tile set; **Built** boxes keep the cells you built and get a corridor to every Door tile on their wall ring. Boxes count towards Room Count and are always the first rooms, so their numbers do not change between seeds. Add one with **Room Boxes → Add Room Box** or *Add Child Node*; drag its handles with the box or the GridMap selected. Errors name the box and draw it in red; the status counts the boxes; Preview Layout draws them per mode.
+- **The dungeon graph knows the boxes:** `DungeonRoom.Box` and `IsBuilt`, and a box's **Data** is copied to its room on every Generate, so it survives regenerating.
+- A room box demo: `demo/godoodungeon/dungeon_rooms.tscn`, with a Built boss room and a Generated entrance; `graph_demo.gd` heads for a room whose Data says `boss`.
+
+### Changed
+- godoodungeon now needs the shared box node of godoowave 1.5 (`editor_tools_common/Nodes/`), which its zip contains. Installed next to godoowave, use godoowave 1.5 or later.
+
 ## [1.1.0] - 2026-11-20
 
 ### Added

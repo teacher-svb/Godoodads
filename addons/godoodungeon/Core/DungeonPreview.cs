@@ -19,16 +19,19 @@ public static class DungeonPreview
 {
     public static PreviewResult Plan(DungeonRequest request)
     {
-        var errors = LayoutValidator.Validate(request.Layout);
+        var errors = LayoutValidator.Validate(request.Layout, request.RoomBoxes.Count);
         if (errors.Count > 0)
             return new PreviewResult(null, null, 0, Array.Empty<AttemptFailure>(), errors);
 
         var occupied = DungeonJob.OccupiedGrid(request);
+        var boxErrors = RoomBoxes.Validate(request.Layout, request.RoomBoxes, occupied);
+        if (boxErrors.Count > 0)
+            return new PreviewResult(null, null, 0, Array.Empty<AttemptFailure>(), boxErrors);
         var failures = new List<AttemptFailure>();
         DungeonLayout layout = null;
         for (int attempt = 0; attempt < Math.Max(1, request.LayoutAttempts); attempt++)
         {
-            layout = LayoutGenerator.Generate(request.Layout, request.Seed, attempt, request.Origin, occupied);
+            layout = LayoutGenerator.Generate(request.Layout, request.Seed, attempt, request.Origin, occupied, request.RoomBoxes);
             if (!layout.IsValid)
             {
                 failures.Add(new AttemptFailure(attempt, string.Join(" ", layout.Errors)));
