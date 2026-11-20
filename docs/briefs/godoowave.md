@@ -5,7 +5,7 @@
 *Called WFC Generator up to 1.3.4, in `addons/wfc_generator/`; renamed to godoowave in 1.4.0 (§15). Sections before §15 use the old name where they record history.*
 
 **Decisions by:** the board (Syndias)
-**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2.0 (§12) adds boundary sockets, height curves, viewport handles, pinning and marker tiles. 1.4.0 (§15) is the rename to godoowave; the 2D adapter (§14) follows in 1.5.
+**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2.0 (§12) adds boundary sockets, height curves, viewport handles, pinning and marker tiles. 1.4.0 (§15) is the rename to godoowave. 1.5.0 (§16) replaces the pin box with pin box nodes; the 2D adapter (§14) follows in 1.6.
 **Reference material:** none. The demo tileset is created for this project.
 
 ---
@@ -348,16 +348,16 @@ Both came with godoodungeon (dungeon brief) on 2026-11-15, tracked under the lab
 
 ---
 
-### 14. Release 1.5
+### 14. Release 1.6
 
-Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. It was planned as 1.4 and moved to 1.5 on 2026-11-15, when 1.4.0 became the rename (§15). Tracked under the label `v1.5.0`. Everything is additive: 1.3 tile sets and scenes keep working unchanged.
+Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. It was planned as 1.4, moved to 1.5 on 2026-11-15, when 1.4.0 became the rename (§15), and to 1.6 on 2026-11-20, when 1.5.0 became pin box nodes (§16). Tracked under the label `v1.6.0`. Everything is additive: 1.5 tile sets and scenes keep working unchanged.
 
 #### 14.1 2D TileMapLayer adapter
 
 - New resources **`WfcTile2D`** (atlas source id, atlas coordinates, alternative tile, sockets on the four edges, Rotation, **Mirror**, Weight, Marker) and **`WfcTileSet2D`** (a `TileSet` and the tiles). The 3D resources do not change. Core is shared, and the 2D grid is the existing X/Z grid with +Z = down.
 - **Mirror** (none, horizontal, vertical, both) adds mirrored variants next to the rotations. Mirroring swaps `+` and `-` on every one-sided socket. Rotations and mirrors are written as the `TileMapLayer` flip and transpose flags.
 - Selecting a `TileMapLayer` shows a **Generate WFC (GDDS)** button in the 2D editor toolbar. It opens the same dialog, which shows only the settings that apply in 2D (no height, no top and bottom boundary, no height curves).
-- Everything else works as in 3D: fixed cells, unknown cells, undo, cancel, failure messages, weights, the generated record and regenerate, the pin box, bounds and pin box handles in the 2D viewport, boundary sockets per edge, markers (Node2D scenes in a `WfcMarkers` child) and guided paths (§13.3).
+- Everything else works as in 3D: fixed cells, unknown cells, undo, cancel, failure messages, weights, the generated record and regenerate, pin box nodes (`WfcPinBox2D`, a `Node2D` child of the `TileMapLayer`, §16), bounds and pin box handles in the 2D viewport, boundary sockets per edge, markers (Node2D scenes in a `WfcMarkers` child) and guided paths (§13.3).
 - The inspector shows a 2D tile set preview with the same parts as the 3D one, including socket editing and measured shares.
 - The facts this relies on (flip and transpose flags, metadata on `TileMapLayer`, the 2D toolbar and viewport input) are checked first and recorded on the first 2D card.
 
@@ -365,7 +365,7 @@ Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own 
 
 - A new top-down 2D demo. Its atlas is drawn by the demo builder. It has one-sided shore edges, mirrored tiles, a path, and a marker.
 
-#### 14.3 Not in 1.5
+#### 14.3 Not in 1.6
 
 Suggesting sockets from Godot terrain sets stays in the README backlog. Region weight masks and multi-cell tiles stay in *WFC 2.0*.
 
@@ -380,3 +380,66 @@ Requested on 2026-11-15, to match the `godoo<name>` scheme of godoodungeon. Trac
 - godoodungeon keeps checking `addons/wfc_generator/plugin.cfg` for versions before 1.3.3, and its warning names godoowave as the replacement.
 - The dialog size is stored under `godoowave_dialog_size`, so the dialog opens at its default size once.
 - Updating needs the old folder deleted and **godoowave** enabled in the plugin list (README, CHANGELOG).
+
+---
+
+### 16. Release 1.5: pin box nodes
+
+Requested by the board on 2026-11-20. The single pin box in `WfcSettings` and its Pin and Unpin buttons (§12.3) are replaced by **pin box nodes**: children of the GridMap, as many as you like, whose cells Generate and Clear never change. Tracked under the label `v1.5.0`. The 2D adapter moves to 1.6 (§14).
+
+Decisions (board, 2026-11-20):
+- A pin box protects everything inside it: occupied cells stay and constrain their neighbours, and **empty cells stay empty**.
+- **No migration.** The old pin box and the pin flags in the generated record are dropped. Cells pinned with 1.2–1.4 are ordinary generated cells again, so the next Generate replaces them unless a pin box node covers them. CHANGELOG and README say so.
+- **Clear never touches pin boxes:** Clear Bounds and Clear Bounds First keep the cells in every enabled pin box, with or without Keep Placed Cells. To free them, disable or delete the box.
+
+#### 16.1 The pin box node
+
+- New node **`WfcPinBox`** (`[Tool, GlobalClass]`, a `Node3D`) in `addons/godoowave/Nodes/`, outside `#if TOOLS`, since scenes save it. It has no runtime behaviour.
+- **Shared base** (decided 2026-11-20, with godoodungeon room boxes, dungeon brief §13): Origin, Size, Enabled, the transform sync and the configuration warning live in a base node class **`GridMapBox`** in `addons/editor_tools_common/Nodes/` (namespace `Godoodads.Common`, not a `[GlobalClass]`, so it is not offered in *Add Child Node*), with a shared gizmo plugin that draws and drags any `GridMapBox` and takes its colour from the subclass. `WfcPinBox` and `DungeonRoomBox` derive from it. Settling the script paths now avoids legacy classes later (CONVENTIONS.md).
+- Exports: **Origin** and **Size** (`Vector3I`, GridMap cells, like the bounds) and **Enabled** (default on). Only direct children of the GridMap count. A disabled box, or one with a zero size, does nothing. Boxes may overlap each other and stick out of the bounds; only their cells inside the bounds matter.
+- The node's position follows Origin (the box's minimum corner), so it sits where it shows. Moving the node with the move tool snaps Origin to the nearest cell; rotation and scale are ignored and reset. If the transform cannot be kept in sync reliably (checked first, 16.6), the transform is locked and only the handles move the box.
+- The dialog's **Pin Boxes** group has an **Add Pin Box** button: it adds a `WfcPinBox` child owned by the scene, centred in the bounds at half their X and Z size and their full height, selects it, and is one undo step. Adding the node with *Add Child Node* works too (Origin 0, Size 4 × 1 × 4).
+
+#### 16.2 Generate and Clear
+
+- Every bounds cell inside an enabled pin box is out of the solve. An occupied cell with a variant is fixed (as hand-placed cells are), an occupied cell without one is excluded (as today), and an empty cell is **excluded**: it stays empty and puts no constraint on its neighbours, as excluded cells do in godoodungeon's corridor solve.
+- Generated cells inside a pin box stay in the generated record as generated, so after the box is disabled, moved or deleted, the next Generate replaces them. Edited and hand-placed cells inside behave as outside.
+- Clear Bounds, and Clear Bounds First before a solve, keep every cell in an enabled pin box, and their record entries.
+- Guided paths (§13.3): path cells in a pin box are placed cells, so they are endpoints, as pinned cells were.
+- Markers (§12.4) on cells in a pin box stay.
+- The status reports the cells kept by pin boxes ("312 cells in 3 pin boxes kept").
+- Determinism: the same settings, seed, placed cells and pin boxes give the same cells.
+
+#### 16.3 Handles and outlines
+
+- **GridMap selected, dialog open:** the bounds handles, plus the outline (in the pin colour) and six face handles of every enabled pin box child, numbered after the bounds in child order. A drag is one undo step on that `WfcPinBox` node (Origin and Size), not on the settings. During a solve there are no handles, as today.
+- **A pin box selected**, dialog open or not: a gizmo plugin for `WfcPinBox` (its own entry in the viewport's gizmo menu, *godoowave pin boxes*) shows that box's six face handles only, snapped to cells, with Godot's own handle API (`_SetHandle`, `_CommitHandle`): the GridMap editor does not take input while a child is selected. The gizmo draws the outline of every pin box, selected or not, so pinned areas stay visible; the gizmo menu hides them.
+- A pin box whose parent is not a GridMap draws a warning (`_GetConfigurationWarnings`) and no handles.
+
+#### 16.4 Removed
+
+- `WfcSettings.PinOrigin`, `PinSize`, *Place Around Bounds*, *Pin Generated Cells*, *Unpin* and the `PinRequested` signal; box 1 of `SetBox`/`BoxOrigin`/`BoxSize`.
+- `GridMapCells.Pin`, `GeneratedRecord.SetPinnedInside` and `IsPinned`, the `clearPins` and `keepPinned` parameters and the `Pinned`/`ClearedPins` counts. The record format keeps its pinned bit for reading old records, which is ignored, and writes it as 0, so godoodungeon records (which never set it) are unchanged.
+- Saved settings from 1.4 with `PinOrigin` and `PinSize` load without errors (checked first, 16.6; a fixture from 1.4.x keeps checking it).
+
+#### 16.5 Shared code
+
+- `editor_tools_common` is replaced by the newest copy when two addons are installed, so `BoundsGizmoPlugin` and `IBoundsBoxes` keep their API: godoodungeon 1.x keeps working with the 1.5 copy. Changes to `GridMapCells` and `GeneratedRecord` keep the methods godoodungeon calls.
+- `GridMapBox` and its gizmo plugin are new shared code that godoodungeon 1.2 builds on (room boxes). They keep their API from 1.5 on.
+- godoodungeon does not read pin boxes (its hand-placed cells already cover this; room boxes come in godoodungeon 1.2).
+
+#### 16.6 Facts checked first
+
+On the first 1.5 card, in the editor:
+1. Gizmo handles on a selected `WfcPinBox` child of a GridMap can be dragged (the GridMap editor does not take the input).
+2. Keeping the transform in sync with Origin (`NotificationTransformChanged` in a `[Tool]` node, snapping, undo of a move) works, or the lock fallback is chosen.
+3. A 1.4 `WfcSettings` with `PinOrigin`/`PinSize` and a record with pinned bits load and generate without errors.
+4. The node survives an assembly reload (`[Tool]`, parameterless constructor, no C# events; CONVENTIONS.md).
+
+#### 16.7 Demo
+
+- The hillside ruin demo gets two pin boxes, one around the ruin and one around an empty clearing, built by `demo/godoowave/tools/build_demo.tscn`.
+
+#### 16.8 Not in 1.5
+
+Pin boxes in godoodungeon, non-box pin shapes, rotated pin boxes, and pin boxes in 2D (they come with the 2D adapter in 1.6).

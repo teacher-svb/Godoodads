@@ -48,7 +48,7 @@ Conventions, layout and test commands: [CONVENTIONS.md](CONVENTIONS.md). Progres
 
 ### godoowave
 
-The 2D `TileMapLayer` adapter is planned for 1.5 (label `v1.5.0`). Region weights and multi-cell tiles are idea cards labelled `v2.0.0`. Not planned yet:
+Pin box nodes are planned for 1.5 (label `v1.5.0`), the 2D `TileMapLayer` adapter for 1.6 (label `v1.6.0`). Region weights and multi-cell tiles are idea cards labelled `v2.0.0`. Not planned yet:
 
 - Runtime (in-game) generation
 - Streaming, chunks and infinite grids (needs a brief; would also help hard tile sets at large sizes)
@@ -61,7 +61,7 @@ The 2D `TileMapLayer` adapter is planned for 1.5 (label `v1.5.0`). Region weight
 
 ### godoodungeon
 
-1.1.0 adds the dungeon graph for gameplay (label `v1.1.0`). Multiple floors, room stamps (hand-built rooms placed by the layout) and room roles with progression are idea cards labelled `v2.0.0`; the board decides after feedback on 1.0.0 (brief §9). Not planned yet:
+1.1.0 adds the dungeon graph for gameplay (label `v1.1.0`), 1.2.0 room boxes: rooms fixed where you place them, generated or hand-built (label `v1.2.0`, brief §13). Multiple floors, room stamps (hand-built rooms placed by the layout) and room roles with progression are idea cards labelled `v2.0.0`; the board decides after feedback on 1.0.0 (brief §9). Not planned yet:
 
 - Runtime (in-game) generation
 - Non-rectangular rooms, and other layouts (BSP, caves)
