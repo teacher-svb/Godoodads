@@ -1,13 +1,13 @@
 ---
 id: "dgn-1-1-graph-write-2026-11-20"
-status: "review"
+status: "done"
 priority: "high"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-20T10:00:00.000Z"
-modified: "2026-11-20T17:00:00.000Z"
-completedAt: null
+modified: "2026-11-20T21:30:00.000Z"
+completedAt: "2026-11-20T21:30:00.000Z"
 labels: ["v1.1.0", "adapters", "editor"]
 order: "g4"
 ---
@@ -35,3 +35,6 @@ Build, **focus the Godot window** so it reloads the assembly, then:
 3. Set `Data` on a room (e.g. `role` = `boss`), Generate again: the warning names 1 entry; Ctrl+Z restores the room's Data.
 4. Clear Dungeon: graph removed from metadata; Ctrl+Z brings it back.
 5. Save the scene, reopen: graph still there.
+
+## Board check (2026-11-20)
+Passed at the release review: status line, metadata, undo/redo of Generate, Data warning with restore by undo, Clear Dungeon and its undo, save and reopen.

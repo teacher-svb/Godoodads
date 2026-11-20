@@ -1,13 +1,13 @@
 ---
 id: "dgn-1-1-preview-labels-2026-11-20"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-20T10:00:00.000Z"
-modified: "2026-11-20T21:00:00.000Z"
-completedAt: null
+modified: "2026-11-20T21:30:00.000Z"
+completedAt: "2026-11-20T21:30:00.000Z"
 labels: ["v1.1.0", "editor", "ui"]
 order: "g5"
 ---
@@ -33,3 +33,6 @@ Build, focus Godot, then open the dialog on `demo/godoodungeon/dungeon_graph.tsc
 
 ## Release review finding (2026-11-20)
 Board: after Ctrl+Z of a Generate the map shows the previous dungeon, but Preview Layout (with its numbers) still shows the undone one. Cause: undo restored the stored settings, not the open dialog's Seed (since 1.0.x). **Decision (board):** undo/redo restore the Seed only. `ApplySeed` do/undo step in the Generate action: do = the run's seed, undo = the previous stored settings' seed (or the seed before a randomised first Generate); applies only while the dialog edits that GridMap. README and CHANGELOG (1.1.0, Changed) updated. Builds, headless editor load clean; needs the manual re-check.
+
+## Board check (2026-11-20)
+Passed at the re-check after the Seed fix: numbers follow undo/redo, readable, removed with the preview, not saved, no errors after a rebuild.
