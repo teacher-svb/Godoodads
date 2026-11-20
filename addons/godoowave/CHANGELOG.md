@@ -2,7 +2,7 @@
 
 All notable changes to godoowave (called WFC Generator up to 1.3.4) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
-## [1.5.0] - 2026-11-21
+## [1.5.0] - 2026-11-20
 
 ### Added
 - **Pin boxes** (`WfcPinBox`): child nodes of the GridMap, as many as you like, whose cells Generate and Clear never change. Occupied cells inside stay and constrain their neighbours, and empty cells stay empty. Add one with **Pin Boxes → Add Pin Box** in the dialog or with *Add Child Node*; resize it with the dots on its faces, with the GridMap or the box selected, and move it with the move tool (it snaps to cells). Untick Enabled or delete a box to let Generate replace its cells. The status reports the cells the pin boxes kept.

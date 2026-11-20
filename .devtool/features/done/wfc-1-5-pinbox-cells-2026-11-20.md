@@ -6,8 +6,8 @@ assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-20T13:00:00.000Z"
-modified: "2026-11-21T01:00:00.000Z"
-completedAt: "2026-11-21T01:00:00.000Z"
+modified: "2026-11-20T01:00:00.000Z"
+completedAt: "2026-11-20T01:00:00.000Z"
 labels: ["v1.5.0", "core", "adapters"]
 order: "d2"
 ---
@@ -21,7 +21,7 @@ Brief: §16.2, §16.4, §16.5.
 - Core tests: fixed/excluded per cell for boxes overlapping each other and the bounds; record entries kept inside boxes and replaced after the box goes; old records with pinned bits decode, and pinned cells are free; Clear keeps box cells in both modes; determinism with boxes.
 - Engine tests: regenerate and path tests updated (pinned cells as path endpoints become pin box cells); godoodungeon tests still pass.
 
-## Results (2026-11-21)
+## Results (2026-11-20)
 - **Core:** `CellBox` (Origin, Size, `Contains`, `AnyContains`). `GeneratedRecord` holds (Item, Orientation) only: `IsPinned`, `SetPinnedInside` and the `pinned` parameter are gone, `RemoveInside` takes boxes to keep, reading drops the 0x80 bit and writing never sets it (byte-identical to a pin-free 1.4 record, so godoodungeon records are unchanged).
 - **Adapters (`GridMapCells`):** `ReadFixed(…, pinBoxes, keepPlaced)`: cells in boxes are fixed or excluded when occupied and excluded when empty; `keepPlaced: false` frees every other occupied cell (Clear Bounds First, Keep Placed Cells off), which replaces `AllFree` there. `RecordAfter(…, pinBoxes)` keeps entries in boxes; `Clear(…, pinBoxes)` and `RecordAfterClear(…, pinBoxes)` keep box cells and entries in both modes. `Pin`, `clearPins`, `Pinned`, `ClearedPins` removed; `FixedCells.PinBoxCells` and `ClearedCells.PinBoxCells` count the bounds cells inside boxes. Methods godoodungeon calls (`Apply`, `Set`, `Matches`, `Contains`, `Cells`, `Encode`, `Decode`) keep their signatures.
 - **Needed here to keep the build green (overlaps `wfc-1-5-pinbox-dialog`):** `WfcSettings` loses the Pin Box group (`PinOrigin`, `PinSize`, Place Around Bounds, Pin Generated Cells, Unpin, `PinRequested`); `BoxOrigin`/`BoxSize`/`SetBox` are the bounds only. The plugin collects `GridMapBox.ActiveChildren<WfcPinBox>` for Generate and Clear, drops `OnPinRequested`, the old pin outline and box 1 of the handles, and reports "Kept N cells in M pin boxes as they were." The dialog card adds Add Pin Box and handles for box children with the GridMap selected.
