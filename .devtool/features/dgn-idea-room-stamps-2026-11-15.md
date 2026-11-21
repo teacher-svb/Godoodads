@@ -6,7 +6,7 @@ assignee: null
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-20T14:10:00.000Z"
+modified: "2026-11-20T19:00:00.000Z"
 completedAt: null
 labels: ["v2.0.0", "idea"]
 order: "c2"
@@ -32,3 +32,7 @@ The designer places a room at a fixed spot in the GridMap and the dungeon is gen
 - It is skipped by the room solve (its cells are kept as placed), or solved with all its cells pinned.
 - It is a node in the room graph, so `CorridorRouter` joins its doors like any other room's.
 - Open: how the designer marks a room as fixed (a box in `DungeonSettings`, a marker node, or a cell box read from the GridMap), and whether its cells belong to the dungeon record (Clear Dungeon keeps them either way).
+
+## Check against 1.1 and 1.2 (2026-11-20)
+- **Covered by 1.2 Built room boxes:** a hand-built room at a fixed place joined to the dungeon (every Door tile on its wall ring gets a corridor; Generate and Clear keep its cells; any interior inside a rectangle).
+- **Left for 2.0:** stamps placed by the layout: a reusable room template (another scene or GridMap) that the generator positions, rotates (GridMap orientations) and may use more than once per dungeon. Room boxes stay where placed and are not rotated (brief §13.8).

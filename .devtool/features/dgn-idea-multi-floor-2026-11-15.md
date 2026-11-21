@@ -6,7 +6,7 @@ assignee: null
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-15T11:00:00.000Z"
-modified: "2026-11-15T19:15:47.000Z"
+modified: "2026-11-20T19:00:00.000Z"
 completedAt: null
 labels: ["v2.0.0", "idea"]
 order: "c1"
@@ -22,3 +22,6 @@ Rooms at different heights in one dungeon, joined by corridors that climb with s
 
 ## Decision (2026-11-15, M4 review)
 Not in 1.x for now: ship godoodungeon 1.0.0 first and decide after feedback. Stays in `v2.0.0`.
+
+## Check against 1.1 and 1.2 (2026-11-20)
+Not covered. Room boxes (1.2) must stand on the bounds' bottom layer; a box may be taller than Room Height, which gives a tall room, not a second floor. Corridors still stay on the bottom layer.
