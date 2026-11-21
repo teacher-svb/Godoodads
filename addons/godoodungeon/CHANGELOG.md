@@ -2,6 +2,11 @@
 
 All notable changes to godoodungeon are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.2.1] - 2026-11-21
+
+### Changed
+- **A room box's node sits at the centre of its floor**, not at its corner: centred on X and Z, on the bottom layer. The move gizmo is now in the middle of the room, and the node follows when you resize the box. Origin and Size still name the box's first cell and its extent, so saved scenes load with their boxes where they were. Installed next to godoowave, use godoowave 1.5.1 or later, which places pin boxes the same way.
+
 ## [1.2.0] - 2026-11-20
 
 ### Added
