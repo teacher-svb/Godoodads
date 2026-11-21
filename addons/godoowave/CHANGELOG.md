@@ -2,6 +2,11 @@
 
 All notable changes to godoowave (called WFC Generator up to 1.3.4) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.5.1] - 2026-11-21
+
+### Changed
+- **A pin box's node sits at the centre of its floor**, not at its corner: centred on X and Z, on the bottom layer. The move gizmo is now in the middle of the box, and the node follows when you resize the box. Origin and Size still name the box's first cell and its extent, so saved scenes load with their boxes where they were. godoodungeon 1.2.1 places room boxes the same way.
+
 ## [1.5.0] - 2026-11-20
 
 ### Added

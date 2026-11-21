@@ -27,7 +27,7 @@ public class WfcPinBoxTests
         var box = new WfcPinBox { Name = "Pin", Origin = new Vector3I(-3, 1, 7), Size = new Vector3I(5, 2, 4), Enabled = false };
         map.AddChild(box);
         box.Owner = root;
-        AssertThat(box.Position).IsEqual(GridMapBox.CornerOf(map, new Vector3I(-3, 1, 7)));
+        AssertThat(box.Position).IsEqual(GridMapBox.CornerOf(map, new Vector3I(-3, 1, 7)) + new Vector3(5, 0, 6));   // floor centre: 5 × 2 / 2, 4 × 3 / 2
 
         var packed = new PackedScene();
         AssertThat(packed.Pack(root)).IsEqual(Error.Ok);
@@ -41,7 +41,7 @@ public class WfcPinBoxTests
         AssertThat(pin.Origin).IsEqual(new Vector3I(-3, 1, 7));
         AssertThat(pin.Size).IsEqual(new Vector3I(5, 2, 4));
         AssertThat(pin.Enabled).IsFalse();
-        AssertThat(pin.Position).IsEqual(GridMapBox.CornerOf(loadedMap, new Vector3I(-3, 1, 7)));
+        AssertThat(pin.Position).IsEqual(GridMapBox.PivotOf(loadedMap, new Vector3I(-3, 1, 7), new Vector3I(5, 2, 4)));
         loaded.Free();
         DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(path));
     }
@@ -87,13 +87,48 @@ public class WfcPinBoxTests
         {
             var box = new WfcPinBox { Origin = new Vector3I(1, 0, 1) };
             map.AddChild(box);
-            box.Position = new Vector3(6.9f, 2.4f, -4.2f);
-            AssertThat(box.Origin).IsEqual(new Vector3I(3, 2, -1));   // 6.9 / 2, 2.4 / 1.5, -4.2 / 3, rounded
-            AssertThat(box.Position).IsEqual(GridMapBox.CornerOf(map, new Vector3I(3, 2, -1)));
+            // The default 4 × 1 × 4 box: its pivot is 4 and 6 from its corner on X and Z.
+            box.Position = new Vector3(10.9f, 2.4f, 1.8f);
+            AssertThat(box.Origin).IsEqual(new Vector3I(3, 2, -1));   // (10.9 - 4) / 2, 2.4 / 1.5, (1.8 - 6) / 3, rounded
+            AssertThat(box.Position).IsEqual(GridMapBox.PivotOf(map, new Vector3I(3, 2, -1), new Vector3I(4, 1, 4)));
             box.Rotation = new Vector3(0, 0.7f, 0);
             box.Scale = new Vector3(2, 2, 2);
             AssertThat(box.Basis.IsEqualApprox(Basis.Identity)).IsTrue();
             AssertThat(box.Origin).IsEqual(new Vector3I(3, 2, -1));
+        }
+        finally
+        {
+            map.Free();
+        }
+    }
+
+    [TestCase]
+    [RequireGodotRuntime]
+    public void The_node_sits_at_the_floor_centre_for_odd_and_even_sizes_and_follows_a_resize()
+    {
+        // Card dgn-1-2-1-box-pivot-centre: centred on X and Z, on the bottom face on Y.
+        var map = Map();
+        ((SceneTree)Engine.GetMainLoop()).Root.AddChild(map);
+        try
+        {
+            var box = new WfcPinBox { Origin = new Vector3I(2, 3, -1), Size = new Vector3I(3, 2, 2) };
+            map.AddChild(box);
+            var corner = GridMapBox.CornerOf(map, new Vector3I(2, 3, -1));
+            AssertThat(box.Position).IsEqual(corner + new Vector3(3, 0, 3));   // odd X: a cell centre; even Z: a cell edge
+
+            box.Size = new Vector3I(4, 5, 3);
+            AssertThat(box.Origin).IsEqual(new Vector3I(2, 3, -1));
+            AssertThat(box.Position).IsEqual(corner + new Vector3(4, 0, 4.5f));
+
+            // A move by two cells on X and one on Z keeps the size and snaps the pivot back on the grid.
+            box.Position += new Vector3(4.3f, 0.2f, 2.6f);
+            AssertThat(box.Origin).IsEqual(new Vector3I(4, 3, 0));
+            AssertThat(box.Size).IsEqual(new Vector3I(4, 5, 3));
+            AssertThat(box.Position).IsEqual(GridMapBox.CornerOf(map, new Vector3I(4, 3, 0)) + new Vector3(4, 0, 4.5f));
+
+            // A flat box is drawn one cell thick, and its pivot agrees.
+            box.Size = new Vector3I(0, 1, 0);
+            AssertThat(box.Position).IsEqual(GridMapBox.CornerOf(map, new Vector3I(4, 3, 0)) + new Vector3(1, 0, 1.5f));
         }
         finally
         {

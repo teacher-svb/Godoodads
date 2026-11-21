@@ -5,8 +5,9 @@ namespace Godoodads.Common;
 /// <summary>
 /// A box of GridMap cells kept as a child node of the GridMap (godoowave pin boxes, godoodungeon
 /// room boxes; WFC brief §16.1). <see cref="Origin"/> and <see cref="Size"/> are in cells, like a
-/// tool's bounds. The node sits at the box's minimum corner: setting Origin moves it, and moving it
-/// (move tool, undo of a move) snaps Origin to the nearest cell. Rotation and scale are reset.
+/// tool's bounds. The node sits at the centre of the box's floor (centred on X and Z, on the bottom
+/// face on Y): setting Origin or Size moves it, and moving it (move tool, undo of a move) snaps
+/// Origin to the nearest cell and keeps Size. Rotation and scale are reset.
 /// Not a global class, so it is not offered in Add Child Node; subclasses are.
 /// </summary>
 [Tool]
@@ -38,6 +39,7 @@ public partial class GridMapBox : Node3D
         set
         {
             _size = value;
+            PlaceAtOrigin();
             UpdateGizmos();
         }
     }
@@ -121,12 +123,22 @@ public partial class GridMapBox : Node3D
             Mathf.RoundToInt((position.Z - first.Z) / cell.Z));
     }
 
-    /// <summary>Moves the node to Origin's corner, with no rotation or scale.</summary>
+    /// <summary>
+    /// The local position in <paramref name="map"/> where a box's node sits: the centre of its floor,
+    /// half its extent from Origin's corner on X and Z. Sides below 1 count as 1, as in the gizmo.
+    /// </summary>
+    public static Vector3 PivotOf(GridMap map, Vector3I origin, Vector3I size) => CornerOf(map, origin) + PivotOffset(map, size);
+
+    /// <summary>From a box's minimum corner to its pivot: half the box's X and Z extent.</summary>
+    private static Vector3 PivotOffset(GridMap map, Vector3I size) =>
+        new(Mathf.Max(size.X, 1) * map.CellSize.X * 0.5f, 0, Mathf.Max(size.Z, 1) * map.CellSize.Z * 0.5f);
+
+    /// <summary>Moves the node to the box's pivot, with no rotation or scale.</summary>
     private void PlaceAtOrigin()
     {
         if (Map is not { } map)
             return;
-        var target = new Transform3D(Basis.Identity, CornerOf(map, _origin));
+        var target = new Transform3D(Basis.Identity, PivotOf(map, _origin, _size));
         if (Transform.IsEqualApprox(target))
             return;
         _syncing = true;
@@ -139,7 +151,7 @@ public partial class GridMapBox : Node3D
     {
         if (_syncing || Map is not { } map)
             return;
-        var cell = NearestCell(map, Position);
+        var cell = NearestCell(map, Position - PivotOffset(map, _size));
         if (cell != _origin)
         {
             _origin = cell;

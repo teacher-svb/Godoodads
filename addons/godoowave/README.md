@@ -84,7 +84,7 @@ A **pin box** keeps a part of the GridMap exactly as it is while you regenerate 
 
 ### Boxes in the viewport
 
-While the dialog is open, the bounds (orange) are drawn in the 3D viewport, and every pin box (blue) is drawn whether the dialog is open or not. With the GridMap selected, the bounds and every enabled pin box have dots on their faces: drag them to resize the box by whole cells. With a pin box selected, its own dots work the same way, and the move tool moves it cell by cell (rotation and scale snap back). Each drag is one undo step; right-click or Escape cancels it. Clicks away from the dots still paint the GridMap as usual. The viewport's gizmo menu can hide the outlines (*godoowave pin boxes*).
+While the dialog is open, the bounds (orange) are drawn in the 3D viewport, and every pin box (blue) is drawn whether the dialog is open or not. With the GridMap selected, the bounds and every enabled pin box have dots on their faces: drag them to resize the box by whole cells. With a pin box selected, its own dots work the same way, and the move tool moves it cell by cell (rotation and scale snap back); the node sits at the centre of the box's floor. Each drag is one undo step; right-click or Escape cancels it. Clicks away from the dots still paint the GridMap as usual. The viewport's gizmo menu can hide the outlines (*godoowave pin boxes*).
 
 ### Paths between placed cells
 

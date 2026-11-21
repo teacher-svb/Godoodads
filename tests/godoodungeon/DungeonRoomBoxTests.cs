@@ -41,6 +41,9 @@ public class DungeonRoomBoxTests
         AssertThat(room.Origin).IsEqual(new Vector3I(4, 0, 9));
         AssertThat(room.Size).IsEqual(new Vector3I(7, 2, 6));
         AssertThat(room.Enabled).IsTrue();
+        // The node sits at the centre of the room's floor (card dgn-1-2-1-box-pivot-centre): cells 4..10
+        // and 9..14 of 2 m each, so x 8..22 and z 18..30, floor at y 0.
+        AssertThat(room.Position).IsEqual(new Vector3(15, 0, 24));
         loaded.Free();
         DirAccess.RemoveAbsolute(ProjectSettings.GlobalizePath(path));
     }

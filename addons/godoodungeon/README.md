@@ -74,7 +74,7 @@ Occupied cells inside the bounds that the last dungeon did not write are yours. 
 
 A **room box** fixes a room where you put it, and the dungeon is laid out and connected around it: an entrance at the edge of the map, a boss room you built by hand. Room boxes are child nodes of the GridMap (`DungeonRoomBox`), saved with the scene.
 
-- Press **Room Boxes → Add Room Box** in the dialog, or add a `DungeonRoomBox` child to the GridMap with *Add Child Node*. The new box sits in the middle of the bounds at Max Room Size; drag its handles (with the box or the GridMap selected) or move it, and it snaps to cells.
+- Press **Room Boxes → Add Room Box** in the dialog, or add a `DungeonRoomBox` child to the GridMap with *Add Child Node*. The new box sits in the middle of the bounds at Max Room Size; drag its handles (with the box or the GridMap selected) or move it, and it snaps to cells. The node sits at the centre of the room's floor.
 - **Mode → Generated** (the default) fixes the room's position and size, walls included, and Generate fills it with the room tile set like any other room. Its cells are replaced on every Generate and removed by Clear Dungeon.
 - **Mode → Built** keeps the cells you built inside the box: the dungeon never changes them, and only joins corridors to the **Door** tiles you placed on its wall ring (not in a corner, on its bottom layer). Every door gets a corridor. A Built box without a door is an error.
 - Boxes count towards **Room Count**: with 12 and two boxes, 10 rooms are generated around them. Boxes come first, in child order, so the first box is always room 1, whatever the seed.
