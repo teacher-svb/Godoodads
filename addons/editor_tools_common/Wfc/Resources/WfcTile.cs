@@ -35,13 +35,17 @@ public partial class WfcTile : Resource
 
     private const int HeightSamples = 64;
 
+    /// <summary>Placeholder of the socket fields in the inspector and the preview's edit popup.</summary>
+    public const string SocketPlaceholder = "label, or labels separated by commas";
+
+    // Each face takes one or more labels separated by commas, such as "wall, window" (see SocketSet).
     [ExportGroup("Sockets")]
-    [Export] public string SocketPosX { get; set; } = "";
-    [Export] public string SocketNegX { get; set; } = "";
-    [Export] public string SocketPosY { get; set; } = "";
-    [Export] public string SocketNegY { get; set; } = "";
-    [Export] public string SocketPosZ { get; set; } = "";
-    [Export] public string SocketNegZ { get; set; } = "";
+    [Export(PropertyHint.PlaceholderText, SocketPlaceholder)] public string SocketPosX { get; set; } = "";
+    [Export(PropertyHint.PlaceholderText, SocketPlaceholder)] public string SocketNegX { get; set; } = "";
+    [Export(PropertyHint.PlaceholderText, SocketPlaceholder)] public string SocketPosY { get; set; } = "";
+    [Export(PropertyHint.PlaceholderText, SocketPlaceholder)] public string SocketNegY { get; set; } = "";
+    [Export(PropertyHint.PlaceholderText, SocketPlaceholder)] public string SocketPosZ { get; set; } = "";
+    [Export(PropertyHint.PlaceholderText, SocketPlaceholder)] public string SocketNegZ { get; set; } = "";
 
     private static readonly StringName[] SocketProperties =
     {

@@ -42,7 +42,7 @@ public class DungeonRoomInputTests
             foreach (int direction in DungeonTileRules.HorizontalDirections)
             {
                 bool outward = input.Grid.Neighbour(cell, direction) < 0;
-                bool edgeOut = sockets[direction].Name == DungeonTestTiles.Edge && sockets[direction].Kind == SocketKind.HorizontalPlus;
+                bool edgeOut = sockets[direction] == new Socket(DungeonTestTiles.Edge, SocketKind.HorizontalPlus);
                 Assert.True(outward == edgeOut, $"cell {input.Grid.Coordinates(cell)} faces {Directions.Name(direction)} with '{sockets[direction]}'");
             }
         }

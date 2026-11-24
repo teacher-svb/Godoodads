@@ -306,10 +306,13 @@ public partial class TileSetPreview : VBoxContainer, ISerializationListener
         _editPopup.AddChild(box);
         _editTitle = new Label();
         box.AddChild(_editTitle);
-        _editLine = new LineEdit { PlaceholderText = "socket label" };
+        _editLine = new LineEdit { PlaceholderText = WfcTile.SocketPlaceholder, TooltipText = SocketSet.Help };
         _editLine.Connect(LineEdit.SignalName.TextChanged, new Callable(this, MethodName.OnEditTextChanged));
         _editLine.Connect(LineEdit.SignalName.TextSubmitted, new Callable(this, MethodName.OnEditSubmitted));
         box.AddChild(_editLine);
+        // Dimmed rather than themed: the preview is also built outside the editor in tests.
+        var hint = new Label { Text = SocketSet.Help, AutowrapMode = TextServer.AutowrapMode.WordSmart, Modulate = new Color(1, 1, 1, 0.65f) };
+        box.AddChild(hint);
         _suggestions = new ItemList { CustomMinimumSize = new Vector2(0, 140), AutoHeight = false };
         _suggestions.Connect(ItemList.SignalName.ItemClicked, new Callable(this, MethodName.OnSuggestionClicked));
         box.AddChild(_suggestions);
@@ -498,12 +501,13 @@ public partial class TileSetPreview : VBoxContainer, ISerializationListener
     {
         _suggestions.Clear();
         var tiles = _tileSet.Tiles.Where(t => t != null).Select(t => t.ToDefinition());
-        foreach (string label in SocketEditing.Suggestions(tiles, Directions.IsVertical(_editDirection), _editLine.Text))
+        foreach (string label in SocketEditing.Suggestions(tiles, Directions.IsVertical(_editDirection), SocketEditing.EntryBeingTyped(_editLine.Text)))
             _suggestions.AddItem(label);
     }
 
+    // A picked suggestion replaces the entry after the last comma, so "wall, " plus "window" gives "wall, window".
     private void OnSuggestionClicked(long index, Vector2 atPosition, long mouseButtonIndex) =>
-        OnEditSubmitted(_suggestions.GetItemText((int)index));
+        OnEditSubmitted(SocketEditing.PickSuggestion(_editLine.Text, _suggestions.GetItemText((int)index)));
 
     /// <summary>Stores the label on the tile's own face, as one undo action.</summary>
     private void OnEditSubmitted(string text)

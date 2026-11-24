@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Godoodads.Common.Wfc.Core;
@@ -92,4 +94,96 @@ public readonly record struct Socket(string Name, SocketKind Kind, int Rotation 
         SocketKind.VerticalRotated => $"{Name}@{Rotation}",
         _ => Name,
     };
+}
+
+/// <summary>
+/// The sockets on one face: one or more labels separated by commas, such as <c>wall, window</c>
+/// (spaces around the commas are optional). Two faces fit when any label on one matches any
+/// label on the other.
+/// </summary>
+public readonly struct SocketSet : IEquatable<SocketSet>
+{
+    public const char Separator = ',';
+
+    /// <summary>The rule shown next to socket fields in the editor.</summary>
+    public const string Help = "One or more socket labels separated by commas, such as 'wall, window'. "
+        + "Faces fit when any label on one matches any label on the other.";
+
+    private readonly Socket[] _labels;
+
+    public SocketSet(params Socket[] labels) => _labels = labels ?? Array.Empty<Socket>();
+
+    public IReadOnlyList<Socket> Labels => _labels ?? Array.Empty<Socket>();
+
+    public static implicit operator SocketSet(Socket socket) => new(socket);
+
+    /// <summary>Splits <paramref name="label"/> on commas and parses each entry with <see cref="Socket.TryParse"/>.</summary>
+    public static bool TryParse(string label, bool vertical, out SocketSet set, out string error)
+    {
+        set = default;
+        error = null;
+        if (string.IsNullOrWhiteSpace(label))
+        {
+            error = "The socket label is empty.";
+            return false;
+        }
+
+        string[] entries = label.Split(Separator);
+        var labels = new List<Socket>(entries.Length);
+        foreach (string raw in entries)
+        {
+            string entry = raw.Trim();
+            if (entry.Length == 0)
+            {
+                error = $"'{label.Trim()}' has an empty entry. Separate socket labels with single commas.";
+                return false;
+            }
+            if (!Socket.TryParse(entry, vertical, out var socket, out error))
+                return false;
+            if (labels.Contains(socket))
+            {
+                error = $"'{label.Trim()}' lists '{entry}' twice.";
+                return false;
+            }
+            labels.Add(socket);
+        }
+        set = new SocketSet(labels.ToArray());
+        return true;
+    }
+
+    /// <summary>True when any label of this face can face any label of <paramref name="other"/>.</summary>
+    public bool Matches(SocketSet other)
+    {
+        foreach (var a in Labels)
+            foreach (var b in other.Labels)
+                if (a.Matches(b))
+                    return true;
+        return false;
+    }
+
+    /// <summary>True when any label of this face can face <paramref name="other"/>.</summary>
+    public bool Matches(Socket other) => Labels.Any(a => a.Matches(other));
+
+    /// <summary>True when any label has the name <paramref name="name"/>, in any +/-/@n form.</summary>
+    public bool HasName(string name) => Labels.Any(l => l.Name == name);
+
+    public SocketSet RotatedY(int quarterTurns) => new(Labels.Select(l => l.RotatedY(quarterTurns)).ToArray());
+
+    public bool Equals(SocketSet other) => Labels.SequenceEqual(other.Labels);
+
+    public override bool Equals(object obj) => obj is SocketSet other && Equals(other);
+
+    public override int GetHashCode()
+    {
+        var hash = new HashCode();
+        foreach (var label in Labels)
+            hash.Add(label);
+        return hash.ToHashCode();
+    }
+
+    public static bool operator ==(SocketSet a, SocketSet b) => a.Equals(b);
+
+    public static bool operator !=(SocketSet a, SocketSet b) => !a.Equals(b);
+
+    public override string ToString() => string.Join(Separator + " ", Labels);
 }

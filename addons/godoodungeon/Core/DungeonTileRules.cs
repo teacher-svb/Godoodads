@@ -158,15 +158,16 @@ public static class DungeonTileRules
     {
         int mask = 0;
         foreach (int direction in HorizontalDirections)
-            if (variant.Sockets[direction].Name == pathSocket)
+            if (variant.Sockets[direction].HasName(pathSocket))
                 mask |= 1 << direction;
         return mask;
     }
 
-    private static bool IsEdgeOut(Socket socket, string edge) => socket.Name == edge && socket.Kind == SocketKind.HorizontalPlus;
+    private static bool IsEdgeOut(SocketSet socket, string edge) => socket.Labels.Any(l => l.Name == edge && l.Kind == SocketKind.HorizontalPlus);
 
+    /// <summary>Every label on every horizontal face, one entry per label of a comma-separated list.</summary>
     private static IEnumerable<(int Tile, Socket Socket)> HorizontalFaces(CompiledTileSet set) =>
-        set.Variants.SelectMany(v => HorizontalDirections.Select(d => (v.TileIndex, v.Sockets[d])));
+        set.Variants.SelectMany(v => HorizontalDirections.SelectMany(d => v.Sockets[d].Labels.Select(l => (v.TileIndex, l))));
 
     private static string Names(IReadOnlyList<string> names, IEnumerable<(int Tile, Socket Socket)> faces) =>
         string.Join(", ", faces.Select(f => f.Tile < names.Count ? names[f.Tile] : $"tile {f.Tile}").Distinct());

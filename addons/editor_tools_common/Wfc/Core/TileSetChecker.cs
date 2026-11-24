@@ -33,7 +33,7 @@ public static class TileSetChecker
     }
 
     /// <summary>True when an external socket can face <paramref name="socket"/>.</summary>
-    public static bool MeetsExternal(Socket socket, IReadOnlyCollection<Socket> external) =>
+    public static bool MeetsExternal(SocketSet socket, IReadOnlyCollection<Socket> external) =>
         external != null && external.Any(e => socket.Matches(e));
 
     private static List<UnmatchedFace> FindUnmatchedFaces(CompiledTileSet tiles, IReadOnlyCollection<Socket> external)
