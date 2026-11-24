@@ -138,6 +138,7 @@ public static class DungeonGridMap
         EdgeSocket = settings.RoomEdgeSocket,
         CorridorTiles = tileSets.Corridor.Compiled,
         PathSocket = settings.PathSocket,
+        DoorwaySocket = settings.DoorwaySocket,
         PathWander = settings.PathWander,
         Seed = settings.Seed,
         LayoutAttempts = settings.LayoutAttempts,

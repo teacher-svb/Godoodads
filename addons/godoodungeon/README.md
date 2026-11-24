@@ -146,7 +146,8 @@ int[] way = graph.ShortestPath(ends.X, ends.Y);
 | Corridor Tile Set | | Corridor pieces and an empty tile. |
 | Room Edge Socket | `outside` | The socket name of faces that point out of a room. Tiles use `outside+`; the room bounds supply `outside-`. |
 | Door | | The room tile placed at every door. It is stored by its MeshLibrary item, so it stays the same tile when you add, remove or reorder tiles. |
-| Path Socket | `path` | The socket of the corridor tiles' open faces. |
+| Path Socket | `path` | The socket names of the corridor tiles' open faces, separated by commas, such as `corridor, pitfall`. A face is a corridor opening when any of its labels has one of these names. |
+| Doorway Socket | (empty) | The path sockets that may face a door, separated by commas, such as `corridor`: the corridor tile outside a door has one of them on its face towards the door. Use it to keep pieces such as pitfalls away from doors. Empty lets any path socket face a door. |
 | Path Wander | 0.3 | 0 gives the most direct corridors, 1 the most meandering. |
 | **Bounds** | | |
 | Bounds Origin, Bounds Size | 0, 48 × 1 × 48 | The box the dungeon fills. X and Z hold the dungeon, Y the room layers from the bottom. Corridors use the bottom layer. |
@@ -167,7 +168,7 @@ int[] way = graph.ShortestPath(ends.X, ends.Y);
 
 ## Tile sets
 
-Both tile sets are ordinary `WfcTileSet` resources ([godoowave](../godoowave/README.md#tile-sets) explains tiles, sockets, rotations and weights). A face can list several socket labels separated by commas, such as `wall, window`; it then fits any face that matches one of them. A face counts as a room edge or a corridor opening when any of its labels has the Room Edge Socket or Path Socket name. They must use the same `MeshLibrary` as the GridMap. Build walls **inside** the cell, on its outer edge: a corridor that passes next to a room then shows its own wall beside the room's, not inside it.
+Both tile sets are ordinary `WfcTileSet` resources ([godoowave](../godoowave/README.md#tile-sets) explains tiles, sockets, rotations and weights). A face can list several socket labels separated by commas, such as `wall, window`; it then fits any face that matches one of them. A face counts as a room edge or a corridor opening when any of its labels has the Room Edge Socket name or a Path Socket name. They must use the same `MeshLibrary` as the GridMap. Build walls **inside** the cell, on its outer edge: a corridor that passes next to a room then shows its own wall beside the room's, not inside it.
 
 ### Room tile set
 

@@ -52,7 +52,7 @@ public sealed class DungeonTileSets
         // The door is stored by item (1.0.1); the rules and the solver use the tile's index.
         result.DoorTile = settings.Door == DungeonSettings.NoDoor ? -1 : result.Room.TileForItem(settings.Door);
         var (errors, warnings) = DungeonTileRules.Check(result.Room.Compiled, result.Room.TileNames, result.DoorTile,
-            settings.RoomEdgeSocket, result.Corridor.Compiled, settings.PathSocket);
+            settings.RoomEdgeSocket, result.Corridor.Compiled, settings.PathSocket, settings.DoorwaySocket);
         result.Errors.AddRange(errors);
         result.Warnings.AddRange(warnings);
         string edge = settings.RoomEdgeSocket?.Trim() ?? "";
