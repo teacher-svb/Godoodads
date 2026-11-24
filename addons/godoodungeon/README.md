@@ -167,7 +167,7 @@ int[] way = graph.ShortestPath(ends.X, ends.Y);
 
 ## Tile sets
 
-Both tile sets are ordinary `WfcTileSet` resources ([godoowave](../godoowave/README.md#tile-sets) explains tiles, sockets, rotations and weights). They must use the same `MeshLibrary` as the GridMap. Build walls **inside** the cell, on its outer edge: a corridor that passes next to a room then shows its own wall beside the room's, not inside it.
+Both tile sets are ordinary `WfcTileSet` resources ([godoowave](../godoowave/README.md#tile-sets) explains tiles, sockets, rotations and weights). A face can list several socket labels separated by commas, such as `wall, window`; it then fits any face that matches one of them. A face counts as a room edge or a corridor opening when any of its labels has the Room Edge Socket or Path Socket name. They must use the same `MeshLibrary` as the GridMap. Build walls **inside** the cell, on its outer edge: a corridor that passes next to a room then shows its own wall beside the room's, not inside it.
 
 ### Room tile set
 

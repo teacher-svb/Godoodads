@@ -1,15 +1,15 @@
 ---
 id: "dgn-1-2-1-box-pivot-centre-2026-11-21"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoodungeon"
 dueDate: null
 created: "2026-11-21T10:00:00.000Z"
-modified: "2026-11-21T10:40:00.000Z"
-completedAt: null
+modified: "2026-11-24T15:30:01.859Z"
+completedAt: "2026-11-24T15:30:01.859Z"
 labels: ["v1.2.1", "common", "editor", "bug"]
-order: "h1"
+order: "a3"
 ---
 # godoodungeon 1.2.1: Room box node sits at its floor centre, not its corner
 

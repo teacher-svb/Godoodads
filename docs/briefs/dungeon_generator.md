@@ -340,3 +340,14 @@ Decisions (board, 2026-11-20):
 #### 13.8 Not in 1.2
 
 Room stamps placed by the layout, non-rectangular boxes, rotated boxes, boxes on other floors, and forcing which rooms a box connects to (the room roles idea).
+
+---
+
+### 14. Version 1.3: several socket labels on one face
+
+**Decided by the board on 2026-11-24.** Ships the comma-separated socket lists of the shared WFC solver (WFC brief §17, godoowave 1.6.0) to godoodungeon users. Tracked with the label `v1.3.0`.
+
+- Room and corridor tile sets may list several labels on a face (`wall, window`). The tile rules check each label: a face is a room edge when any label is `<edge>+`, and a corridor opening when any label has the Path Socket name. A list may not hold `<edge>-`, as single labels may not.
+- Room Edge Socket and Path Socket stay single names.
+- Tile sets with one label per face give the same dungeon for the same settings and seed as 1.2.1.
+- Installed next to godoowave, godoowave must be 1.6.0 or later, because both zips carry `editor_tools_common`.

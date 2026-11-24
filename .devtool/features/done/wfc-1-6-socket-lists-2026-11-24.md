@@ -1,15 +1,15 @@
 ---
 id: "wfc-1-6-socket-lists-2026-11-24"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-24T10:00:00.000Z"
-modified: "2026-11-24T15:00:00.000Z"
-completedAt: null
+modified: "2026-11-24T15:29:58.466Z"
+completedAt: "2026-11-24T15:29:58.466Z"
 labels: ["v1.6.0", "core", "common"]
-order: "eB"
+order: "a0"
 ---
 # godoowave 1.6: several socket labels on one face
 
