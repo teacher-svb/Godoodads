@@ -2,6 +2,11 @@
 
 All notable changes to godoowave (called WFC Generator up to 1.3.4) are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.6.0] - 2026-11-24
+
+### Added
+- **Several socket labels on one face.** Separate them with commas, such as `wall, window` (`wall,window` works too). A face connects to a face that matches any of its labels, so one tile can sit next to several kinds of neighbour without duplicating it. The inspector's socket fields show the format when empty, and the preview's edit popup explains the rule and adds a picked suggestion to the list. Faces with one label behave as before: existing tile sets give the same cells for the same settings and seed. godoodungeon tile sets get the same, through the shared solver.
+
 ## [1.5.1] - 2026-11-21
 
 ### Changed

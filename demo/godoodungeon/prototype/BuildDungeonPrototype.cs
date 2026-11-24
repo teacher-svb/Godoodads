@@ -129,9 +129,9 @@ public partial class BuildDungeonPrototype : Node
         foreach (var r in Rooms)
             foreach (var (cell, outward) in r.Doors)
             {
-                int doorTurns = TurnsWhere(room, door, v => v.Sockets[outward].Name == EdgeSocket && v.Sockets[Directions.Opposite(outward)].Name == "in");
+                int doorTurns = TurnsWhere(room, door, v => v.Sockets[outward].HasName(EdgeSocket) && v.Sockets[Directions.Opposite(outward)].HasName("in"));
                 map.SetCellItem(cell, roomItems[door], GridMapOrientation.FromQuarterTurns(doorTurns));
-                int stubTurns = TurnsWhere(corridor, straight, v => v.Sockets[Directions.Opposite(outward)].Name == PathSocket);
+                int stubTurns = TurnsWhere(corridor, straight, v => v.Sockets[Directions.Opposite(outward)].HasName(PathSocket));
                 map.SetCellItem(cell + Offset(outward), corridorItems[straight], GridMapOrientation.FromQuarterTurns(stubTurns));
             }
     }
@@ -222,7 +222,7 @@ public partial class BuildDungeonPrototype : Node
                     continue;
                 int variant = binding.Compiled.FindVariant(tile, GridMapOrientation.ToQuarterTurns(map.GetCellItemOrientation(cell)));
                 tileName = binding.TileNames[tile];
-                return binding.Compiled.Variants[variant].Sockets[direction].Name;
+                return binding.Compiled.Variants[variant].Sockets[direction].Labels[0].Name; // the prototype tiles have one label per face
             }
             return null;
         }

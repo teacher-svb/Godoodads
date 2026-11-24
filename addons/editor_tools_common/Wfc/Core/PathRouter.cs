@@ -68,7 +68,7 @@ public static class PathRouter
         var faces = new int[set.Variants.Count];
         for (int variant = 0; variant < faces.Length; variant++)
             foreach (int direction in set.ActiveDirections)
-                if (set.Variants[variant].Sockets[direction].Name == name)
+                if (set.Variants[variant].Sockets[direction].HasName(name))
                     faces[variant] |= 1 << direction;
         return faces;
     }
@@ -87,7 +87,7 @@ public static class PathRouter
 
     private static PathPlan Failed(params PathError[] errors) => new() { Errors = errors };
 
-    private sealed record Stub(int Index, int FixedCell, int EntryCell, int EntryFace, int Group, Socket Incoming);
+    private sealed record Stub(int Index, int FixedCell, int EntryCell, int EntryFace, int Group, SocketSet Incoming);
 
     /// <summary>Leaving a cell through <paramref name="Exit"/> with <paramref name="Variant"/>, which shows <paramref name="Outgoing"/> there.</summary>
     private readonly record struct Move(int Exit, int Outgoing, int Variant);
@@ -112,7 +112,7 @@ public static class PathRouter
         private readonly long _seed;
         private readonly Vector3I _origin;
         private readonly int[] _faces;
-        private readonly List<Socket> _sockets = new();
+        private readonly List<SocketSet> _sockets = new();
         private readonly int[] _routeFaces;
         private readonly int[] _routeVariant;
         private readonly List<Stub> _stubs = new();
@@ -187,7 +187,7 @@ public static class PathRouter
             _pending = Enumerable.Repeat(true, _stubs.Count).ToArray();
         }
 
-        private int SocketId(Socket socket)
+        private int SocketId(SocketSet socket)
         {
             int id = _sockets.IndexOf(socket);
             if (id < 0)
@@ -204,7 +204,7 @@ public static class PathRouter
 
         private int FixedFaces(int cell) => _initial[cell] >= 0 ? _faces[_initial[cell]] : 0;
 
-        private Socket SocketOf(int variant, int direction) => _set.Variants[variant].Sockets[direction];
+        private SocketSet SocketOf(int variant, int direction) => _set.Variants[variant].Sockets[direction];
 
         private void FindGroupsAndStubs()
         {
@@ -351,7 +351,7 @@ public static class PathRouter
         }
 
         /// <summary>A variant for the cell where a route ends: entered as given and also open to <paramref name="face"/>.</summary>
-        private int EndVariant(int cell, int entry, Socket incoming, int face, Socket faceIncoming)
+        private int EndVariant(int cell, int entry, SocketSet incoming, int face, SocketSet faceIncoming)
         {
             int mask = (1 << entry) | (1 << face);
             if (!_byMask[Layer(cell)].TryGetValue(mask, out var variants))
@@ -363,7 +363,7 @@ public static class PathRouter
         /// A variant for a route cell that another route joins: its old path faces keep their
         /// sockets, so its route neighbours still fit, and the new face fits the arriving socket.
         /// </summary>
-        private int JunctionVariant(int cell, int entry, Socket incoming)
+        private int JunctionVariant(int cell, int entry, SocketSet incoming)
         {
             int old = _routeVariant[cell];
             if (old < 0 || (_routeFaces[cell] & 1 << entry) != 0)

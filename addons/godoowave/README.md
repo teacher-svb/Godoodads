@@ -127,11 +127,11 @@ A `WfcTileSet` holds a `MeshLibrary` and a list of `WfcTile` entries. The rules 
 | Weight | How often the tile is chosen, relative to the others (default 1). The weight is shared by the tile's rotations, so a ramp with Quarter Turns and weight 1 is as common as a plain block with weight 1. 0 means the solver never chooses the tile, but you can still place it by hand. |
 | Height Curve | Optional. Multiplies the weight by height: the curve's start is the bottom layer of the bounds, its end the top layer. 0 at a height means the tile is never generated there. |
 | Marker | Optional scene placed at every cell this tile is generated in, rotated with it, such as a light, a spawn point or a trigger. It works on empty tiles too. |
-| Sockets | One label per face: +X, -X, +Y, -Y, +Z, -Z, as the module is modelled. |
+| Sockets | One or more labels per face: +X, -X, +Y, -Y, +Z, -Z, as the module is modelled. Separate several labels with commas, such as `wall, window`. |
 
 The tile set's inspector shows a preview: the selected tile in 3D with its socket labels (drag to orbit), its weight and share of the total, the tiles allowed next to each face, and a check for problems.
 
-- **Edit sockets in the preview.** Click a face label to change it. The list suggests the labels already used in the tile set, including the partner of a one-sided label. On a rotated variant, the edit goes to the face of the tile itself. Each edit is one undo step. A label shown in red is one no tile can face.
+- **Edit sockets in the preview.** Click a face label to change it. The list suggests the labels already used in the tile set, including the partner of a one-sided label. To add a label to a face, type a comma after the existing ones and pick or type the new one: `wall, ` plus `window` gives `wall, window`. On a rotated variant, the edit goes to the face of the tile itself. Each edit is one undo step. A label shown in red is one no tile can face.
 - **Measure the real shares.** Under **Tile shares**, press **Measure** to see how much of a sample result each tile really covers, next to its share of the weights (see [Measuring tile shares](#measuring-tile-shares)).
 
 <img src="docs/preview.png" alt="The tile set preview: a stair module with its socket labels and valid neighbours" width="560">
@@ -148,6 +148,8 @@ Two facing sockets connect when their labels match:
 | Top or bottom, rotation-specific | `stair@0` to `stair@3` | the same label with the same number, after the tile's rotation is applied |
 
 Labels use letters, digits and underscores. Every face needs a label.
+
+A face can list several labels separated by commas, such as `wall, window` (`wall,window` works too). It then connects to a face that matches **any** of them, by the rules above, so one tile can sit next to walls and windows without a duplicate tile per label. Kinds may be mixed (`door+, wall`). Boundary sockets, External Sockets and Paths → Socket stay single labels, and meet a face when any of its labels matches. A face whose labels include the path name counts as a path face.
 
 ### Designing a tile set
 
