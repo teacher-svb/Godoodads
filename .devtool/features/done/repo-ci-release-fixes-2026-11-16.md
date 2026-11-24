@@ -1,15 +1,15 @@
 ---
 id: "repo-ci-release-fixes-2026-11-16"
-status: "review"
+status: "done"
 priority: "medium"
 assignee: "claude"
 epic: "Godoodads"
 dueDate: null
 created: "2026-11-16T15:08:16.000Z"
-modified: "2026-11-16T15:08:16.000Z"
-completedAt: null
+modified: "2026-11-24T15:30:00.211Z"
+completedAt: "2026-11-24T15:30:00.211Z"
 labels: ["v1.0.0", "infra", "ci", "release"]
-order: "g1"
+order: "a2"
 ---
 # Release workflow failures (2026-11-16)
 
