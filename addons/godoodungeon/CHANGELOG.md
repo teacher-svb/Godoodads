@@ -2,6 +2,13 @@
 
 All notable changes to godoodungeon are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [1.3.1] - 2026-11-24
+
+### Added
+- **Several path sockets:** Path Socket takes a comma-separated list, such as `corridor, pitfall`, so corridors can be built from several kinds of piece. A face is a corridor opening when any of its labels has one of these names.
+- **Doorway Socket:** the path sockets that may face a door, such as `corridor`. The corridor tile outside a door then has one of them on its face towards the door, so pieces such as pitfalls stay away from doors but appear further along. Empty (the default) lets any path socket face a door. The tile set check reports doorway names that are not path sockets, names no corridor tile uses, and sides no piece can face a door from.
+- One Path Socket name and an empty Doorway Socket give the same dungeon for the same settings and seed as 1.3.0. Only godoodungeon changes; the shared solver is the one of godoowave 1.6.0.
+
 ## [1.3.0] - 2026-11-24
 
 ### Added

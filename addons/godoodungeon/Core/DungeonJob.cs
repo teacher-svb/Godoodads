@@ -22,6 +22,7 @@ public sealed record DungeonRequest
 
     public CompiledTileSet CorridorTiles { get; init; }
     public string PathSocket { get; init; } = "path";
+    public string DoorwaySocket { get; init; } = "";
     public float PathWander { get; init; } = 0.3f;
 
     public long Seed { get; init; }
@@ -259,7 +260,7 @@ public sealed class DungeonJob
 
             Volatile.Write(ref _stage, $"Layout {attempt + 1}: corridors");
             bool HandPlaced(Vector3I cell) => request.HandPlaced.Contains(cell);
-            var corridorInput = SolveInputs.Corridors(layout, plan, request.CorridorTiles, request.PathSocket, HandPlaced);
+            var corridorInput = SolveInputs.Corridors(layout, plan, request.CorridorTiles, request.PathSocket, HandPlaced, request.DoorwaySocket);
             if (!corridorInput.IsValid)
                 return new DungeonResult { Status = DungeonStatus.Invalid, Layout = layout, Errors = new[] { corridorInput.Error } };
             var corridors = Solve(corridorInput, request.CorridorTiles, corridorSeed, request);

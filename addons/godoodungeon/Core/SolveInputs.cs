@@ -76,38 +76,59 @@ public static class SolveInputs
     /// variants that fit.
     /// </summary>
     /// <param name="handPlaced">GridMap cells that hold hand-placed items; null means none.</param>
+    /// <param name="pathSocket">Comma-separated names of the corridor openings.</param>
+    /// <param name="doorwaySocket">
+    /// Comma-separated names, one of which the cell outside a door must have on its face towards the
+    /// door (brief §14.1). Empty lets any path socket face a door.
+    /// </param>
     public static SolveInput Corridors(DungeonLayout layout, CorridorPlan plan, CompiledTileSet tiles, string pathSocket,
-        Func<Vector3I, bool> handPlaced = null)
+        Func<Vector3I, bool> handPlaced = null, string doorwaySocket = "")
     {
         var origin = layout.Origin;
         var grid = GridTopology.Create3D(new Vector3I(plan.Size.X, 1, plan.Size.Y));
         var initial = new int[grid.CellCount];
         Array.Fill(initial, WfcSolver.Free);
-        string path = pathSocket?.Trim() ?? "";
+        var paths = DungeonTileRules.SocketNames(pathSocket);
+        var doorways = DungeonTileRules.SocketNames(doorwaySocket);
 
-        // One class of variants per path face mask that occurs, mask 0 (no path faces) first.
-        var classOfMask = new Dictionary<int, int>();
+        // Faces of corridor cells that look into a door, when doorway sockets limit them.
+        var doorFaces = new int[grid.CellCount];
+        if (doorways.Length > 0)
+            foreach (var door in layout.Doors)
+            {
+                var outside = door.Outside;
+                if (outside.X >= 0 && outside.Y >= 0 && outside.X < plan.Size.X && outside.Y < plan.Size.Y)
+                    doorFaces[grid.Index(new Vector3I(outside.X, 0, outside.Y))] |= 1 << Directions.Opposite(Direction(door.Side));
+            }
+
+        // One class of variants per path face mask and door face mask that occur, (0, 0) first.
+        var classOfMask = new Dictionary<(int Path, int Door), int>();
         var classes = new List<IReadOnlyList<int>>();
-        int ClassOf(int mask)
+        int ClassOf(int mask, int doors)
         {
-            if (classOfMask.TryGetValue(mask, out int index))
+            if (classOfMask.TryGetValue((mask, doors), out int index))
                 return index;
-            var variants = Enumerable.Range(0, tiles.Variants.Count).Where(v => DungeonTileRules.PathFaces(tiles.Variants[v], path) == mask).ToList();
-            classOfMask[mask] = classes.Count;
+            var variants = Enumerable.Range(0, tiles.Variants.Count).Where(v => DungeonTileRules.PathFaces(tiles.Variants[v], paths) == mask
+                && DungeonTileRules.HorizontalDirections.All(d => (doors & (1 << d)) == 0 || DungeonTileRules.HasAnyName(tiles.Variants[v].Sockets[d], doorways))).ToList();
+            classOfMask[(mask, doors)] = classes.Count;
             classes.Add(variants);
             return classes.Count - 1;
         }
-        ClassOf(0);
+        ClassOf(0, 0);
         var classOfCell = new int[grid.CellCount];
         for (int cell = 0; cell < grid.CellCount; cell++)
         {
             var at = grid.Coordinates(cell);
-            classOfCell[cell] = ClassOf(plan.Faces[at.Z * plan.Size.X + at.X]);
+            int mask = plan.Faces[at.Z * plan.Size.X + at.X];
+            classOfCell[cell] = ClassOf(mask, doorFaces[cell] & mask);
         }
-        foreach (var (mask, index) in classOfMask)
+        string path = DungeonTileRules.Quoted(paths);
+        foreach (var ((mask, doors), index) in classOfMask)
             if (classes[index].Count == 0)
-                return new SolveInput(origin, grid, initial, null,
-                    $"The corridor tile set has no piece with '{path}' faces on {DescribeMask(mask)}, which the corridors need.");
+                return new SolveInput(origin, grid, initial, null, doors == 0
+                    ? $"The corridor tile set has no piece with {path} faces on {DescribeMask(mask)}, which the corridors need."
+                    : $"The corridor tile set has no piece with {path} faces on {DescribeMask(mask)} and {DungeonTileRules.Quoted(doorways)} on {DescribeMask(doors)}, "
+                        + "which a corridor next to a door needs. Check Doorway Socket against the corridor tile set.");
 
         foreach (var room in layout.Rooms)
             foreach (var cell in room.Cells())

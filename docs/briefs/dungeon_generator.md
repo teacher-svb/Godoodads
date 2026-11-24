@@ -351,3 +351,13 @@ Room stamps placed by the layout, non-rectangular boxes, rotated boxes, boxes on
 - Room Edge Socket and Path Socket stay single names.
 - Tile sets with one label per face give the same dungeon for the same settings and seed as 1.2.1.
 - Installed next to godoowave, godoowave must be 1.6.0 or later, because both zips carry `editor_tools_common`.
+
+#### 14.1 Version 1.3.1: several path sockets and a Doorway Socket
+
+**Decided by the board on 2026-11-24.** Corridors built from several kinds of piece, of which only some may stand right outside a door: `corridor` and `pitfall` pieces, without a pitfall at the door. Tracked with the label `v1.3.1`.
+
+- **Path Socket** takes a comma-separated list (`corridor, pitfall`, spaces optional). A face is a corridor opening when any of its labels has one of the names. The corridor router is unchanged; the cell restrictions, the tile set checks and the connectivity check use the list.
+- **Doorway Socket** (`DungeonSettings.DoorwaySocket`, a comma-separated list, empty by default): the corridor cell outside a door must have one of these names on its face towards the door. The cell restrictions then group variants by path face mask and door face mask. Empty adds no restriction.
+- Doorway names must be Path Socket names (error). A listed name no corridor tile uses is a warning; no tile with any of the names is an error, as is a side from which no piece can face a door with a doorway name.
+- One Path Socket name and an empty Doorway Socket give the same restriction classes in the same order, so the same dungeon for the same seed as 1.3.0.
+- Only godoodungeon changes, so `editor_tools_common` stays as in godoowave 1.6.0.

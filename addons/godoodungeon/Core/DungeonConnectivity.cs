@@ -17,7 +17,7 @@ public static class DungeonConnectivity
     /// <summary>The indices of the rooms the walk from room 0 does not reach. Empty when the dungeon is connected.</summary>
     public static List<int> UnreachableRooms(DungeonLayout layout, SolveInput corridors, int[] corridorCells, CompiledTileSet corridorTiles, string pathSocket)
     {
-        string path = pathSocket.Trim();
+        var paths = DungeonTileRules.SocketNames(pathSocket);
         var grid = corridors.Grid;
         int PathFaces(int cell)
         {
@@ -27,7 +27,7 @@ public static class DungeonConnectivity
             int mask = 0;
             var sockets = corridorTiles.Variants[variant].Sockets;
             foreach (int direction in corridorTiles.ActiveDirections)
-                if (sockets[direction].HasName(path))
+                if (DungeonTileRules.HasAnyName(sockets[direction], paths))
                     mask |= 1 << direction;
             return mask;
         }

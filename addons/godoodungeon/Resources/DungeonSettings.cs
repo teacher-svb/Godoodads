@@ -138,8 +138,20 @@ public partial class DungeonSettings : Resource
         _legacyDoorTile = -1;
     }
 
-    /// <summary>Socket name of the corridor tiles' open faces.</summary>
-    [Export] public string PathSocket { get; set; } = "path";
+    /// <summary>Placeholder text of the socket name list settings.</summary>
+    public const string SocketListPlaceholder = "name, or names separated by commas";
+
+    /// <summary>
+    /// Socket names of the corridor tiles' open faces, separated by commas, such as 'corridor, pitfall'.
+    /// A face is a corridor opening when any of its labels has one of these names.
+    /// </summary>
+    [Export(PropertyHint.PlaceholderText, SocketListPlaceholder)] public string PathSocket { get; set; } = "path";
+
+    /// <summary>
+    /// Path socket names that may face a door, separated by commas, such as 'corridor': the corridor
+    /// tile outside a door has one of them on its face towards the door. Empty lets any path socket face a door.
+    /// </summary>
+    [Export(PropertyHint.PlaceholderText, "any path socket")] public string DoorwaySocket { get; set; } = "";
 
     /// <summary>0 gives the shortest corridors, 1 the most meandering.</summary>
     [Export(PropertyHint.Range, "0,1,0.01")] public float PathWander { get; set; } = 0.3f;

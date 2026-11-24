@@ -8,14 +8,14 @@ A suite of independent editor addons for Godot 4.7+ (.NET / C#). Each addon live
 |---|---|---|---|
 | godooscatter (MultiMesh Scatter) | `addons/godooscatter/` | 1.3.2, see its [README](addons/godooscatter/README.md) | [docs/briefs/godooscatter.md](docs/briefs/godooscatter.md) |
 | godoowave (WFC Generator) | `addons/godoowave/` | 1.6.0, see its [README](addons/godoowave/README.md) | [docs/briefs/godoowave.md](docs/briefs/godoowave.md) |
-| godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | 1.3.0, see its [README](addons/godoodungeon/README.md) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
+| godoodungeon (Dungeon Generator) | `addons/godoodungeon/` | 1.3.1, see its [README](addons/godoodungeon/README.md) | [docs/briefs/dungeon_generator.md](docs/briefs/dungeon_generator.md) |
 | godoocurves | `addons/godoocurves/` | 1.0.0, see its [README](addons/godoocurves/README.md) | [docs/briefs/godoocurves.md](docs/briefs/godoocurves.md) |
 
 ## Install an addon
 
 The addons need Godot 4.7 or later, the **.NET** edition, and the [.NET SDK](https://dotnet.microsoft.com/download) 8.0 or later.
 
-1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `godoodungeon-1.3.0.zip`, `godoowave-1.6.0.zip`, `godooscatter-1.3.2.zip` or `godoocurves-1.0.0.zip`. Each release is named after its addon.
+1. **Download** the addon's latest zip from [Releases](https://github.com/teacher-svb/Godoodads/releases), for example `godoodungeon-1.3.1.zip`, `godoowave-1.6.0.zip`, `godooscatter-1.3.2.zip` or `godoocurves-1.0.0.zip`. Each release is named after its addon.
 2. **Extract it into your project's root folder**, next to `project.godot`. Every zip contains the addon's folder and `editor_tools_common`, the shared helpers, both under `addons/`. When you install a second Godoodads addon, let the newer `editor_tools_common` replace the older one.
 3. **Create a C# solution** if your project has none: *Project → Tools → C# → Create C# solution*.
 4. **Build** the project (the hammer icon, or `dotnet build`).
