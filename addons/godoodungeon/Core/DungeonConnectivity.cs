@@ -27,7 +27,7 @@ public static class DungeonConnectivity
             int mask = 0;
             var sockets = corridorTiles.Variants[variant].Sockets;
             foreach (int direction in corridorTiles.ActiveDirections)
-                if (sockets[direction].Name == path)
+                if (sockets[direction].HasName(path))
                     mask |= 1 << direction;
             return mask;
         }

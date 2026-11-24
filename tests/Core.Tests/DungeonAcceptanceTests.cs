@@ -79,7 +79,7 @@ public class DungeonAcceptanceTests
                     foreach (int direction in DungeonTileRules.HorizontalDirections)
                     {
                         bool outward = solve.Input.Grid.Neighbour(cell, direction) < 0;
-                        bool edge = sockets[direction].Name == DungeonTestTiles.Edge && sockets[direction].Kind == SocketKind.HorizontalPlus;
+                        bool edge = sockets[direction] == new Socket(DungeonTestTiles.Edge, SocketKind.HorizontalPlus);
                         Assert.True(outward == edge, $"seed {seed}: room cell {solve.Input.GridMapCell(cell)} faces {Directions.Name(direction)} with '{sockets[direction]}'");
                     }
                 }

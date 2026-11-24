@@ -21,7 +21,7 @@ public sealed record TileDefinition(string[] Sockets, TileRotation Rotation = Ti
     IReadOnlyList<double> HeightProfile = null);
 
 /// <summary>One placeable rotation of a tile. Sockets are in world directions.</summary>
-public sealed record TileVariant(int TileIndex, int QuarterTurns, Socket[] Sockets);
+public sealed record TileVariant(int TileIndex, int QuarterTurns, SocketSet[] Sockets);
 
 /// <summary>A problem with a tile definition. Direction is -1 when it applies to the whole tile set.</summary>
 public sealed record TileIssue(int TileIndex, int Direction, string Message);
@@ -128,7 +128,7 @@ public sealed class CompiledTileSet
 
     private void AddTile(int tileIndex, TileDefinition tile)
     {
-        var parsed = new Socket[Directions.Count];
+        var parsed = new SocketSet[Directions.Count];
         bool valid = true;
         if (!(tile.Weight >= 0) || double.IsInfinity(tile.Weight))
         {
@@ -144,7 +144,7 @@ public sealed class CompiledTileSet
         foreach (int direction in ActiveDirections)
         {
             string label = tile.Sockets != null && tile.Sockets.Length == Directions.Count ? tile.Sockets[direction] : null;
-            if (!Socket.TryParse(label, Directions.IsVertical(direction), out parsed[direction], out string error))
+            if (!SocketSet.TryParse(label, Directions.IsVertical(direction), out parsed[direction], out string error))
             {
                 _errors.Add(new TileIssue(tileIndex, direction, error));
                 valid = false;
@@ -158,7 +158,7 @@ public sealed class CompiledTileSet
         var seen = new Dictionary<string, int>();
         for (int turns = 0; turns < 4; turns += step)
         {
-            var world = new Socket[Directions.Count];
+            var world = new SocketSet[Directions.Count];
             var key = new List<string>();
             foreach (int direction in ActiveDirections)
                 world[Directions.RotateY(direction, turns)] = parsed[direction].RotatedY(turns);

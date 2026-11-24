@@ -159,7 +159,7 @@ public class DungeonTileRulesTests
             Assert.True(variant >= 0);
             Assert.Equal(Door, room.Variants[variant].TileIndex);
             Assert.Equal(new Socket("outside", SocketKind.HorizontalPlus), room.Variants[variant].Sockets[outward]);
-            Assert.Equal("in", room.Variants[variant].Sockets[Directions.Opposite(outward)].Name);
+            Assert.Equal("in", room.Variants[variant].Sockets[Directions.Opposite(outward)].ToString());
         }
 
         var corridor = Compile(CorridorTiles);

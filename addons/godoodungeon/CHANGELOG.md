@@ -2,6 +2,11 @@
 
 All notable changes to godoodungeon are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+- **Several socket labels on one face**, from the shared WFC solver (godoowave 1.5): separate them with commas, such as `wall, window`. A face connects to a face that matches any of its labels. Room Edge Socket and Path Socket stay single names; a face counts as a room edge or a corridor opening when any of its labels has that name.
+
 ## [1.0.1] - 2026-11-16
 
 ### Changed

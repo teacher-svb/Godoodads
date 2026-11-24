@@ -13,6 +13,8 @@ internal static class WfcTestTiles
 
     public static TileDefinition Uniform3D(string socket) => Tile3D(socket, socket, socket, socket, socket, socket);
 
+    public static TileDefinition Uniform2D(string socket) => Tile2D(socket, socket, socket, socket);
+
     /// <summary>Asserts that every pair of solved neighbouring cells is allowed by the adjacency table.</summary>
     public static void AssertValid(GridTopology grid, CompiledTileSet tiles, int[] cells)
     {

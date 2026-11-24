@@ -6,12 +6,12 @@ assignee: "claude"
 epic: "godoowave"
 dueDate: null
 created: "2026-11-10T15:00:00.000Z"
-modified: "2026-11-15T20:11:45.000Z"
+modified: "2026-11-24T14:00:00.000Z"
 completedAt: null
-labels: ["v1.5.0", "acceptance"]
+labels: ["v1.6.0", "acceptance"]
 order: "fB"
 ---
-# godoowave 1.5: 1.5 acceptance pass
+# godoowave 1.6: acceptance pass
 
 Run the 1.0 acceptance criteria again (brief §8) in 2D, plus the 2D parity checks of §14.1.
 

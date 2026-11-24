@@ -5,7 +5,7 @@
 *Called WFC Generator up to 1.3.4, in `addons/wfc_generator/`; renamed to godoowave in 1.4.0 (§15). Sections before §15 use the old name where they record history.*
 
 **Decisions by:** the board (Syndias)
-**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2.0 (§12) adds boundary sockets, height curves, viewport handles, pinning and marker tiles. 1.4.0 (§15) is the rename to godoowave; the 2D adapter (§14) follows in 1.5.
+**Status:** 1.0.0 complete (2026-11-09). Milestones M0–M5 were done; the board decided against tile weights and boundary sockets for v1 (M3 review). 1.1.0 (§11) adds per-tile weights, ordering by remaining weight, and regenerate. 1.2.0 (§12) adds boundary sockets, height curves, viewport handles, pinning and marker tiles. 1.4.0 (§15) is the rename to godoowave, 1.5.0 (§16) adds several socket labels on one face, and the 2D adapter (§14) follows in 1.6.
 **Reference material:** none. The demo tileset is created for this project.
 
 ---
@@ -323,7 +323,7 @@ Decided by the board on 2026-11-10. Tracked under the label `v1.3.0`. One releas
 
 #### 13.5 Not in 1.3
 
-The 2D adapter moves to 1.4 (§14), later 1.5 (§15). Region weight masks and multi-cell tiles stay in *WFC 2.0*. Renaming sockets across a tile set, matching-face thumbnails and suggesting sockets from terrain sets go to the README backlog.
+The 2D adapter moves to 1.4 (§14), later 1.5 (§15) and 1.6 (§16). Region weight masks and multi-cell tiles stay in *WFC 2.0*. Renaming sockets across a tile set, matching-face thumbnails and suggesting sockets from terrain sets go to the README backlog.
 
 #### 13.6 Patch 1.3.1
 
@@ -348,9 +348,9 @@ Both came with godoodungeon (dungeon brief) on 2026-11-15, tracked under the lab
 
 ---
 
-### 14. Release 1.5
+### 14. Release 1.6: 2D TileMapLayer adapter
 
-Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. It was planned as 1.4 and moved to 1.5 on 2026-11-15, when 1.4.0 became the rename (§15). Tracked under the label `v1.5.0`. Everything is additive: 1.3 tile sets and scenes keep working unchanged.
+Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own release after 1.3. It was planned as 1.4, moved to 1.5 on 2026-11-15 when 1.4.0 became the rename (§15), and to 1.6 on 2026-11-24 when 1.5.0 became socket lists (§16). Tracked under the label `v1.6.0`. Everything is additive: 1.3 tile sets and scenes keep working unchanged.
 
 #### 14.1 2D TileMapLayer adapter
 
@@ -365,7 +365,7 @@ Decided by the board on 2026-11-10: the 2D adapter, planned in §13, is its own 
 
 - A new top-down 2D demo. Its atlas is drawn by the demo builder. It has one-sided shore edges, mirrored tiles, a path, and a marker.
 
-#### 14.3 Not in 1.5
+#### 14.3 Not in 1.6
 
 Suggesting sockets from Godot terrain sets stays in the README backlog. Region weight masks and multi-cell tiles stay in *WFC 2.0*.
 
@@ -380,3 +380,16 @@ Requested on 2026-11-15, to match the `godoo<name>` scheme of godoodungeon. Trac
 - godoodungeon keeps checking `addons/wfc_generator/plugin.cfg` for versions before 1.3.3, and its warning names godoowave as the replacement.
 - The dialog size is stored under `godoowave_dialog_size`, so the dialog opens at its default size once.
 - Updating needs the old folder deleted and **godoowave** enabled in the plugin list (README, CHANGELOG).
+
+---
+
+### 16. Release 1.5: several socket labels on one face
+
+Decided by the board on 2026-11-24 (card `wfc-1-5-socket-lists`). Lives in the shared solver, so godoodungeon gets it too.
+
+- A face takes one or more labels separated by commas: `wall, window` and `wall,window` are the same. Spaces around the commas are ignored, and the list is shown as `wall, window`.
+- Two faces fit when any label on one matches any label on the other, by the rules of single labels (`a`/`a`, `a+`/`a-`, `a`/`a` on top and bottom, `a@n`/`a@n`). Kinds may be mixed in one list (`door+, wall`). Rotation turns each `@n` label, and the 1.6 Mirror (§14.1) will swap `+`/`-` on each label.
+- Empty entries (`wall,,window`, a trailing comma) and a label listed twice are errors on that face.
+- A face with one label behaves exactly as in 1.4, so existing tile sets give the same cells for the same settings and seed. Commas were not allowed in labels before, so no label changes meaning.
+- A path face is a face with any label of the path socket's name. Boundary sockets, External Sockets, Room Edge Socket and Path Socket stay single labels; they meet a face when any of its labels matches.
+- The inspector's socket fields show the placeholder *label, or labels separated by commas*. The preview's edit popup shows the same placeholder and a hint with the rule. Its suggestions filter on the entry after the last comma, and a picked suggestion replaces that entry, so `wall, ` plus `window` gives `wall, window`.
